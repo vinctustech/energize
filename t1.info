@@ -1,0 +1,6 @@
+table users
+	string name
+	string dept
+
+table asdf
+	string zxcv
