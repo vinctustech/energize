@@ -21,10 +21,20 @@ libraryDependencies ++= Seq(
 	"org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 )
 
-//libraryDependencies ++= Seq(
-//	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+libraryDependencies ++= Seq(
+	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 //	"org.scala-lang.modules" %% "scala-swing" % "1.0.2"
-//)
+)
+
+libraryDependencies ++= Seq(
+	"com.h2database" % "h2" % "1.4.193",
+	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5"
+)
+
+libraryDependencies ++= Seq(
+	"xyz.hyperreal" %% "indentation-lexical" % "0.6",
+	"xyz.hyperreal" %% "json" % "0.5"
+)
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".Main" )
 
@@ -57,3 +67,9 @@ pomExtra := (
       <url>https://github.com/emaxedon</url>
     </developer>
   </developers>)
+
+enablePlugins(HugoPlugin)
+
+ghpages.settings
+
+git.remoteRepo := s"git@github.com:edadma/${name.value}.git"
