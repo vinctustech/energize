@@ -64,7 +64,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
-				"table", "unique", "required", "string", "optional", "integer", "secret", "api", "GET", "POST", "DELETE"
+				"table", "unique", "required", "string", "optional", "integer", "secret", "routes", "uuid", "date", "GET", "POST", "DELETE"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -86,35 +86,42 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		tableDefinition |
 		tableMapping
 		
-	lazy val tableDefinition: PackratParser[TableDefinitionAST] =
-		"table" ~> ident ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableDefinitionAST( name, fields )}
+	lazy val tableDefinition: PackratParser[TableDefinition] =
+		"table" ~> ident ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableDefinition( name, fields )}
 		
 	lazy val tableField: PackratParser[TableField] =
 		rep(fieldModifier) ~ fieldType ~ ident <~ Newline ^^ {case modifiers ~ typ ~ name => TableField( modifiers, typ, name )}
 
 	lazy val fieldType: PackratParser[FieldType] =
-		"string" ^^^ StringType
+		"string" ^^^ StringType |
+		"uuid" ^^^ UUIDType |
+		"date" ^^^ DateType
 		
 	lazy val fieldModifier: PackratParser[FieldTypeModifier] =
 		"unique" ^^^ UniqueModifier |
 		"secret" ^^^ SecretModifier
 		
 	lazy val tableMapping: PackratParser[APIAST] =
-		"api" ~> opt(ident) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {case table ~ mappings => APIAST( table, mappings )}
+		"routes" ~> uriPath ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {case base ~ mappings => APIAST( base, mappings )}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
-		httpMethod ~ mappingAction <~ Newline ^^ {case method ~ action => URIMapping( method, Nil, action )} |
-		httpMethod ~ rep1sep(uriSegment, "/") ~ mappingAction <~ Newline ^^ {case method ~ path ~ action => URIMapping( method, path, action )}
+		httpMethod ~ expression <~ Newline ^^ {case method ~ action => URIMapping( method, URIPath(Nil), action )} |
+		httpMethod ~ uriPath ~ expression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
 		
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		"GET" ^^^ GETMethod |
 		"POST" ^^^ POSTMethod |
 		"DELETE" ^^^ DELETEMethod
 		
+	lazy val uriPath: PackratParser[URIPath] =
+		repsep(uriSegment, "/") ^^ (URIPath)
+	
 	lazy val uriSegment: PackratParser[URISegment] =
 		ident ^^ (NameURISegment) |
 		":" ~> ident ^^ (ParameterURISegment)
 	
-	lazy val mappingAction: PackratParser[ActionAST] =
-		ident ~ ("(" ~> repsep(ident, ",") <~ ")") ^^ {case name ~ args => ActionAST( name, args )}
+	lazy val expression: PackratParser[ExpressionAST] =
+		ident ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => FunctionExpression( name, args )} |
+		ident ^^ (VariableExpression) |
+		stringLit ^^ (StringExpression)
 }

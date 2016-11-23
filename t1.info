@@ -1,13 +1,32 @@
 table users
-	unique string username
-	secret string password
-	string firstname
-	string lastname
-	unique string email
+  unique string userName
+  secret string password
+  string firstName
+  string lastName
+  unique string email
 
-api users
-	GET    :username          get( username )
-	POST                      append()                      // JSON message body is sent to all actions, so 'append()' gets the user info that way
-	DELETE :id                delete( id )
-	GET    list               listAll()
-	GET    browse             listBy( sortBy )              // 'sortBy' is a query parameter
+routes api/v1/users
+  GET    :user                        query( "select from users where userName = '$user'" )
+  POST                                insert( users, json )                // 'json' denotes JSON message body
+  DELETE :id                          command( "delete from users where id = '$id'" )
+  GET                                 query( "select from users" )
+  
+routes api/v2/users
+  GET    username/:user               query( "select from users where userName = '$user'" )
+  GET    id/:id                       query( "select from users where id = '$id'" )
+  POST                                insert( users, json )
+  DELETE username/:user               command( "delete from users where userName = '$user'" )
+  DELETE id/:id                       command( "delete from users where id = '$id'" )
+  GET    list                         query( "select from users" )
+
+table orders
+  uuid userID
+  date orderDate
+  date shippedDate
+  
+routes api/v1/orders
+  GET    :orderDate                   query( "select from users inner join orders on users.id = orders.userID where orders.orderDate = 'orderDate'" )
+
+routes api/v2/orders
+  GET    :orderDate                   query( "select from users inner join orders on users.id = orders.userID where orders.orderDate = 'orderDate'" )
+  GET    late                         query( "select from users inner join orders on users.id = orders.userID where orders.shippedDate = null and orders.orderDate < dateadd('day', -10, current_date)" )
