@@ -24,7 +24,7 @@ case object UniqueModifier extends FieldTypeModifier
 case object SecretModifier extends FieldTypeModifier
 
 
-case class TableMappingAST( table: Option[String], mappings: List[URIMapping] ) extends StatementAST
+case class APIAST( table: Option[String], mappings: List[URIMapping] ) extends StatementAST
 	
 case class URIMapping( method: HTTPMethod, path: List[URISegment], action: ActionAST )
 
@@ -49,4 +49,4 @@ case class NameURISegment( name: String ) extends URISegment
 case class ParameterURISegment( name: String ) extends URISegment
 	
 
-case class ActionAST( name: String )
+case class ActionAST( name: String, args: List[String] )
