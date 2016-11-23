@@ -84,7 +84,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 	lazy val statement: PackratParser[StatementAST] =
 		tableDefinition |
-		tableMapping
+		routesDefinition
 		
 	lazy val tableDefinition: PackratParser[TableDefinition] =
 		"table" ~> ident ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableDefinition( name, fields )}
@@ -101,8 +101,8 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		"unique" ^^^ UniqueModifier |
 		"secret" ^^^ SecretModifier
 		
-	lazy val tableMapping: PackratParser[APIAST] =
-		"routes" ~> uriPath ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {case base ~ mappings => APIAST( base, mappings )}
+	lazy val routesDefinition: PackratParser[RoutesDefinition] =
+		"routes" ~> uriPath ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {case base ~ mappings => RoutesDefinition( base, mappings )}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
 		httpMethod ~ expression <~ Newline ^^ {case method ~ action => URIMapping( method, URIPath(Nil), action )} |

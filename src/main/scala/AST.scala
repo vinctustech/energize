@@ -27,7 +27,7 @@ case object UniqueModifier extends FieldTypeModifier
 case object SecretModifier extends FieldTypeModifier
 
 
-case class APIAST( base: URIPath, mappings: List[URIMapping] ) extends StatementAST
+case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST
 	
 case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 
