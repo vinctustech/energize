@@ -1,5 +1,13 @@
 table users
-	string username
-	string password
-	string realname
-	string email
+	unique string username
+	secret string password
+	       string firstname
+	       string lastname
+	unique string email
+
+mapping users
+	GET    /:username         retrieve( username )
+	POST	 /									add()                         // the JSON message body is sent to all actions, so 'add()' get the user info that way
+	DELETE /:id               delete( id )
+	GET    /list              listAll()
+	GET    /browse            listBy( sortBy )              // 'sortBy' is a query parameter

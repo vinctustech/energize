@@ -62,11 +62,14 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 					case Some( exponent ) => exponent
 				}
 
-			reserved +=
-				(	"if", "then", "else", "elif", "true", "false", "or", "and", "not",
-					"table", "unique", "required", "string", "optional", "integer"
+			reserved += (
+				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
+				"table", "unique", "required", "string", "optional", "integer", "secret", "mapping", "GET", "POST", "DELETE"
 				)
-			delimiters += ("+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=")
+			delimiters += (
+				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",
+				":"
+				)
 		}
 
 	def parse( r: Reader[Char] ) = phrase( source )( lexical.read(r) )
@@ -80,17 +83,36 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		Newline ^^^ Nil
 
 	lazy val statement: PackratParser[StatementAST] =
-		tableDeclaration
-
-	lazy val tableDeclaration: PackratParser[TableAST] =
-		("table" ~> ident) ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableAST( name, fields )}
+		tableDefinition |
+		tableMapping
 		
-	lazy val tableField: PackratParser[FieldAST] =
-		(rep(fieldModifier) ~ fieldType ~ ident) <~ Newline ^^ {case modifiers ~ typ ~ name => FieldAST( modifiers, typ, name )}
+	lazy val tableDefinition: PackratParser[TableDefinitionAST] =
+		("table" ~> ident) ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableDefinitionAST( name, fields )}
+		
+	lazy val tableField: PackratParser[TableField] =
+		(rep(fieldModifier) ~ fieldType ~ ident) <~ Newline ^^ {case modifiers ~ typ ~ name => TableField( modifiers, typ, name )}
 
 	lazy val fieldType: PackratParser[FieldType] =
 		"string" ^^^ StringType
 		
 	lazy val fieldModifier: PackratParser[FieldTypeModifier] =
-		"unique" ^^^ UniqueModifier
+		"unique" ^^^ UniqueModifier |
+		"secret" ^^^ SecretModifier
+		
+	lazy val tableMapping: PackratParser[TableMappingAST] =
+		"mapping" ~> opt(ident) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {case table ~ mappings => TableMappingAST( table, mappings )}
+		
+	lazy val uriMapping: PackratParser[URIMapping] =
+		httpMethod ~ ("/" ~> repsep(uriSegment, "/")) ~ mappingAction ^^ {case method ~ path ~ action => URIMapping( method, path, action )}
+		
+	lazy val httpMethod: PackratParser[HTTPMethod] =
+		"GET" ^^^ GETMethod |
+		"POST" ^^^ POSTMethod |
+		"DELETE" ^^^ DELETEMethod
+		
+	lazy val uriSegment: PackratParser[URISegment] =
+		ident ^^ (NameURISegment)
+	
+	lazy val mappingAction: PackratParser[ActionAST] =
+		ident <~ ("(" ~ ")") ^^ {case name => ActionAST( name )}
 }
