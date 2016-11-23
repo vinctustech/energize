@@ -1,6 +1,5 @@
 table users
-	string name
-	string dept
-
-table asdf
-	string zxcv
+	string username
+	string password
+	string realname
+	string email

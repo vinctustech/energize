@@ -77,82 +77,20 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 	lazy val source =
 		rep1(statement <~ Newline) |
-		accept(Newline) ^^^ List( (null, null) )
+		Newline ^^^ Nil
 
-	lazy val statement: PackratParser[AST] =
+	lazy val statement: PackratParser[StatementAST] =
 		tableDeclaration
-//		ident ~ "=" ~ expr ~ Newline ^^ {case v ~ _ ~ e ~ _ => ("#assign", (v, e))} |
-//		expr <~ Newline
 
 	lazy val tableDeclaration: PackratParser[TableAST] =
 		("table" ~> ident) ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableAST( name, fields )}
 		
 	lazy val tableField: PackratParser[FieldAST] =
-		(fieldType ~ ident) <~ Newline ^^ {case typ ~ name => FieldAST( typ, name )}
-			
+		(rep(fieldModifier) ~ fieldType ~ ident) <~ Newline ^^ {case modifiers ~ typ ~ name => FieldAST( modifiers, typ, name )}
+
 	lazy val fieldType: PackratParser[FieldType] =
 		"string" ^^^ StringType
 		
-// 	lazy val expr: PackratParser[Any] =
-// 		expr5
-// 
-// 	lazy val elif =
-// 		(onl ~ "elif") ~> (expr7 <~ "then") ~ expr ^^ {case c ~ t => (c, t)}
-// 
-// 	lazy val expr5: PackratParser[Any] =
-// 		"if" ~> (expr7 <~ "then") ~ expr ~ rep(elif) ~ opt((onl ~ "else") ~> expr) ^^
-// 			{case c ~ t ~ ei ~ e => ("#if", c, t, ei, e)} |
-// 		expr7
-// 
-// 	lazy val expr7 =
-// 		expr7a ~ rep("or" ~ expr7a) ^^
-// 			{case lhs ~ list => (lhs /: list){case (x, op ~ y) => (op, (x, y))}}
-// 
-// 	lazy val expr7a =
-// 		expr7b ~ rep("and" ~ expr7b) ^^
-// 			{case lhs ~ list => (lhs /: list){case (x, op ~ y) => (op, (x, y))}}
-// 
-// 	lazy val expr7b: PackratParser[Any] =
-// 		"not" ~ expr7b ^^ {case op ~ e => (op, e)} |
-// 	expr7c
-// 
-// 	lazy val expr7c: PackratParser[Any] =
-// 		expr10 ~ ("==" | "/=" | "<" | ">" | "<=" | ">=") ~ expr10 ^^
-// 			{case l ~ o ~ r => (o, (l, r))} |
-// 		expr10
-// 
-// 	lazy val expr10: PackratParser[Any] =
-// 		expr10 ~ ("+" | "-") ~ expr20 ^^ {case l ~ o ~ r => (o, (l, r))} |
-// 		expr20
-// 
-// 	lazy val expr20: PackratParser[Any] =
-// 		expr20 ~ ("*" | "/") ~ expr30 ^^ {case l ~ o ~ r => (o, (l, r))} |
-// 		expr20 ~ expr30 ^^ {case l ~ r => ("*", (l, r))} |
-// 		expr30
-// 
-// 	lazy val expr30: PackratParser[Any] =
-// 		expr30 ~ "^" ~ expr40 ^^ {case l ~ o ~ r => (o, (l, r))} |
-// 		expr40
-// 
-//  	lazy val expr40: PackratParser[Any] =
-// 		"-" ~> expr40 ^^ (("-", _)) |
-// 		expr50
-// 
-// 	lazy val expr50 =
-// 		primaryExpr
-// 
-// 	lazy val primaryExpr =
-// 		ident ~ "(" ~ repsep(expr, ",") ~ ")" ^^ {case id ~ _ ~ e ~ _ => (id, e)} |
-// 		numericLit ^^
-// 			(n =>
-// 				if (n matches ".*(\\.|e|E).*")
-// 					n.toDouble.asInstanceOf[boxed.Double]
-// 				else
-// 					n.toInt.asInstanceOf[boxed.Integer]) |
-// 		stringLit |
-// 		("true" | "false") ^^ (_.toBoolean) |
-// 		"[" ~> repsep(expr, ",") <~ "]" ^^ {case l => ("#list", l)} |
-// 		ident ^^ {case v => ("#var", v)} |
-// 		"(" ~> expr <~ ")" |
-// 		accept(Indent) ~> (statement+) <~ Dedent ^^ {case s => ("#block", s)}
+	lazy val fieldModifier: PackratParser[FieldTypeModifier] =
+		"unique" ^^^ UniqueModifier
 }
