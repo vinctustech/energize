@@ -1,84 +1,15 @@
 package xyz.hyperreal.informatio
 
-import java.sql._
+import java.io.File
 
-import collection.mutable.{HashMap, ListBuffer}
-import util.parsing.input.CharSequenceReader
-
-import xyz.hyperreal.indentation_lexical._
+import collection.mutable.HashMap
 
 
 object Main extends App {
 	
-	val p = new InformatioParser
-	val ast =
-		p.parse( new CharSequenceReader(io.Source.fromFile("t0.info").getLines.map(l => l + '\n').mkString) ) match {
-			case p.Success( tree, _ ) => tree
-			case p.NoSuccess( error, rest ) =>
-				println( rest.pos.line + ": " + error + "\n" + rest.pos.longString )
-				sys.exit
-				sys.error( "" )
-		}
-
-//		println( ast )
-	Class.forName( "org.h2.Driver" )
-	
-	val conn = DriverManager.getConnection( "jdbc:h2:~/projects/informatio/test", "sa", "" )
-	val statement = conn.createStatement
-	
-	def problem( error: String ) {
-		conn.close
-		sys.error( error )
-	}
-	
-	val routes = new ListBuffer[Route]
-	
-	ast foreach {
-		case TableDefinition( name, bases, fields ) =>
-			if (!conn.getMetaData.getTables( null, null, name.toUpperCase, null ).next) {
-				val f =
-					fields map {
-						case TableField( modifiers, typ, name ) =>
-							val t =
-								typ match {
-									case StringType => "VARCHAR(255)"
-									case UUIDType => "UUID"
-									case DateType => "DATE"
-								}
-								
-							name + " " + t
-					} mkString ", "
-				
-				val com = "CREATE TABLE " + name + "(" + "id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")"
-				
-				println( com )
-				statement.execute( com )
-			}
-			
-			bases foreach {
-				case URIPath( base ) =>
-//					routes += Route( "GET", base :+ , FunctionExpression("query", List(StringExpression("select from " + name)))  )
-			}
-		case RoutesDefinition( URIPath(base), mappings ) =>
-//			println( base map {case NameURISegment(segment) => segment} mkString ("/", "/", "/") )
-			
-			mappings foreach {
-				case URIMapping( GETMethod, URIPath(path), action ) => routes += Route( "GET", base ++ path, action )
-				case URIMapping( POSTMethod, URIPath(path), action ) => routes += Route( "POST", base ++ path, action )
-				case URIMapping( PUTMethod, URIPath(path), action ) => routes += Route( "PUT", base ++ path, action )
-				case URIMapping( DELETEMethod, URIPath(path), action ) => routes += Route( "DELETE", base ++ path, action )
-				case _ => sys.error( "unknown method" )
-			}
-	}
-	
-//	println( routes mkString "\n" )
-	
-	println( find("GET", "/api/v1/users/joe") )
-	println( find("GET", "/api/v1/users") )
-	
-	conn.close
-	
-	def find( method: String, path: String ): Option[(Map[String,String], ExpressionAST)] = {
+	val routes = Interpreter( new File("t0.info") )
+		
+	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String,String], ExpressionAST)] = {
 		val segments = {
 			val trimed = path.trim
 			val l = trimed split "/" toList
@@ -114,5 +45,7 @@ object Main extends App {
 		None
 	}
 	
-	case class Route( method: String, path: List[URISegment], action: ExpressionAST )
+	println( find("GET", "/api/v1/users/1", routes) )
+	println( find("GET", "/api/v1/users", routes) )
+
 }
