@@ -32,7 +32,7 @@ case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends
 case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 
 case class URIPath( path: List[URISegment] )
-	
+
 	
 trait HTTPMethod
 
@@ -44,12 +44,10 @@ case object PUTMethod extends HTTPMethod
 
 case object DELETEMethod extends HTTPMethod
 
-case object HEADMethod extends HTTPMethod
-
 	
 trait URISegment
 
-case class NameURISegment( name: String ) extends URISegment
+case class NameURISegment( segment: String ) extends URISegment
 
 case class ParameterURISegment( name: String ) extends URISegment
 	

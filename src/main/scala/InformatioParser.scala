@@ -111,6 +111,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		"GET" ^^^ GETMethod |
 		"POST" ^^^ POSTMethod |
+		"PUT" ^^^ PUTMethod |
 		"DELETE" ^^^ DELETEMethod
 		
 	lazy val uriPath: PackratParser[URIPath] =
