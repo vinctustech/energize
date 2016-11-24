@@ -6,8 +6,8 @@ trait AST
 
 trait StatementAST extends AST
 
-case class TableDefinition( name: String, fields: List[TableField] ) extends StatementAST
-	
+case class TableDefinition( name: String, bases: List[URIPath], fields: List[TableField] ) extends StatementAST
+
 case class TableField( modifiers: List[FieldTypeModifier], typ: FieldType, name: String )
 
 

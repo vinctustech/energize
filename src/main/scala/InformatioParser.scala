@@ -87,7 +87,10 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		routesDefinition
 		
 	lazy val tableDefinition: PackratParser[TableDefinition] =
-		"table" ~> ident ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {case name ~ fields => TableDefinition( name, fields )}
+		"table" ~> ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {
+			case name ~ bases ~ fields => TableDefinition( name, bases, fields )
+//			case name ~ None ~ fields => TableDefinition( name, bases, fields )
+		}
 		
 	lazy val tableField: PackratParser[TableField] =
 		rep(fieldModifier) ~ fieldType ~ ident <~ Newline ^^ {case modifiers ~ typ ~ name => TableField( modifiers, typ, name )}
@@ -102,7 +105,10 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		"secret" ^^^ SecretModifier
 		
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =
-		"routes" ~> uriPath ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {case base ~ mappings => RoutesDefinition( base, mappings )}
+		"routes" ~> opt(uriPath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
+			case Some( base ) ~ mappings => RoutesDefinition( base, mappings )
+			case None ~ mappings => RoutesDefinition( URIPath(Nil), mappings )
+		}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
 		httpMethod ~ expression <~ Newline ^^ {case method ~ action => URIMapping( method, URIPath(Nil), action )} |
@@ -115,7 +121,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		"DELETE" ^^^ DELETEMethod
 		
 	lazy val uriPath: PackratParser[URIPath] =
-		repsep(uriSegment, "/") ^^ (URIPath)
+		rep1sep(uriSegment, "/") ^^ (URIPath)
 	
 	lazy val uriSegment: PackratParser[URISegment] =
 		ident ^^ (NameURISegment) |

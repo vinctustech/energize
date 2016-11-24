@@ -1,4 +1,4 @@
-table users
+table users api/v1
   unique string userName
   secret string password
   string firstName

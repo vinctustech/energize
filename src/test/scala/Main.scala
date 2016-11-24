@@ -34,7 +34,7 @@ object Main extends App {
 	val routes = new ListBuffer[Route]
 	
 	ast foreach {
-		case TableDefinition( name, fields ) =>
+		case TableDefinition( name, bases, fields ) =>
 			if (!conn.getMetaData.getTables( null, null, name.toUpperCase, null ).next) {
 				val f =
 					fields map {
@@ -53,6 +53,11 @@ object Main extends App {
 				
 				println( com )
 				statement.execute( com )
+			}
+			
+			bases foreach {
+				case URIPath( base ) =>
+//					routes += Route( "GET", base :+ , FunctionExpression("query", List(StringExpression("select from " + name)))  )
 			}
 		case RoutesDefinition( URIPath(base), mappings ) =>
 //			println( base map {case NameURISegment(segment) => segment} mkString ("/", "/", "/") )
