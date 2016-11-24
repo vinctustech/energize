@@ -1,0 +1,12 @@
+table users
+  unique string userName
+  secret string password
+  string firstName
+  string lastName
+  unique string email
+
+routes api/v1/users
+  GET    :user                        query( "select from users where userName = '$user'" )
+  POST                                insert( users, json )                // 'json' denotes JSON message body
+  DELETE :id                          command( "delete from users where id = '$id'" )
+  GET                                 query( "select from users" )
