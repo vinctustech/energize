@@ -6,25 +6,27 @@ trait AST
 
 trait StatementAST extends AST
 
-case class TableDefinition( name: String, bases: List[URIPath], fields: List[TableField] ) extends StatementAST
+case class TableDefinition( name: String, bases: List[URIPath], fields: List[TableColumn] ) extends StatementAST
 
-case class TableField( modifiers: List[FieldTypeModifier], typ: FieldType, name: String )
-
-
-trait FieldType
-
-case object StringType extends FieldType
-
-case object UUIDType extends FieldType
-
-case object DateType extends FieldType
+case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String )
 
 
-trait FieldTypeModifier
+trait ColumnType
 
-case object UniqueModifier extends FieldTypeModifier
+case object StringType extends ColumnType
 
-case object SecretModifier extends FieldTypeModifier
+case object UUIDType extends ColumnType
+
+case object DateType extends ColumnType
+
+
+trait ColumnTypeModifier
+
+case object UniqueModifier extends ColumnTypeModifier
+
+case object RequiredModifier extends ColumnTypeModifier
+
+case object SecretModifier extends ColumnTypeModifier
 
 
 case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST

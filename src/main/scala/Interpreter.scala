@@ -4,16 +4,26 @@ import java.sql._
 import java.io.File
 
 import util.parsing.input.CharSequenceReader
-import collection.mutable.ListBuffer
+import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 
 object Interpreter {
 	
-	def apply( src: String ): List[Route] = apply( io.Source.fromString(src) )
+	def apply( src: String ): (Map[String, (List[String], Map[String, Column])], List[Route]) = apply( io.Source.fromString(src) )
 	
-	def apply( src: File ): List[Route] = apply( io.Source.fromFile(src) )
+	def apply( src: File ): (Map[String, (List[String], Map[String, Column])], List[Route]) = apply( io.Source.fromFile(src) )
 	
-	def apply( src: io.Source ): List[Route] = {
+	def apply( src: io.Source ): (Map[String, (List[String], Map[String, Column])], List[Route]) = {
+		Class.forName( "org.h2.Driver" )
+		
+		val conn = DriverManager.getConnection( "jdbc:h2:~/projects/informatio/test", "sa", "" )
+		val statement = conn.createStatement
+		
+		def problem( error: String ) = {
+			conn.close
+			sys.error( error )
+		}
+		
 		val p = new InformatioParser
 		val ast =
 			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
@@ -21,54 +31,76 @@ object Interpreter {
 				case p.NoSuccess( error, rest ) =>
 					println( rest.pos.line + ": " + error + "\n" + rest.pos.longString )
 					sys.exit
-					sys.error( "" )
+					problem( "" )
 			}
-			
-		Class.forName( "org.h2.Driver" )
 		
-		val conn = DriverManager.getConnection( "jdbc:h2:~/projects/informatio/test", "sa", "" )
-		val statement = conn.createStatement
-		
-		def problem( error: String ) {
-			conn.close
-			sys.error( error )
-		}
-		
+		val tables = new HashMap[String, LinkedHashMap[String, Column]]
 		val routes = new ListBuffer[Route]
 		
 		ast foreach {
-			case TableDefinition( name, bases, fields ) =>
-				if (!conn.getMetaData.getTables( null, null, name.toUpperCase, null ).next) {
-					val f =
-						fields map {
-							case TableField( modifiers, typ, name ) =>
-								val t =
-									typ match {
-										case StringType => "VARCHAR(255)"
-										case UUIDType => "UUID"
-										case DateType => "DATE"
-									}
-									
-								name + " " + t
-						} mkString ", "
-					
-					val com = "CREATE TABLE " + name + "(" + "id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")"
-					
-					println( com )
-					statement.execute( com )
-				}
+			case TableDefinition( name, bases, columns ) =>
+				if (tables contains name)
+					problem( "table defined twice: " + name )
 
-				for (URIPath( base ) <- bases)
-					routes ++=
-						Interpreter(
-							"""
-							|routes <base>/<table>
-							|  GET    :id                          query( "select from <table> where id = '$id'" )
-							|  GET                                 query( "select from <table>" )
-							|  POST                                insert( <table>, json )
-							|  DELETE :id                          command( "delete from <table> where id = '$id'" )
-							""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")
-						)
+				val cols = new LinkedHashMap[String, Column]
+				val f =
+					columns map {
+						case TableColumn( modifiers, typ, cname ) =>
+							if (cols contains cname)
+								problem( "column defined twice: " + cname )
+								
+							val t =
+								typ match {
+									case StringType => "VARCHAR(255)"
+									case UUIDType => "UUID"
+									case DateType => "DATE"
+								}
+							var secret = false
+							var required = false
+							var unique = false
+							var m = ""
+							
+							modifiers foreach {
+								case UniqueModifier =>
+									if (unique)
+										problem( "modifier 'unique' encountered more than once: " + name + "/" + cname )
+										
+									unique = true
+									m += " unique"
+								case RequiredModifier =>
+									if (required)
+										problem( "modifier 'required' encountered more than once: " + name + "/" + cname )
+										
+									required = true
+								case SecretModifier =>
+									if (secret)
+										problem( "modifier 'secret' encountered more than once: " + name + "/" + cname )
+										
+									secret = true	
+							}
+							
+							cols(cname) = Column( cname, typ, secret, required )
+							cname + " " + t + m
+					} mkString ", "
+				
+				tables(name) = cols
+					
+				if (!conn.getMetaData.getTables( null, null, name.toUpperCase, null ).next)
+					statement.execute( "CREATE TABLE " + name + "(" + "id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
+
+				for (URIPath( base ) <- bases) {
+					val (_, r) = Interpreter(
+						"""
+						|routes <base>/<table>
+						|  GET    :id                          query( "select from <table> where id = '$id'" )
+						|  GET                                 query( "select from <table>" )
+						|  POST                                insert( <table>, json )
+						|  DELETE :id                          command( "delete from <table> where id = '$id'" )
+						""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")
+					)
+					
+					routes ++= r
+				}
 					
 			case RoutesDefinition( URIPath(base), mappings ) =>
 				
@@ -77,14 +109,30 @@ object Interpreter {
 					case URIMapping( POSTMethod, URIPath(path), action ) => routes += Route( "POST", base ++ path, action )
 					case URIMapping( PUTMethod, URIPath(path), action ) => routes += Route( "PUT", base ++ path, action )
 					case URIMapping( DELETEMethod, URIPath(path), action ) => routes += Route( "DELETE", base ++ path, action )
-					case _ => sys.error( "unknown method" )
+					case _ => problem( "unknown method" )
 				}
 		}
 		
 		conn.close
-		routes.toList
+		
+		val tableMap = tables.map {
+			case (tname, tinfo) => {
+				val cnames = new ListBuffer[String]
+				
+				tinfo foreach {
+					case (cname, cinfo) =>
+						cnames += cname
+				}
+				
+				(tname, (cnames.toList, tinfo.toMap))
+			}
+		} toMap
+		
+		(tableMap, routes.toList)
 	}
 
 }
 
 case class Route( method: String, path: List[URISegment], action: ExpressionAST )
+	
+case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean )

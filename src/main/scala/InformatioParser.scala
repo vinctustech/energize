@@ -87,21 +87,20 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		routesDefinition
 		
 	lazy val tableDefinition: PackratParser[TableDefinition] =
-		"table" ~> ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableField) <~ Dedent) ^^ {
-			case name ~ bases ~ fields => TableDefinition( name, bases, fields )
-//			case name ~ None ~ fields => TableDefinition( name, bases, fields )
-		}
+		"table" ~> ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case name ~ bases ~ columns => TableDefinition( name, bases, columns )}
 		
-	lazy val tableField: PackratParser[TableField] =
-		rep(fieldModifier) ~ fieldType ~ ident <~ Newline ^^ {case modifiers ~ typ ~ name => TableField( modifiers, typ, name )}
+	lazy val tableColumn: PackratParser[TableColumn] =
+		rep(columnModifier) ~ columnType ~ ident <~ Newline ^^ {case modifiers ~ typ ~ name => TableColumn( modifiers, typ, name )}
 
-	lazy val fieldType: PackratParser[FieldType] =
+	lazy val columnType: PackratParser[ColumnType] =
 		"string" ^^^ StringType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType
 		
-	lazy val fieldModifier: PackratParser[FieldTypeModifier] =
+	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		"unique" ^^^ UniqueModifier |
+		"require" ^^^ RequiredModifier |
 		"secret" ^^^ SecretModifier
 		
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =
