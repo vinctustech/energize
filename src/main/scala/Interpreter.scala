@@ -103,7 +103,6 @@ object Interpreter {
 				}
 					
 			case RoutesDefinition( URIPath(base), mappings ) =>
-				
 				mappings foreach {
 					case URIMapping( GETMethod, URIPath(path), action ) => routes += Route( "GET", base ++ path, action )
 					case URIMapping( POSTMethod, URIPath(path), action ) => routes += Route( "POST", base ++ path, action )
