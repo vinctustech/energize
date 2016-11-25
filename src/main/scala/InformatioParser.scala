@@ -64,7 +64,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
-				"table", "unique", "required", "string", "optional", "integer", "secret", "routes", "uuid", "date", "GET", "POST", "DELETE"
+				"table", "unique", "required", "string", "optional", "integer", "secret", "routes", "uuid", "date", "GET", "POST", "PUT", "DELETE"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",

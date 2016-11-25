@@ -95,6 +95,7 @@ object Interpreter {
 						|  GET    :id                          query( "select from <table> where id = '$id'" )
 						|  GET                                 query( "select from <table>" )
 						|  POST                                insert( <table>, json )
+						|  PUT                                 put( <table>, json )
 						|  DELETE :id                          command( "delete from <table> where id = '$id'" )
 						""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")
 					)
