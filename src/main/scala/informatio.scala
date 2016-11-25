@@ -1,9 +1,37 @@
 package xyz.hyperreal
 
+import java.sql._
+
 import collection.mutable.HashMap
 
 
 package object informatio {
+	
+	var connection: Connection = null
+	var statement: Statement = null
+		
+	sys.addShutdownHook {
+		close
+	}
+	
+	def connect = {
+		if (connection eq null) {
+			Class.forName( "org.h2.Driver" )
+			connection = DriverManager.getConnection( "jdbc:h2:~/projects/informatio/test", "sa", "" )
+			statement = connection.createStatement
+		}
+		
+		connection
+	}
+	
+	def close {
+		if (connection ne null)
+			connection.close
+	}
+	
+	def query( sql: String ) = {
+		
+	}
 	
 	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String,String], ExpressionAST)] = {
 		val segments = {

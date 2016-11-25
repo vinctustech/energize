@@ -25,7 +25,11 @@ object Main extends App {
 	
 	def eval( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, (List[String], Map[String, Column])] ) =
 		expr match {
-			case FunctionExpression( "query", List(arg) ) => 
+			case FunctionExpression( "query", List(StringExpression(sql)) ) =>
+				val res = statement.executeQuery( sql )
 				
+			case _ => sys.error( "error evaluating expression" )
 		}
+		
+	close
 }

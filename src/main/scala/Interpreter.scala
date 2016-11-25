@@ -1,6 +1,5 @@
 package xyz.hyperreal.informatio
 
-import java.sql._
 import java.io.File
 
 import util.parsing.input.CharSequenceReader
@@ -14,13 +13,7 @@ object Interpreter {
 	def apply( src: File ): (Map[String, (List[String], Map[String, Column])], List[Route]) = apply( io.Source.fromFile(src) )
 	
 	def apply( src: io.Source ): (Map[String, (List[String], Map[String, Column])], List[Route]) = {
-		Class.forName( "org.h2.Driver" )
-		
-		val conn = DriverManager.getConnection( "jdbc:h2:~/projects/informatio/test", "sa", "" )
-		val statement = conn.createStatement
-		
 		def problem( error: String ) = {
-			conn.close
 			sys.error( error )
 		}
 		
@@ -85,7 +78,7 @@ object Interpreter {
 				
 				tables(name) = cols
 					
-				if (!conn.getMetaData.getTables( null, null, name.toUpperCase, null ).next)
+				if (!connect.getMetaData.getTables( null, null, name.toUpperCase, null ).next)
 					statement.execute( "CREATE TABLE " + name + "(" + "id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
 
 				for (URIPath( base ) <- bases) {
@@ -112,8 +105,6 @@ object Interpreter {
 					case _ => problem( "unknown method" )
 				}
 		}
-		
-		conn.close
 		
 		val tableMap = tables.map {
 			case (tname, tinfo) => {
