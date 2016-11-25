@@ -5,6 +5,8 @@ import java.io.File
 import util.parsing.input.CharSequenceReader
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
+import xyz.hyperreal.table.TextTable
+
 
 object Interpreter {
 	
@@ -78,18 +80,24 @@ object Interpreter {
 				
 				tables(name) = cols
 					
-				if (!connect.getMetaData.getTables( null, null, name.toUpperCase, null ).next)
-					statement.execute( "CREATE TABLE " + name + "(" + "id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
-
+// 				val rs = connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null )
+// 				
+// 				while (rs.next)
+// 					println( for (i <- 1 to 11) yield rs.getObject(i) )
+				if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
+					println( "creating table '" + name.toUpperCase + "'" )
+					statement.execute( "CREATE TABLE " + name + "(id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
+				}
+				
 				for (URIPath( base ) <- bases) {
 					val (_, r) = Interpreter(
 						"""
 						|routes <base>/<table>
-						|  GET    :id                          query( "select from <table> where id = '$id'" )
-						|  GET                                 query( "select from <table>" )
+						|  GET    :id                          query( "select * from <table> where id = '$id';" )
+						|  GET                                 query( "select * from <table>;" )
 						|  POST                                insert( <table>, json )
 						|  PUT                                 put( <table>, json )
-						|  DELETE :id                          command( "delete from <table> where id = '$id'" )
+						|  DELETE :id                          command( "delete from <table> where id = '$id';" )
 						""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")
 					)
 					

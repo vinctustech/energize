@@ -3,13 +3,14 @@ package xyz.hyperreal.informatio
 import java.io.File
 
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
+import xyz.hyperreal.table._
 
 
 object Main extends App {
 	
 	val (tables, routes) = Interpreter( new File("t0.info") )
 
-	DefaultJSONWriter.write( process("GET", "/api/v1/users", """{"a": 123}""", tables, routes) )
+	DefaultJSONWriter.write( process("GET", "/api/v1/users", "", tables, routes) )
 
 	def process( reqmethod: String, reqpath: String, reqjson: String, tables: Map[String, (List[String], Map[String, Column])], routes: List[Route] ): Map[String, Any] = {
 		val json = DefaultJSONReader.fromString( reqjson )

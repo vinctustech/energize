@@ -28,12 +28,14 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= Seq(
 	"com.h2database" % "h2" % "1.4.193",
+	"jline" % "jline" % "2.14.2",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5"
 )
 
 libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "indentation-lexical" % "0.6",
-	"xyz.hyperreal" %% "json" % "0.5"
+	"xyz.hyperreal" %% "json" % "0.5",
+	"xyz.hyperreal" %% "table" % "0.2"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".Main" )
