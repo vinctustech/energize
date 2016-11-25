@@ -4,7 +4,6 @@ import java.io.{PrintWriter, File}
 
 import jline.console.ConsoleReader
 
-import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 import xyz.hyperreal.table.TextTable
 
 
@@ -64,6 +63,7 @@ object Main extends App {
 				case List( "stack"|"s", "off" ) => stacktrace = false
 				case Nil|List( "" ) =>
 				case ("GET"|"POST"|"PUT"|"DELETE") :: _ =>
+					
 				case "select" :: _ =>
 					println( TextTable(statement.executeQuery(line1)) )
 				case _ => //sql non-query command
