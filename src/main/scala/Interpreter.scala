@@ -47,6 +47,7 @@ object Interpreter {
 							val t =
 								typ match {
 									case StringType => "VARCHAR(255)"
+									case IntegerType => "INT"
 									case UUIDType => "UUID"
 									case DateType => "DATE"
 								}
@@ -92,12 +93,12 @@ object Interpreter {
 				for (URIPath( base ) <- bases) {
 					val (_, r) = Interpreter(
 						"""
-						|routes <base>/<table>
-						|  GET    :id                          query( "select * from <table> where id = '$id';" )
-						|  GET                                 query( "select * from <table>;" )
-						|  POST                                insert( <table>, json )
-						|  PUT                                 put( <table>, json )
-						|  DELETE :id                          command( "delete from <table> where id = '$id';" )
+						|route <base>/<table>
+						|  GET    :id    query( "select * from <table> where id = '$id';" )
+						|  GET           query( "select * from <table>;" )
+						|  POST          insert( <table>, json )
+						|  PUT    :id    update( <table>, json, id )
+						|  DELETE :id    command( "delete from <table> where id = '$id';" )
 						""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")
 					)
 					

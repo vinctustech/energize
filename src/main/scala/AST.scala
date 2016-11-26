@@ -15,6 +15,8 @@ trait ColumnType
 
 case object StringType extends ColumnType
 
+case object IntegerType extends ColumnType
+
 case object UUIDType extends ColumnType
 
 case object DateType extends ColumnType

@@ -26,8 +26,9 @@ object Main extends App {
 
 	var tables: Map[String, Table] = null
 	var routes: List[Route] = null
+	var db = "projects/informatio/test"
 	
-	connect( "projects/informatio/test" )
+	connect( db )
 	println
 	
 	while ({line = reader.readLine; line != null}) {
@@ -38,6 +39,7 @@ object Main extends App {
 			com match {
 				case List( "connect|c", dbfile ) =>
 					connect( dbfile )
+					db = dbfile
 					tables = null
 					routes = null
 				case List( "help"|"h" ) =>
@@ -47,6 +49,7 @@ object Main extends App {
 					|help (h)                             print this summary
 					|quit (q)                             exit the REPL
 					|stack (t) on/off                     turn exception stack trace on or off
+					|wipe (w)															wipe current database clean and reconnect
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
@@ -61,10 +64,15 @@ object Main extends App {
 					sys.exit
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
+				case List( "wipe"|"w" ) =>
+					close
+					new File( sys.props("user.home"), db + ".mv.db" ).delete
+					new File( sys.props("user.home"), db + ".trace.db" ).delete
+					connect( db )
 				case Nil|List( "" ) =>
-				case List( method@("POST"|"post"), path, json ) =>
-					println( process( method, path, json, tables, routes ) )
-				case List( method@("GET"|"get"|"PUT"|"put"|"DELETE"|"delete"), path ) =>
+				case (method@("POST"|"post"|"PUT"|"put")) :: path :: _ =>
+					println( process( method, path, line1.split("\\s+", 3)(2), tables, routes ) )
+				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					println( process( method, path, "", tables, routes ) )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )

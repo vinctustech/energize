@@ -1,2 +1,3 @@
 table users api/v1
-  unique string email
+	unique string email
+	integer age

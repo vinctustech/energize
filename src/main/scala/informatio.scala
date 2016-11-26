@@ -60,10 +60,10 @@ package object informatio {
 						case Some( v ) =>
 							if (t.columns(c).typ == StringType) {
 								com += '\''
-								com ++= v.toString
+								com ++= String.valueOf( v )
 								com += '\''
 							} else
-								v.toString
+								com ++= String.valueOf( v )
 					}
 					
 					if (c != last)
@@ -75,6 +75,21 @@ package object informatio {
 					"status" -> "ok",
 					"update" -> statement.executeUpdate( com.toString )
 				)
+			case FunctionExpression( "update", List(table, json, id) ) =>
+				val t = eval( table, vars, tables, reqbody ).asInstanceOf[Table]
+				val j = evalj( json, vars, tables, reqbody )
+				val idv = evali( id, vars, tables, reqbody )
+				val com = new StringBuilder( "update " )
+				val last = t.names.last
+				
+				println( idv )
+				com ++= t.name
+				com ++= " set "
+				
+				println( j.toList map {
+					case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
+					case (k, v) => k + "=" + String.valueOf( v )
+				} mkString ", " )
 			case FunctionExpression( "query", List(sql) ) =>
 				val res = statement.executeQuery( evals(sql, vars, tables, reqbody) )
 				val list = new ListBuffer[Map[String, Any]]
@@ -102,6 +117,9 @@ package object informatio {
 	
 	def evals( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): String =
 		eval( expr, vars, tables, reqbody ).asInstanceOf[String]
+	
+	def evali( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): Int =
+		eval( expr, vars, tables, reqbody ).asInstanceOf[String].toInt
 	
 	def evalj( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): Map[String, Any] =
 		eval( expr, vars, tables, reqbody ).asInstanceOf[Map[String, Any]]

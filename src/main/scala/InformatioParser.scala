@@ -64,7 +64,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
-				"table", "unique", "required", "string", "optional", "integer", "secret", "routes", "uuid", "date", "GET", "POST", "PUT", "DELETE"
+				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "DELETE"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -95,6 +95,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 	lazy val columnType: PackratParser[ColumnType] =
 		"string" ^^^ StringType |
+		"integer" ^^^ IntegerType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType
 		
@@ -104,7 +105,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		"secret" ^^^ SecretModifier
 		
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =
-		"routes" ~> opt(uriPath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
+		"route" ~> opt(uriPath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
 			case Some( base ) ~ mappings => RoutesDefinition( base, mappings )
 			case None ~ mappings => RoutesDefinition( URIPath(Nil), mappings )
 		}
