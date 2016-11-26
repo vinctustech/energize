@@ -99,6 +99,13 @@ package object informatio {
 					"status" -> "ok",
 					"update" -> statement.executeUpdate( com.toString )
 				)
+			case FunctionExpression( "command", List(sql) ) =>
+				val com = evals( sql, vars, tables, reqbody )
+				
+				Map(
+					"status" -> "ok",
+					"update" -> statement.executeUpdate( com.toString )
+				)
 			case FunctionExpression( "query", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody )
 				val res = statement.executeQuery( com )
