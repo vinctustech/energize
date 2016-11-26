@@ -3,6 +3,7 @@ package xyz.hyperreal
 import java.sql._
 
 import collection.mutable.{ListBuffer, HashMap}
+import util.matching.Regex
 
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
@@ -11,6 +12,7 @@ package object informatio {
 	
 	var connection: Connection = null
 	var statement: Statement = null
+	private val varRegex = "\\$([a-zA-Z][a-zA-Z0-9]*)".r
 		
 	sys.addShutdownHook {
 		close
@@ -43,7 +45,7 @@ package object informatio {
 		DefaultJSONWriter.toString( evalj( expr, vars, tables, reqbody ) )
 	}
 	
-	def eval( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): Any =
+	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String ): Any =
 		expr match {
 			case FunctionExpression( "insert", List(table, json) ) =>
 				val t = eval( table, vars, tables, reqbody ).asInstanceOf[Table]
@@ -71,6 +73,7 @@ package object informatio {
 				}
 				
 				com += ')'
+				
 				Map(
 					"status" -> "ok",
 					"update" -> statement.executeUpdate( com.toString )
@@ -82,16 +85,23 @@ package object informatio {
 				val com = new StringBuilder( "update " )
 				val last = t.names.last
 				
-				println( idv )
 				com ++= t.name
 				com ++= " set "
+				com ++=
+					j.toList map {
+						case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
+						case (k, v) => k + "=" + String.valueOf( v )
+					} mkString ", "
+				com ++= " where id="
+				com ++= idv.toString
 				
-				println( j.toList map {
-					case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
-					case (k, v) => k + "=" + String.valueOf( v )
-				} mkString ", " )
+				Map(
+					"status" -> "ok",
+					"update" -> statement.executeUpdate( com.toString )
+				)
 			case FunctionExpression( "query", List(sql) ) =>
-				val res = statement.executeQuery( evals(sql, vars, tables, reqbody) )
+				val com = evals( sql, vars, tables, reqbody )
+				val res = statement.executeQuery( com )
 				val list = new ListBuffer[Map[String, Any]]
 				val md = res.getMetaData
 				val count = md.getColumnCount
@@ -103,7 +113,15 @@ package object informatio {
 					"status" -> "ok",
 					"data" -> list.toList
 				)
-			case StringExpression( s ) => s
+			case StringExpression( s ) =>
+				def replacer( m: Regex.Match ): String = {
+					vars get m.group(1) match {
+						case None => sys.error( "variable not found: " + m.group(1) )
+						case Some( s ) => s
+					}
+				}
+	
+				varRegex.replaceAllIn( s, replacer _ )
 			case VariableExpression( v ) =>
 				v match {
 					case "json" =>
@@ -115,16 +133,19 @@ package object informatio {
 			case _ => sys.error( "error evaluating expression" )
 		}
 	
-	def evals( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): String =
+	def evals( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String ): String =
 		eval( expr, vars, tables, reqbody ).asInstanceOf[String]
 	
-	def evali( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): Int =
+	def evali( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String ): Int =
 		eval( expr, vars, tables, reqbody ).asInstanceOf[String].toInt
 	
-	def evalj( expr: ExpressionAST, vars: Map[String, Any], tables: Map[String, Table], reqbody: String ): Map[String, Any] =
+	def evalj( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String ): Map[String, Any] =
 		eval( expr, vars, tables, reqbody ).asInstanceOf[Map[String, Any]]
 	
 	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String,String], ExpressionAST)] = {
+		if (routes eq null)
+			sys.error( "no routes loaded" )
+			
 		val segments = {
 			val trimed = path.trim
 			val l = trimed split "/" toList
