@@ -24,7 +24,7 @@ object Main extends App {
 	""".trim.stripMargin.lines foreach println
 	println
 
-	var tables: Map[String, (List[String], Map[String, Column])] = null
+	var tables: Map[String, Table] = null
 	var routes: List[Route] = null
 	
 	connect( "projects/informatio/test" )
@@ -62,10 +62,12 @@ object Main extends App {
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
 				case Nil|List( "" ) =>
-				case ("GET"|"POST"|"PUT"|"DELETE") :: _ =>
-					
+				case List( method@("POST"|"post"), path, json ) =>
+					println( process( method, path, json, tables, routes ) )
+				case List( method@("GET"|"get"|"PUT"|"put"|"DELETE"|"delete"), path ) =>
+					println( process( method, path, "", tables, routes ) )
 				case "select" :: _ =>
-					println( TextTable(statement.executeQuery(line1)) )
+					print( TextTable(statement.executeQuery(line1)) )
 				case _ => //sql non-query command
 					statement.execute( line1 )
 			}

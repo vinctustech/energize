@@ -1,6 +1,2 @@
 table users api/v1
-  unique string userName
-  secret string password
-  string firstName
-  string lastName
   unique string email

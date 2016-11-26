@@ -10,11 +10,11 @@ import xyz.hyperreal.table.TextTable
 
 object Interpreter {
 	
-	def apply( src: String ): (Map[String, (List[String], Map[String, Column])], List[Route]) = apply( io.Source.fromString(src) )
+	def apply( src: String ): (Map[String, Table], List[Route]) = apply( io.Source.fromString(src) )
 	
-	def apply( src: File ): (Map[String, (List[String], Map[String, Column])], List[Route]) = apply( io.Source.fromFile(src) )
+	def apply( src: File ): (Map[String, Table], List[Route]) = apply( io.Source.fromFile(src) )
 	
-	def apply( src: io.Source ): (Map[String, (List[String], Map[String, Column])], List[Route]) = {
+	def apply( src: io.Source ): (Map[String, Table], List[Route]) = {
 		def problem( error: String ) = {
 			sys.error( error )
 		}
@@ -123,7 +123,7 @@ object Interpreter {
 						cnames += cname
 				}
 				
-				(tname, (cnames.toList, tinfo.toMap))
+				(tname, Table( tname, cnames.toList, tinfo.toMap ))
 			}
 		} toMap
 		
@@ -133,5 +133,7 @@ object Interpreter {
 }
 
 case class Route( method: String, path: List[URISegment], action: ExpressionAST )
+	
+case class Table( name: String, names: List[String], columns: Map[String, Column] )
 	
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean )
