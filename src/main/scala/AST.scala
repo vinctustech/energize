@@ -28,6 +28,8 @@ case object UniqueModifier extends ColumnTypeModifier
 
 case object RequiredModifier extends ColumnTypeModifier
 
+case object OptionalModifier extends ColumnTypeModifier
+
 case object SecretModifier extends ColumnTypeModifier
 
 

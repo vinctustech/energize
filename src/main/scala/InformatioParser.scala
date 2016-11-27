@@ -101,7 +101,8 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		"unique" ^^^ UniqueModifier |
-		"require" ^^^ RequiredModifier |
+		"required" ^^^ RequiredModifier |
+		"optional" ^^^ OptionalModifier |
 		"secret" ^^^ SecretModifier
 		
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =

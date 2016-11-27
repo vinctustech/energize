@@ -53,6 +53,7 @@ object Interpreter {
 								}
 							var secret = false
 							var required = false
+							var optional = false
 							var unique = false
 							var m = ""
 							
@@ -67,7 +68,19 @@ object Interpreter {
 									if (required)
 										problem( "modifier 'required' encountered more than once: " + name + "/" + cname )
 										
+									if (optional)
+										problem( "modifier 'required' encountered along with 'optional': " + name + "/" + cname )
+										
+									m += " not null"
 									required = true
+								case OptionalModifier =>
+									if (optional)
+										problem( "modifier 'optional' encountered more than once: " + name + "/" + cname )
+										
+									if (required)
+										problem( "modifier 'optional' encountered along with 'required': " + name + "/" + cname )
+										
+									optional = true
 								case SecretModifier =>
 									if (secret)
 										problem( "modifier 'secret' encountered more than once: " + name + "/" + cname )
