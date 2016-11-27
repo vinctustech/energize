@@ -1,4 +1,4 @@
 table toDos api/v1
-	name string
-	description string
-	status integer
+	name string required
+	description string optional
+	status integer required
