@@ -1,3 +1,4 @@
-table users api/v1
-	unique string email
-	integer age
+table toDos api/v1
+	name string
+	description string
+	status integer

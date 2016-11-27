@@ -46,6 +46,8 @@ case object POSTMethod extends HTTPMethod
 
 case object PUTMethod extends HTTPMethod
 
+case object PATCHMethod extends HTTPMethod
+
 case object DELETEMethod extends HTTPMethod
 
 	

@@ -70,7 +70,7 @@ object Main extends App {
 					new File( sys.props("user.home"), db + ".trace.db" ).delete
 					connect( db )
 				case Nil|List( "" ) =>
-				case (method@("POST"|"post"|"PUT"|"put")) :: path :: _ =>
+				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
 					println( process( method, path, line1.split("\\s+", 3)(2), tables, routes ) )
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					println( process( method, path, "", tables, routes ) )

@@ -64,7 +64,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
-				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "DELETE"
+				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -91,7 +91,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 			case name ~ bases ~ columns => TableDefinition( name, bases, columns )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
-		rep(columnModifier) ~ columnType ~ ident <~ Newline ^^ {case modifiers ~ typ ~ name => TableColumn( modifiers, typ, name )}
+		ident ~ columnType ~ rep(columnModifier) <~ Newline ^^ {case name ~ typ ~ modifiers => TableColumn( modifiers, typ, name )}
 
 	lazy val columnType: PackratParser[ColumnType] =
 		"string" ^^^ StringType |
@@ -118,6 +118,7 @@ class InformatioParser extends StandardTokenParsers with PackratParsers
 		"GET" ^^^ GETMethod |
 		"POST" ^^^ POSTMethod |
 		"PUT" ^^^ PUTMethod |
+		"PATCH" ^^^ PATCHMethod |
 		"DELETE" ^^^ DELETEMethod
 		
 	lazy val uriPath: PackratParser[URIPath] =

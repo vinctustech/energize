@@ -97,7 +97,7 @@ object Interpreter {
 						|  GET    :id    query( "select * from <table> where id = '$id';" )
 						|  GET           query( "select * from <table>;" )
 						|  POST          insert( <table>, json )
-						|  PUT    :id    update( <table>, json, id )
+						|  PATCH  :id    update( <table>, json, id )
 						|  DELETE :id    command( "delete from <table> where id = '$id';" )
 						""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")
 					)
@@ -110,6 +110,7 @@ object Interpreter {
 					case URIMapping( GETMethod, URIPath(path), action ) => routes += Route( "GET", base ++ path, action )
 					case URIMapping( POSTMethod, URIPath(path), action ) => routes += Route( "POST", base ++ path, action )
 					case URIMapping( PUTMethod, URIPath(path), action ) => routes += Route( "PUT", base ++ path, action )
+					case URIMapping( PATCHMethod, URIPath(path), action ) => routes += Route( "PATCH", base ++ path, action )
 					case URIMapping( DELETEMethod, URIPath(path), action ) => routes += Route( "DELETE", base ++ path, action )
 					case _ => problem( "unknown method" )
 				}
