@@ -6,9 +6,28 @@ import prop.PropertyChecks
 
 class Tests extends FreeSpec with PropertyChecks with Matchers {
 	
-	"tests" in {
-//		a [RuntimeException] should be thrownBy {interpret( """ (= 1 1] """ )}
-//		interpret( """ (cdr '(a)) """ ) shouldBe SNil
+	"empty database" in {
+		connect( "test", true )
+
+		val config =
+			"""
+			|table toDos api/v1
+			|	name string required
+			|	description string optional
+			|	status integer required
+			""".trim.stripMargin
+			
+		val (tables, routes) = Interpreter( config )
+
+		process( "GET", "/api/v1/toDos", "", tables, routes ) shouldBe
+			"""
+			|{
+			|  "status": "ok",
+			|  "data": []
+			|}
+			""".trim.stripMargin
+		
+		close
 	}
 	
 }
