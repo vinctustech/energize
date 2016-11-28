@@ -1,6 +1,7 @@
 package xyz.hyperreal.cras
 
 import java.util.concurrent.TimeUnit
+import java.io.ByteArrayOutputStream
 
 import org.apache.http.{MethodNotSupportedException, HttpStatus, HttpResponse, ExceptionLogger, HttpConnection, HttpException, HttpRequest, HttpEntityEnclosingRequest}
 import org.apache.http.entity.ContentType
@@ -71,9 +72,12 @@ class Server( port: Int, tables: Map[String, Table], routes: List[Route] ) {
 			val entity =
 				request match {
 					case withEntity: HttpEntityEnclosingRequest =>
-						println( "|" + withEntity.getEntity.toString + "|" )
+						val buf = new ByteArrayOutputStream
+						val entity = withEntity.getEntity
+							
+						entity.writeTo( buf )
 						new NStringEntity(
-							process( method, target, withEntity.getEntity.toString, tables, routes ),
+							process( method, target, buf.toString, tables, routes ),
 							ContentType.APPLICATION_JSON)
 					case noEntity =>
 						new NStringEntity(
