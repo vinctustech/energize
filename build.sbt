@@ -1,4 +1,4 @@
-name := "informatio"
+name := "cras"
 
 version := "0.1"
 
