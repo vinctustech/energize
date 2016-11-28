@@ -10,20 +10,20 @@ object ServerMain extends App {
 		sys.exit( 1 )
 	}
 	
-	sys.addShutdownHook {
-		close
-	}
-	
 	val db = args(0)
 	val config = args(1) + ".info"
+	val (connection, statement) = dbconnect( db )
 	
-	connect( db )
+	sys.addShutdownHook {
+		connection.close
+	}
+	
 	println( connection )
 	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	println( "loading " + config )
 
-	val (tables, routes) = Interpreter( new File(config) )
+	val (tables, routes) = configuration( io.Source.fromFile(config), connection )
 	
 	println( "starting server" )
-	new Server( 8080, tables, routes ).start
+	new Server( 8080, tables, routes, statement ).start
 }

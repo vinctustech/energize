@@ -1,5 +1,6 @@
 package xyz.hyperreal.cras
 
+import java.sql._
 import java.io.{PrintWriter, File}
 
 import jline.console.ConsoleReader
@@ -26,16 +27,24 @@ object REPLMain extends App {
 
 	var tables: Map[String, Table] = null
 	var routes: List[Route] = null
+	var connection: Connection = null
+	var statement: Statement = null
 	var db = "projects/cras/test"
 		
 	sys.addShutdownHook {
-		close
+		connection.close
 	}
 	
-	connect( db )
-	println( connection )
-	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
-	println
+	def connect( file: String ) {
+		val (c, s) = dbconnect( file )
+		
+		connection = c
+		statement = s
+		db = file
+		println( connection )
+		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
+		println
+	}
 	
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
@@ -44,8 +53,10 @@ object REPLMain extends App {
 		try {
 			com match {
 				case List( "connect|c", dbfile ) =>
+					if (connection ne null)
+						connection.close
+						
 					connect( dbfile )
-					println( connection )
 					db = dbfile
 					tables = null
 					routes = null
@@ -62,26 +73,25 @@ object REPLMain extends App {
 					|<SQL>                                execute <SQL> non-query command
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					val (t, r) = Interpreter( new File(config + ".info") )
+					val (t, r) = configuration( io.Source.fromFile(config + ".info"), connection )
 
 					tables = t
 					routes = r
 				case List( "quit"|"q" ) =>
-					close
+					statement.close
 					sys.exit
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
 				case List( "wipe"|"w" ) =>
-					close
+					statement.close
 					new File( sys.props("user.home"), db + ".mv.db" ).delete
 					new File( sys.props("user.home"), db + ".trace.db" ).delete
 					connect( db )
-					println( connection )
 				case Nil|List( "" ) =>
 				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
-					println( process( method, path, line1.split("\\s+", 3)(2), tables, routes ) )
+					println( process( method, path, line1.split("\\s+", 3)(2), tables, routes, statement ) )
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
-					println( process( method, path, "", tables, routes ) )
+					println( process( method, path, "", tables, routes, statement ) )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )
 				case _ => //sql non-query command

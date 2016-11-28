@@ -7,8 +7,7 @@ import prop.PropertyChecks
 class Tests extends FreeSpec with PropertyChecks with Matchers {
 	
 	"empty database" in {
-		connect( "test", true )
-
+		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
 			|table toDos api/v1
@@ -17,9 +16,9 @@ class Tests extends FreeSpec with PropertyChecks with Matchers {
 			|	status integer required
 			""".trim.stripMargin
 			
-		val (tables, routes) = Interpreter( config )
+		val (tables, routes) = configuration( io.Source.fromString(config), c )
 
-		process( "GET", "/api/v1/toDos", "", tables, routes ) shouldBe
+		process( "GET", "/api/v1/toDos", "", tables, routes, s ) shouldBe
 			"""
 			|{
 			|  "status": "ok",
@@ -27,7 +26,7 @@ class Tests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin
 		
-		close
+		c.close
 	}
 	
 }

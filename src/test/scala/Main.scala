@@ -6,13 +6,12 @@ import java.io.File
 object Main extends App {
 
 	def test {
-		connect( "test", true )
+		val (c, s) = dbconnect( "test", true )
+		val (tables, routes) = configuration( io.Source.fromFile("t0.info"), c )
 
-		val (tables, routes) = Interpreter( new File("t0.info") )
-
-		println( process("GET", "/api/v1/toDos", "", tables, routes) )
+		println( process("GET", "/api/v1/toDos", "", tables, routes, s) )
 		
-		close
+		c.close
 	}
 	
 	test

@@ -1,5 +1,6 @@
 package xyz.hyperreal.cras
 
+import java.sql._
 import java.util.concurrent.TimeUnit
 import java.io.ByteArrayOutputStream
 
@@ -13,7 +14,7 @@ import org.apache.http.protocol.{HttpContext, HttpCoreContext}
 import org.apache.http.ssl.SSLContexts
 
 
-class Server( port: Int, tables: Map[String, Table], routes: List[Route] ) {
+class Server( port: Int, tables: Map[String, Table], routes: List[Route], statement: Statement ) {
 	val config = IOReactorConfig.custom
 		.setSoTimeout(15000)
 		.setTcpNoDelay(true)
@@ -77,11 +78,11 @@ class Server( port: Int, tables: Map[String, Table], routes: List[Route] ) {
 							
 						entity.writeTo( buf )
 						new NStringEntity(
-							process( method, target, buf.toString, tables, routes ),
+							process( method, target, buf.toString, tables, routes, statement ),
 							ContentType.APPLICATION_JSON)
 					case noEntity =>
 						new NStringEntity(
-							process( method, target, "{}", tables, routes ),
+							process( method, target, "{}", tables, routes, statement ),
 							ContentType.APPLICATION_JSON)
 				}
 			response.setEntity(entity)
