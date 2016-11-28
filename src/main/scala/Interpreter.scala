@@ -94,12 +94,8 @@ object Interpreter {
 				
 				tables(name) = cols
 					
-// 				val rs = connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null )
-// 				
-// 				while (rs.next)
-// 					println( for (i <- 1 to 11) yield rs.getObject(i) )
 				if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
-					println( "creating table '" + name.toUpperCase + "'" )
+//					println( "creating table '" + name.toUpperCase + "'" )
 					statement.execute( "CREATE TABLE " + name + "(id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
 				}
 				

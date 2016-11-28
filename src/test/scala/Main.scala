@@ -2,17 +2,19 @@ package xyz.hyperreal.informatio
 
 import java.io.File
 
-import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
-import xyz.hyperreal.table._
-
 
 object Main extends App {
-	
-	connect( "projects/informatio/test" )
 
-	val (tables, routes) = Interpreter( new File("t0.info") )
+	def test {
+		connect( "projects/informatio/test", true )
 
-	DefaultJSONWriter.write( process("GET", "/api/v1/users", "", tables, routes) )
+		val (tables, routes) = Interpreter( new File("t0.info") )
+
+		println( process("GET", "/api/v1/toDos", "", tables, routes) )
 		
-	close
+		close
+	}
+	
+	test
+	test
 }

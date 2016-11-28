@@ -38,9 +38,9 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "table" % "0.2"
 )
 
-mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".Main" )
+mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".Server" )
 
-mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".Main" )
+mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".Server" )
 
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 

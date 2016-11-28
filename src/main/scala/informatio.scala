@@ -18,15 +18,13 @@ package object informatio {
 		close
 	}
 	
-	def connect( dbfile: String ) = {
+	def connect( dbfile: String, memory: Boolean = false ) = {
 		if (connection eq null)
 			close
 
 		Class.forName( "org.h2.Driver" )
-		connection = DriverManager.getConnection( "jdbc:h2:~/" + dbfile, "sa", "" )
-		statement = connection.createStatement
-		println( connection )
-		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
+		connection = DriverManager.getConnection( s"jdbc:h2${if (memory) ":mem" else ""}:~/" + dbfile, "sa", "" )
+		statement = connection.createStatement		
 		connection
 	}
 	

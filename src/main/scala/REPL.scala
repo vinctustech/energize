@@ -7,7 +7,7 @@ import jline.console.ConsoleReader
 import xyz.hyperreal.table.TextTable
 
 
-object Main extends App {
+object REPL extends App {
 	
 	val reader = new ConsoleReader
 	val out = new PrintWriter( reader.getTerminal.wrapOutIfNeeded(System.out), true )
@@ -29,6 +29,8 @@ object Main extends App {
 	var db = "projects/informatio/test"
 	
 	connect( db )
+	println( connection )
+	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	println
 	
 	while ({line = reader.readLine; line != null}) {
@@ -39,6 +41,7 @@ object Main extends App {
 			com match {
 				case List( "connect|c", dbfile ) =>
 					connect( dbfile )
+					println( connection )
 					db = dbfile
 					tables = null
 					routes = null
@@ -69,6 +72,7 @@ object Main extends App {
 					new File( sys.props("user.home"), db + ".mv.db" ).delete
 					new File( sys.props("user.home"), db + ".trace.db" ).delete
 					connect( db )
+					println( connection )
 				case Nil|List( "" ) =>
 				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
 					println( process( method, path, line1.split("\\s+", 3)(2), tables, routes ) )
