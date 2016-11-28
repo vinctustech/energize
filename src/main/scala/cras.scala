@@ -8,7 +8,7 @@ import util.matching.Regex
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
-package object informatio {
+package object cras {
 	
 	var connection: Connection = null
 	var statement: Statement = null

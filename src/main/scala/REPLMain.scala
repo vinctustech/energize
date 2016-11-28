@@ -1,4 +1,4 @@
-package xyz.hyperreal.informatio
+package xyz.hyperreal.cras
 
 import java.io.{PrintWriter, File}
 
@@ -7,7 +7,7 @@ import jline.console.ConsoleReader
 import xyz.hyperreal.table.TextTable
 
 
-object REPL extends App {
+object REPLMain extends App {
 	
 	val reader = new ConsoleReader
 	val out = new PrintWriter( reader.getTerminal.wrapOutIfNeeded(System.out), true )
@@ -18,7 +18,7 @@ object REPL extends App {
 	reader.setPrompt( "> " )
 
 	"""
-	|Welcome to Informatio version 0.1.
+	|Welcome to CRAS version 0.1.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
 	""".trim.stripMargin.lines foreach println
@@ -26,7 +26,7 @@ object REPL extends App {
 
 	var tables: Map[String, Table] = null
 	var routes: List[Route] = null
-	var db = "projects/informatio/test"
+	var db = "projects/cras/test"
 	
 	connect( db )
 	println( connection )

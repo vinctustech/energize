@@ -1,4 +1,4 @@
-package xyz.hyperreal.informatio
+package xyz.hyperreal.cras
 
 import java.{lang => boxed}
 
@@ -11,7 +11,7 @@ import util.parsing.input.Reader
 import xyz.hyperreal.indentation_lexical._
 
 
-class InformatioParser extends StandardTokenParsers with PackratParsers
+class CrasParser extends StandardTokenParsers with PackratParsers
 {
 	override val lexical: IndentationLexical =
 		new IndentationLexical( false, true, List("[", "("), List("]", ")"), "//", "/*", "*/" )

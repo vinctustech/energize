@@ -1,4 +1,4 @@
-package xyz.hyperreal.informatio
+package xyz.hyperreal.cras
 
 import java.io.File
 
@@ -19,7 +19,7 @@ object Interpreter {
 			sys.error( error )
 		}
 		
-		val p = new InformatioParser
+		val p = new CrasParser
 		val ast =
 			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
 				case p.Success( tree, _ ) => tree
