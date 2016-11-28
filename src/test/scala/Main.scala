@@ -1,4 +1,4 @@
-package xyz.hyperreal.informatio
+package xyz.hyperreal.cras
 
 import java.io.File
 
@@ -6,7 +6,7 @@ import java.io.File
 object Main extends App {
 
 	def test {
-		connect( "projects/informatio/test", true )
+		connect( "test", true )
 
 		val (tables, routes) = Interpreter( new File("t0.info") )
 

@@ -27,6 +27,10 @@ object REPLMain extends App {
 	var tables: Map[String, Table] = null
 	var routes: List[Route] = null
 	var db = "projects/cras/test"
+		
+	sys.addShutdownHook {
+		close
+	}
 	
 	connect( db )
 	println( connection )

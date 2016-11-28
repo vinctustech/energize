@@ -13,10 +13,6 @@ package object cras {
 	var connection: Connection = null
 	var statement: Statement = null
 	private val varRegex = "\\$([a-zA-Z][a-zA-Z0-9]*)".r
-		
-	sys.addShutdownHook {
-		close
-	}
 	
 	def connect( dbfile: String, memory: Boolean = false ) = {
 		if (connection eq null)
@@ -33,7 +29,10 @@ package object cras {
 			connection.close
 	}
 
-	def process( reqmethod: String, reqpath: String, reqbody: String, tables: Map[String, Table], routes: List[Route] ): String = {
+	val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
+	
+	def process( reqmethod: String, requri: String, reqbody: String, tables: Map[String, Table], routes: List[Route] ): String = {
+		val reqpath = requri
 		val (vars, expr) =
 			find( reqmethod, reqpath, routes ) match {
 				case None => return """{"status": "error", "reason": "bad route"}"""

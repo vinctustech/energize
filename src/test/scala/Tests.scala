@@ -1,4 +1,4 @@
-package xyz.hyperreal.name
+package xyz.hyperreal.cras
 
 import org.scalatest._
 import prop.PropertyChecks

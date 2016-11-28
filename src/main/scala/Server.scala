@@ -12,74 +12,74 @@ import org.apache.http.protocol.{HttpContext, HttpCoreContext}
 import org.apache.http.ssl.SSLContexts
 
 
-class Server( port: Int ) {
+class Server( port: Int, tables: Map[String, Table], routes: List[Route] ) {
 	val config = IOReactorConfig.custom
-					.setSoTimeout(15000)
-					.setTcpNoDelay(true)
-					.build
+		.setSoTimeout(15000)
+		.setTcpNoDelay(true)
+		.build
 
 	val server = ServerBootstrap.bootstrap
-					.setListenerPort(port)
-					.setServerInfo("CRAS/0.1")
-					.setIOReactorConfig(config)
-					.setSslContext(null)
-					.setExceptionLogger(ExceptionLogger.STD_ERR)
-					.registerHandler("*", new RequestHandler)
-					.create
+		.setListenerPort(port)
+		.setServerInfo("CRAS/0.1")
+		.setIOReactorConfig(config)
+		.setSslContext(null)
+		.setExceptionLogger(ExceptionLogger.STD_ERR)
+		.registerHandler("*", new RequestHandler)
+		.create
 
 	def start {
 		server.start
 		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
 
 		Runtime.getRuntime.addShutdownHook(new Thread {
-				override def run {
-						server.shutdown(1, TimeUnit.MILLISECONDS)
-				}
+			override def run {
+				server.shutdown(1, TimeUnit.MILLISECONDS)
+			}
 		})
 	}
 	
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {
 
 		def processRequest (
-						request: HttpRequest,
-						context: HttpContext): HttpAsyncRequestConsumer[HttpRequest] = {
-				// Buffer request content in memory for simplicity
-				new BasicAsyncRequestConsumer
+				request: HttpRequest,
+				context: HttpContext): HttpAsyncRequestConsumer[HttpRequest] = {
+			new BasicAsyncRequestConsumer
 		}
 
 		def handle(
-						request: HttpRequest,
-						httpexchange: HttpAsyncExchange,
-						context: HttpContext) {
-				val response = httpexchange.getResponse
-				
-				handleInternal( request, response, context )
-				httpexchange.submitResponse( new BasicAsyncResponseProducer(response) )
+				request: HttpRequest,
+				httpexchange: HttpAsyncExchange,
+				context: HttpContext) {
+			val response = httpexchange.getResponse
+			
+			handleInternal( request, response, context )
+			httpexchange.submitResponse( new BasicAsyncResponseProducer(response) )
 		}
 
 		private def handleInternal(
-						request: HttpRequest,
-						response: HttpResponse,
-						context: HttpContext) {
+				request: HttpRequest,
+				response: HttpResponse,
+				context: HttpContext) {
 
-				val method = request.getRequestLine.getMethod.toUpperCase
+			val method = request.getRequestLine.getMethod.toUpperCase
+			
+			if (method == "OPTION" || method == "HEAD")
+					throw new MethodNotSupportedException(method + " method not supported")
+
+			val target = request.getRequestLine.getUri
 				
-				if (method == "OPTION" || method == "HEAD")
-						throw new MethodNotSupportedException(method + " method not supported")
-
-				val target = request.getRequestLine.getUri
-					
-				val entity =
-					request match {
-						case withEntity: HttpEntityEnclosingRequest =>
-							new NStringEntity(
-								s"""{"method": "$method", "uri": "$target", "entity": "${withEntity.getClass}"}""",
-								ContentType.APPLICATION_JSON)
-						case noEntity =>
-							new NStringEntity(
-								s"""{"method": "$method", "uri": "$target"}""",
-								ContentType.APPLICATION_JSON)
-					}
+			val entity =
+				request match {
+					case withEntity: HttpEntityEnclosingRequest =>
+						println( "|" + withEntity.getEntity.toString + "|" )
+						new NStringEntity(
+							process( method, target, withEntity.getEntity.toString, tables, routes ),
+							ContentType.APPLICATION_JSON)
+					case noEntity =>
+						new NStringEntity(
+							process( method, target, "{}", tables, routes ),
+							ContentType.APPLICATION_JSON)
+				}
 			response.setEntity(entity)
 		}
 	}
