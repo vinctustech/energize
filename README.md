@@ -9,7 +9,7 @@ Configurable ReST API Server
 Overview
 --------
 
-*cras* (which is an acronym for "configurable ReST API server) allows you to get your ReST API up and running in very little time by reducing the amount of typing normally required.
+*cras* (which is an acronym for "configurable ReST API server") allows you to get your ReST API up and running in very little time by reducing the amount of typing normally required.
 
 
 Example
