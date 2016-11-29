@@ -1,0 +1,1 @@
+Search.setIndex({envversion:42,terms:{content:0,index:0,modul:[],search:0,page:0},objtypes:{},objnames:{},filenames:["index"],titles:["CRAS Reference Manual"],objects:{},titleterms:{welcom:[],manual:0,indic:0,cra:0,tabl:0,document:[],refer:0}})
