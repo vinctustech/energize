@@ -12,6 +12,68 @@ Overview
 *cras* (which is an acronym for "configurable ReST API server") allows you to get your ReST API up and running in very little time by drastically reducing the amount of typing normally required.
 
 
+License
+-------
+
+*cras* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
+
+
+Documentation
+-------------
+
+- [Example inside this README](://github.com/edadma/cras#example)
+- [CRAS Reference Manual](http://edadma.github.io/cras)
+- Type `java -jar cras-0.1.jar --help` for executable options
+- Type `help` inside the REPL for commands
+
+
+Usage
+-----
+
+### Executable
+
+If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/cras-0.1.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
+
+Run it as a normal Java executable JAR with the command `java -jar cras-0.1.jar` in the folder where you downloaded the file.
+
+### Library
+
+Use the following definition to use *cras* in your Maven project:
+
+	<repository>
+		<id>hyperreal</id>
+		<url>https://dl.bintray.com/edadma/maven</url>
+	</repository>
+
+	<dependency>
+		<groupId>xyz.hyperreal</groupId>
+		<artifactId>cras</artifactId>
+		<version>0.1</version>
+	</dependency>
+
+Add the following to your `build.sbt` file to use *cras* in your SBT project:
+
+	resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
+
+	libraryDependencies += "xyz.hyperreal" %% "cras" % "0.1"
+
+
+Building
+--------
+
+### Requirements
+
+- Java 8+
+- SBT 0.13.13+
+- Scala 2.12.0+
+
+### Build and Run the REPL
+
+	git clone git://github.com/edadma/cras.git
+	cd cras
+	sbt run
+
+
 Example
 -------
 
@@ -92,65 +154,3 @@ To verify that a table called `todo` has been created, type the SQL command
 	select * from todo;
 	
 In the REPL, you can always restart from scratch using the `wipe` command, reload a modified configuration using `load`, etc.
-
-
-
-License
--------
-
-*cras* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
-
-
-Documentation
--------------
-
-- [CRAS Reference Manual](http://edadma.github.io/cras)
-- Type `java -jar cras-0.1.jar --help` for executable options
-- Type `help` inside the REPL for commands
-
-
-Usage
------
-
-### Executable
-
-If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/cras-0.1.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
-
-Run it as a normal Java executable JAR with the command `java -jar cras-0.1.jar` in the folder where you downloaded the file.
-
-### Library
-
-Use the following definition to use *cras* in your Maven project:
-
-	<repository>
-		<id>hyperreal</id>
-		<url>https://dl.bintray.com/edadma/maven</url>
-	</repository>
-
-	<dependency>
-		<groupId>xyz.hyperreal</groupId>
-		<artifactId>cras</artifactId>
-		<version>0.1</version>
-	</dependency>
-
-Add the following to your `build.sbt` file to use *cras* in your SBT project:
-
-	resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
-
-	libraryDependencies += "xyz.hyperreal" %% "cras" % "0.1"
-
-
-Building
---------
-
-### Requirements
-
-- Java 8+
-- SBT 0.13.13+
-- Scala 2.12.0+
-
-### Build and Run the REPL
-
-	git clone git://github.com/edadma/cras.git
-	cd cras
-	sbt run
