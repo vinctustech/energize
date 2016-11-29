@@ -11,7 +11,7 @@ object ServerMain extends App {
 	}
 	
 	val db = args(0)
-	val config = args(1) + ".info"
+	val config = args(1) + ".cras"
 	val (connection, statement) = dbconnect( db )
 	
 	sys.addShutdownHook {

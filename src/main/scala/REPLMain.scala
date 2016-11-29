@@ -63,7 +63,7 @@ object REPLMain extends App {
 				case List( "help"|"h" ) =>
 					"""
 					|connect (c) <database>               connect to <database> (relative to user folder) clearing in-memory table and routing information
-					|load (l) <config>                    load a <config> (".info" file) creating all tables and routes as specified
+					|load (l) <config>                    load a <config> (".cras" file) creating all tables and routes as specified
 					|help (h)                             print this summary
 					|quit (q)                             exit the REPL
 					|stack (t) on/off                     turn exception stack trace on or off
@@ -73,7 +73,7 @@ object REPLMain extends App {
 					|<SQL>                                execute <SQL> non-query command
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					val (t, r) = configuration( io.Source.fromFile(config + ".info"), connection )
+					val (t, r) = configuration( io.Source.fromFile(config + ".cras"), connection )
 
 					tables = t
 					routes = r
