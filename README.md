@@ -104,7 +104,7 @@ License
 Documentation
 -------------
 
-- [Scaladoc library documentation](http://edadma.github.io/cras)
+- [CRAS Reference Manual](http://edadma.github.io/cras)
 - Type `java -jar cras-0.1.jar --help` for executable options
 - Type `help` inside the REPL for commands
 
