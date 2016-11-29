@@ -29,7 +29,7 @@ object REPLMain extends App {
 	var routes: List[Route] = null
 	var connection: Connection = null
 	var statement: Statement = null
-	var db = "projects/cras/test"
+	var db = "./test"
 		
 	sys.addShutdownHook {
 		connection.close
@@ -45,6 +45,8 @@ object REPLMain extends App {
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 		println
 	}
+	
+	connect( db )
 	
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
@@ -78,7 +80,7 @@ object REPLMain extends App {
 					tables = t
 					routes = r
 				case List( "quit"|"q" ) =>
-					statement.close
+					connection.close
 					sys.exit
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false

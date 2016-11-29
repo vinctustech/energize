@@ -7,9 +7,9 @@ object Main extends App {
 
 	def test {
 		val (c, s) = dbconnect( "test", true )
-		val (tables, routes) = configuration( io.Source.fromFile("t0.info"), c )
+		val (tables, routes) = configuration( io.Source.fromFile("todo.cras"), c )
 
-		println( process("GET", "/api/v1/toDos", "", tables, routes, s) )
+		println( process("GET", "/api/v1/todo", "", tables, routes, s) )
 		
 		c.close
 	}

@@ -18,7 +18,7 @@ package object cras {
 	def dbconnect( dbfile: String, memory: Boolean = false ) = {
 		Class.forName( "org.h2.Driver" )
 		
-		val connection = DriverManager.getConnection( s"jdbc:h2${if (memory) ":mem:" else ":~/"}" + dbfile, "sa", "" )
+		val connection = DriverManager.getConnection( s"jdbc:h2${if (memory) ":mem:" else ":"}" + dbfile, "sa", "" )
 		
 		(connection, connection.createStatement)
 	}
