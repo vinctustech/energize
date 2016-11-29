@@ -21,7 +21,7 @@ License
 Documentation
 -------------
 
-- [Example inside this README](://github.com/edadma/cras#example)
+- [Example inside this README](http://github.com/edadma/cras#example)
 - [CRAS Reference Manual](http://edadma.github.io/cras)
 - Type `java -jar cras-0.1.jar --help` for executable options
 - Type `help` inside the REPL for commands
