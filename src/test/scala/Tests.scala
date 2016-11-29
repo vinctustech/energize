@@ -10,15 +10,15 @@ class Tests extends FreeSpec with PropertyChecks with Matchers {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
-			|table toDos api/v1
-			|	name string required
-			|	description string optional
-			|	status integer required
+			|table todo api/v1
+			|	name        string  required
+			|	description string  optional
+			|	status      integer required
 			""".trim.stripMargin
 			
 		val (tables, routes) = configuration( io.Source.fromString(config), c )
 
-		process( "GET", "/api/v1/toDos", "", tables, routes, s ) shouldBe
+		process( "GET", "/api/v1/todo", "", tables, routes, s ) shouldBe
 			"""
 			|{
 			|  "status": "ok",
