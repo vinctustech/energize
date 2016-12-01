@@ -32,8 +32,14 @@ package object cras {
 			case None =>
 				None
 			case Some( (vars, expr) ) =>
-				Some( DefaultJSONWriter.toString( evalj( expr, vars, tables, reqbody, statement ) ) )
-		}		
+				Some( DefaultJSONWriter.toString(
+					try {
+						eval( expr, vars, tables, reqbody, statement )
+					} catch {
+						e: CrasInternalException => ("error", e.message)
+					}
+				)
+		}
 	}
 	
 	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Any =
@@ -63,12 +69,8 @@ package object cras {
 						com ++= ", "
 				}
 				
-				com += ')'
-				
-				Map(
-					"status" -> "ok",
-					"update" -> statement.executeUpdate( com.toString )
-				)
+				com += ')'				
+				("update", statement.executeUpdate( com.toString ))
 			case FunctionExpression( "update", List(table, json, id, all) ) =>
 				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
 				val j = evalj( json, vars, tables, reqbody, statement )
@@ -76,10 +78,7 @@ package object cras {
 				val allf = evalb( all, vars, tables, reqbody, statement )
 				
 				if (allf && j.keySet != (t.columns.keySet - "id"))
-					Map(
-						"status" -> "error",
-						"reason" -> "missing column(s) in PUT request"
-					)
+					throw new CrasInternalException( "update: missing column(s) in PUT request" )
 				else {
 					val com = new StringBuilder( "update " )
 					val last = t.names.last
@@ -93,19 +92,12 @@ package object cras {
 						} mkString ", "
 					com ++= " where id="
 					com ++= idv.toString
-					
-					Map(
-						"status" -> "ok",
-						"update" -> statement.executeUpdate( com.toString )
-					)
+					("update", statement.executeUpdate( com.toString ))
 				}
 			case FunctionExpression( "command", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				
-				Map(
-					"status" -> "ok",
-					"update" -> statement.executeUpdate( com.toString )
-				)
+				("update", statement.executeUpdate( com.toString ))
 			case FunctionExpression( "query", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				val res = statement.executeQuery( com )
@@ -116,10 +108,7 @@ package object cras {
 				while (res.next)
 					list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
 				
-				Map(
-					"status" -> "ok",
-					"data" -> list.toList
-				)
+				("query" -> list.toList)
 			case LiteralExpression( s: String ) =>
 				def replacer( m: Regex.Match ): String = {
 					vars get m.group(1) match {

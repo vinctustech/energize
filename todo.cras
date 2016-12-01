@@ -4,6 +4,6 @@ table todo api/v1
 	status      integer required
 
 result
-	("set", set)         => {status: "ok", data: set}
-	("item", item)       => {status: "ok", data: item}
-	("updated", updated) => {status: "ok", data: updated}
+	("query", set)            -> {status: "ok", data: set}
+	("update", updated)       -> {status: "ok", data: updated}
+	("error", message)        -> {status: "error", error: message}

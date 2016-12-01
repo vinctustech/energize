@@ -64,7 +64,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
-				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE"
+				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
+				"result"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -84,9 +85,12 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 	lazy val statement: PackratParser[StatementAST] =
 		tableDefinition |
-		routesDefinition
+		routesDefinition |
+		resultsDefinition
 	
 	lazy val pos = positioned( success(new Positional{}) )
+	
+	lazy val resultsDefinition
 	
 	lazy val tableDefinition: PackratParser[TableDefinition] =
 		"table" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
