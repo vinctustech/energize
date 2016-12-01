@@ -193,9 +193,7 @@ package object cras {
 	}
 	
 	def configuration( src: io.Source, connection: Connection ): (Map[String, Table], List[Route]) = {
-		def problem( error: String ) = {
-			sys.error( error )
-		}
+		def problem( error: String ) = 	sys.error( error )
 		
 		val statement = connection.createStatement
 		val p = new CrasParser
@@ -203,9 +201,7 @@ package object cras {
 			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
 				case p.Success( tree, _ ) => tree
 				case p.NoSuccess( error, rest ) =>
-					println( rest.pos.line + ": " + error + "\n" + rest.pos.longString )
-					sys.exit
-					problem( "" )
+					problem( rest.pos.line + ": " + error + "\n" + rest.pos.longString )
 			}
 		
 		val tables = new HashMap[String, LinkedHashMap[String, Column]]
@@ -302,7 +298,6 @@ package object cras {
 					case URIMapping( PUTMethod, URIPath(path), action ) => routes += Route( "PUT", base ++ path, action )
 					case URIMapping( PATCHMethod, URIPath(path), action ) => routes += Route( "PATCH", base ++ path, action )
 					case URIMapping( DELETEMethod, URIPath(path), action ) => routes += Route( "DELETE", base ++ path, action )
-					case _ => problem( "unknown method" )
 				}
 		}
 		

@@ -69,25 +69,32 @@ class Server( port: Int, tables: Map[String, Table], routes: List[Route], statem
 					throw new MethodNotSupportedException(method + " method not supported")
 
 			val target = request.getRequestLine.getUri
-			val data =
-				request match {
-					case withEntity: HttpEntityEnclosingRequest =>
-						val buf = new ByteArrayOutputStream
-						val entity = withEntity.getEntity
-							
-						entity.writeTo( buf )
-						process( method, target, buf.toString, tables, routes, statement )
-					case noEntity =>
-						process( method, target, "{}", tables, routes, statement )
+			
+			try {
+				val data =
+					request match {
+						case withEntity: HttpEntityEnclosingRequest =>
+							val buf = new ByteArrayOutputStream
+							val entity = withEntity.getEntity
+								
+							entity.writeTo( buf )
+							process( method, target, buf.toString, tables, routes, statement )
+						case noEntity =>
+							process( method, target, "{}", tables, routes, statement )
+					}
+					
+				data match {
+					case Some( d ) =>
+						response.setStatusCode( HttpStatus.SC_OK )
+						response.setEntity( new NStringEntity(d, ContentType.APPLICATION_JSON) )
+					case None => 
+						response.setStatusCode( HttpStatus.SC_NOT_FOUND )
+						response.setEntity( new NStringEntity("<html><body><h1>404: Not Found</h1></body></html>", ContentType.TEXT_HTML) )
 				}
-				
-			data match {
-				case Some( d ) =>
-					response.setStatusCode( HttpStatus.SC_OK )
-					response.setEntity( new NStringEntity(d, ContentType.APPLICATION_JSON) )
-				case None => 
-					response.setStatusCode( HttpStatus.SC_NOT_FOUND )
-					response.setEntity( new NStringEntity("<html><body><h1>404: Route not found</h1></body></html>", ContentType.TEXT_HTML) )
+			} catch {
+				case e: Exception =>
+					response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
+					response.setEntity( new NStringEntity("<html><body><h1>500: Internal Server Error</h1></body></html>", ContentType.TEXT_HTML) )
 			}
 		}
 	}
