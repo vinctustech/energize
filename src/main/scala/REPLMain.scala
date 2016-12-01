@@ -19,7 +19,7 @@ object REPLMain extends App {
 	reader.setPrompt( "> " )
 
 	"""
-	|Welcome to CRAS version 0.1.
+	|Welcome to CRAS version 0.2.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
 	""".trim.stripMargin.lines foreach println

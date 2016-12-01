@@ -132,5 +132,6 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val expression: PackratParser[ExpressionAST] =
 		ident ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => FunctionExpression( name, args )} |
 		ident ^^ (VariableExpression) |
-		stringLit ^^ (StringExpression)
+		stringLit ^^ (LiteralExpression) |
+		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean ))
 }

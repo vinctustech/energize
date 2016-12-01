@@ -66,4 +66,4 @@ case class FunctionExpression( name: String, args: List[ExpressionAST] ) extends
 
 case class VariableExpression( name: String ) extends ExpressionAST
 	
-case class StringExpression( string: String ) extends ExpressionAST
+case class LiteralExpression( value: Any ) extends ExpressionAST

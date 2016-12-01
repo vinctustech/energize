@@ -69,27 +69,36 @@ package object cras {
 					"status" -> "ok",
 					"update" -> statement.executeUpdate( com.toString )
 				)
-			case FunctionExpression( "update", List(table, json, id) ) =>
+			case FunctionExpression( "update", List(table, json, id, all) ) =>
 				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
 				val j = evalj( json, vars, tables, reqbody, statement )
 				val idv = evali( id, vars, tables, reqbody, statement )
-				val com = new StringBuilder( "update " )
-				val last = t.names.last
+				val allf = evalb( all, vars, tables, reqbody, statement )
 				
-				com ++= t.name
-				com ++= " set "
-				com ++=
-					j.toList map {
-						case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
-						case (k, v) => k + "=" + String.valueOf( v )
-					} mkString ", "
-				com ++= " where id="
-				com ++= idv.toString
-				
-				Map(
-					"status" -> "ok",
-					"update" -> statement.executeUpdate( com.toString )
-				)
+				if (allf && j.keySet != (t.columns.keySet - "id"))
+					Map(
+						"status" -> "error",
+						"reason" -> "missing column(s) in PUT request"
+					)
+				else {
+					val com = new StringBuilder( "update " )
+					val last = t.names.last
+					
+					com ++= t.name
+					com ++= " set "
+					com ++=
+						j.toList map {
+							case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
+							case (k, v) => k + "=" + String.valueOf( v )
+						} mkString ", "
+					com ++= " where id="
+					com ++= idv.toString
+					
+					Map(
+						"status" -> "ok",
+						"update" -> statement.executeUpdate( com.toString )
+					)
+				}
 			case FunctionExpression( "command", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				
@@ -111,7 +120,7 @@ package object cras {
 					"status" -> "ok",
 					"data" -> list.toList
 				)
-			case StringExpression( s ) =>
+			case LiteralExpression( s: String ) =>
 				def replacer( m: Regex.Match ): String = {
 					vars get m.group(1) match {
 						case None => sys.error( "variable not found: " + m.group(1) )
@@ -120,6 +129,7 @@ package object cras {
 				}
 	
 				varRegex.replaceAllIn( s, replacer _ )
+			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>
 				v match {
 					case "json" =>
@@ -131,14 +141,17 @@ package object cras {
 			case _ => sys.error( "error evaluating expression" )
 		}
 	
-	def evals( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): String =
+	def evals( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ) =
 		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[String]
 	
-	def evali( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Int =
+	def evali( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ) =
 		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[String].toInt
 	
-	def evalj( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Map[String, Any] =
+	def evalj( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement )=
 		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[Map[String, Any]]
+	
+	def evalb( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ) =
+		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[Boolean]
 	
 	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String,String], ExpressionAST)] = {
 		if (routes eq null)
@@ -272,9 +285,11 @@ package object cras {
 						|  GET    :id    query( "select * from <table> where id = '$id';" )
 						|  GET           query( "select * from <table>;" )
 						|  POST          insert( <table>, json )
-						|  PATCH  :id    update( <table>, json, id )
+						|  PATCH  :id    update( <table>, json, id, false )
+						|  PUT    :id    update( <table>, json, id, true )
 						|  DELETE :id    command( "delete from <table> where id = '$id';" )
-						""".stripMargin.replaceAll("<table>", name).replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), connection
+						""".stripMargin.replaceAll("<table>", name).
+							replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), connection
 					)
 					
 					routes ++= r
