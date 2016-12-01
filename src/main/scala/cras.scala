@@ -184,7 +184,6 @@ package object cras {
 				case (ParameterURISegment( name ), request) =>
 					vars(name) = request
 					true
-				case _ => sys.error( "unknown segment type" )
 			})
 				return Some( (vars.toMap, action) )
 		}
@@ -233,13 +232,13 @@ package object cras {
 							var m = ""
 							
 							modifiers foreach {
-								case UniqueModifier( pos ) =>
+								case ColumnTypeModifier( "unique", pos ) =>
 									if (unique)
 										problem( pos, "modifier 'unique' encountered more than once" )
 										
 									unique = true
 									m += " unique"
-								case RequiredModifier( pos ) =>
+								case ColumnTypeModifier( "required", pos ) =>
 									if (required)
 										problem( pos, "modifier 'required' encountered more than once" )
 										
@@ -248,7 +247,7 @@ package object cras {
 										
 									m += " not null"
 									required = true
-								case OptionalModifier( pos ) =>
+								case ColumnTypeModifier( "optional", pos ) =>
 									if (optional)
 										problem( pos, "modifier 'optional' encountered more than once" )
 										
@@ -256,7 +255,7 @@ package object cras {
 										problem( pos, "modifier 'optional' encountered along with 'required'" )
 										
 									optional = true
-								case SecretModifier( pos ) =>
+								case ColumnTypeModifier( "secret", pos ) =>
 									if (secret)
 										problem( pos, "modifier 'secret' encountered more than once" )
 										
@@ -293,11 +292,7 @@ package object cras {
 					
 			case RoutesDefinition( URIPath(base), mappings ) =>
 				mappings foreach {
-					case URIMapping( GETMethod, URIPath(path), action ) => routes += Route( "GET", base ++ path, action )
-					case URIMapping( POSTMethod, URIPath(path), action ) => routes += Route( "POST", base ++ path, action )
-					case URIMapping( PUTMethod, URIPath(path), action ) => routes += Route( "PUT", base ++ path, action )
-					case URIMapping( PATCHMethod, URIPath(path), action ) => routes += Route( "PATCH", base ++ path, action )
-					case URIMapping( DELETEMethod, URIPath(path), action ) => routes += Route( "DELETE", base ++ path, action )
+					case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
 				}
 		}
 		

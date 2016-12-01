@@ -23,16 +23,7 @@ case object UUIDType extends ColumnType
 
 case object DateType extends ColumnType
 
-
-trait ColumnTypeModifier
-
-case class UniqueModifier( pos: Position ) extends ColumnTypeModifier
-
-case class RequiredModifier( pos: Position ) extends ColumnTypeModifier
-
-case class OptionalModifier( pos: Position ) extends ColumnTypeModifier
-
-case class SecretModifier( pos: Position ) extends ColumnTypeModifier
+case class ColumnTypeModifier( modifier: String, pos: Position )
 
 
 case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST
@@ -41,18 +32,7 @@ case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 
 case class URIPath( path: List[URISegment] )
 
-	
-trait HTTPMethod
-
-case object GETMethod extends HTTPMethod
-
-case object POSTMethod extends HTTPMethod
-
-case object PUTMethod extends HTTPMethod
-
-case object PATCHMethod extends HTTPMethod
-
-case object DELETEMethod extends HTTPMethod
+case class HTTPMethod( method: String )
 
 	
 trait URISegment

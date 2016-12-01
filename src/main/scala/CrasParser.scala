@@ -102,10 +102,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"date" ^^^ DateType
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
-		pos <~ "unique" ^^ {p => UniqueModifier( p.pos )} |
-		pos <~ "required" ^^ {p => RequiredModifier( p.pos )} |
-		pos <~ "optional" ^^ {p => OptionalModifier( p.pos )} |
-		pos <~ "secret" ^^ {p => SecretModifier( p.pos )}
+		pos ~ ("unique" | "required" | "optional" | "secret") ^^ {case p ~ m => ColumnTypeModifier( m, p.pos )}
 		
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =
 		"route" ~> opt(uriPath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
@@ -118,11 +115,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		httpMethod ~ uriPath ~ expression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
 		
 	lazy val httpMethod: PackratParser[HTTPMethod] =
-		"GET" ^^^ GETMethod |
-		"POST" ^^^ POSTMethod |
-		"PUT" ^^^ PUTMethod |
-		"PATCH" ^^^ PATCHMethod |
-		"DELETE" ^^^ DELETEMethod
+		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ (HTTPMethod)
 		
 	lazy val uriPath: PackratParser[URIPath] =
 		rep1sep(uriSegment, "/") ^^ (URIPath)
