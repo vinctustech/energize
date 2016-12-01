@@ -1,14 +1,16 @@
 package xyz.hyperreal.cras
 
+import util.parsing.input.Position
+
 
 trait AST
 
 
 trait StatementAST extends AST
 
-case class TableDefinition( name: String, bases: List[URIPath], fields: List[TableColumn] ) extends StatementAST
+case class TableDefinition( pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn] ) extends StatementAST
 
-case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String )
+case class TableColumn( pos: Position, modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String )
 
 
 trait ColumnType
@@ -24,13 +26,13 @@ case object DateType extends ColumnType
 
 trait ColumnTypeModifier
 
-case object UniqueModifier extends ColumnTypeModifier
+case class UniqueModifier( pos: Position ) extends ColumnTypeModifier
 
-case object RequiredModifier extends ColumnTypeModifier
+case class RequiredModifier( pos: Position ) extends ColumnTypeModifier
 
-case object OptionalModifier extends ColumnTypeModifier
+case class OptionalModifier( pos: Position ) extends ColumnTypeModifier
 
-case object SecretModifier extends ColumnTypeModifier
+case class SecretModifier( pos: Position ) extends ColumnTypeModifier
 
 
 case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST

@@ -4,7 +4,7 @@ import java.sql._
 
 import collection.mutable.{ListBuffer, HashMap}
 import util.matching.Regex
-import util.parsing.input.CharSequenceReader
+import util.parsing.input.{Position, CharSequenceReader}
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 import xyz.hyperreal.table.TextTable
@@ -192,32 +192,32 @@ package object cras {
 		None
 	}
 	
+	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
+	
 	def configuration( src: io.Source, connection: Connection ): (Map[String, Table], List[Route]) = {
-		def problem( error: String ) = 	sys.error( error )
-		
 		val statement = connection.createStatement
 		val p = new CrasParser
 		val ast =
 			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
 				case p.Success( tree, _ ) => tree
 				case p.NoSuccess( error, rest ) =>
-					problem( rest.pos.line + ": " + error + "\n" + rest.pos.longString )
+					problem( rest.pos, error )
 			}
 		
 		val tables = new HashMap[String, LinkedHashMap[String, Column]]
 		val routes = new ListBuffer[Route]
 		
 		ast foreach {
-			case TableDefinition( name, bases, columns ) =>
+			case TableDefinition( pos, name, bases, columns ) =>
 				if (tables contains name)
-					problem( "table defined twice: " + name )
-
+					problem( pos, s"table '$name' defined twice" )
+				
 				val cols = new LinkedHashMap[String, Column]
 				val f =
 					columns map {
-						case TableColumn( modifiers, typ, cname ) =>
+						case TableColumn( pos, modifiers, typ, cname ) =>
 							if (cols contains cname)
-								problem( "column defined twice: " + cname )
+								problem( pos, s"column '$cname' defined twice" )
 								
 							val t =
 								typ match {
@@ -233,32 +233,32 @@ package object cras {
 							var m = ""
 							
 							modifiers foreach {
-								case UniqueModifier =>
+								case UniqueModifier( pos ) =>
 									if (unique)
-										problem( "modifier 'unique' encountered more than once: " + name + "/" + cname )
+										problem( pos, "modifier 'unique' encountered more than once" )
 										
 									unique = true
 									m += " unique"
-								case RequiredModifier =>
+								case RequiredModifier( pos ) =>
 									if (required)
-										problem( "modifier 'required' encountered more than once: " + name + "/" + cname )
+										problem( pos, "modifier 'required' encountered more than once" )
 										
 									if (optional)
-										problem( "modifier 'required' encountered along with 'optional': " + name + "/" + cname )
+										problem( pos, "modifier 'required' encountered along with 'optional'" )
 										
 									m += " not null"
 									required = true
-								case OptionalModifier =>
+								case OptionalModifier( pos ) =>
 									if (optional)
-										problem( "modifier 'optional' encountered more than once: " + name + "/" + cname )
+										problem( pos, "modifier 'optional' encountered more than once" )
 										
 									if (required)
-										problem( "modifier 'optional' encountered along with 'required': " + name + "/" + cname )
+										problem( pos, "modifier 'optional' encountered along with 'required'" )
 										
 									optional = true
-								case SecretModifier =>
+								case SecretModifier( pos ) =>
 									if (secret)
-										problem( "modifier 'secret' encountered more than once: " + name + "/" + cname )
+										problem( pos, "modifier 'secret' encountered more than once" )
 										
 									secret = true	
 							}

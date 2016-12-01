@@ -6,7 +6,7 @@ import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.input.CharArrayReader.EofCh
 import util.parsing.combinator.lexical.StdLexical
-import util.parsing.input.Reader
+import util.parsing.input.{Positional, Reader}
 
 import xyz.hyperreal.indentation_lexical._
 
@@ -85,13 +85,15 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val statement: PackratParser[StatementAST] =
 		tableDefinition |
 		routesDefinition
-		
+	
+	lazy val pos = positioned( success(new Positional{}) )
+	
 	lazy val tableDefinition: PackratParser[TableDefinition] =
-		"table" ~> ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case name ~ bases ~ columns => TableDefinition( name, bases, columns )}
+		"table" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case p ~ name ~ bases ~ columns => TableDefinition( p.pos, name, bases, columns )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
-		ident ~ columnType ~ rep(columnModifier) <~ Newline ^^ {case name ~ typ ~ modifiers => TableColumn( modifiers, typ, name )}
+		pos ~ ident ~ columnType ~ rep(columnModifier) <~ Newline ^^ {case p ~ name ~ typ ~ modifiers => TableColumn( p.pos, modifiers, typ, name )}
 
 	lazy val columnType: PackratParser[ColumnType] =
 		"string" ^^^ StringType |
@@ -100,10 +102,10 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"date" ^^^ DateType
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
-		"unique" ^^^ UniqueModifier |
-		"required" ^^^ RequiredModifier |
-		"optional" ^^^ OptionalModifier |
-		"secret" ^^^ SecretModifier
+		pos <~ "unique" ^^ {p => UniqueModifier( p.pos )} |
+		pos <~ "required" ^^ {p => RequiredModifier( p.pos )} |
+		pos <~ "optional" ^^ {p => OptionalModifier( p.pos )} |
+		pos <~ "secret" ^^ {p => SecretModifier( p.pos )}
 		
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =
 		"route" ~> opt(uriPath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
@@ -135,3 +137,5 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		stringLit ^^ (LiteralExpression) |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean ))
 }
+
+case class PositionalString( s: String ) extends Positional
