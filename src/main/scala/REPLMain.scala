@@ -51,6 +51,12 @@ object REPLMain extends App {
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
 		val com = line1 split "\\s+" toList
+	
+		def result( method: String, path: String, json: String ) =
+			process( method, path, json, tables, routes, statement ) match {
+				case None => println( "route not found" )
+				case Some( data ) => println( data )
+			}
 		
 		try {
 			com match {
@@ -91,9 +97,9 @@ object REPLMain extends App {
 					connect( db )
 				case Nil|List( "" ) =>
 				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
-					println( process( method, path, line1.split("\\s+", 3)(2), tables, routes, statement ) )
+					result( method, path, line1.split("\\s+", 3)(2) )
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
-					println( process( method, path, "", tables, routes, statement ) )
+					result( method, path, "{}" )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )
 				case _ => //sql non-query command

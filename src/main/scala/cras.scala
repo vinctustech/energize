@@ -25,15 +25,15 @@ package object cras {
 
 	val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
-	def process( reqmethod: String, requri: String, reqbody: String, tables: Map[String, Table], routes: List[Route], statement: Statement ): String = {
+	def process( reqmethod: String, requri: String, reqbody: String, tables: Map[String, Table], routes: List[Route], statement: Statement ) = {
 		val reqpath = requri
-		val (vars, expr) =
-			find( reqmethod, reqpath, routes ) match {
-				case None => return """{"status": "error", "reason": "bad route"}"""
-				case Some( ve ) => ve
-			}
 		
-		DefaultJSONWriter.toString( evalj( expr, vars, tables, reqbody, statement ) )
+		find( reqmethod, reqpath, routes ) match {
+			case None =>
+				None
+			case Some( (vars, expr) ) =>
+				Some( DefaultJSONWriter.toString( evalj( expr, vars, tables, reqbody, statement ) ) )
+		}		
 	}
 	
 	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Any =
