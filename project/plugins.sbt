@@ -13,10 +13,10 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.3")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "1.2.0-RC1")
-
 addSbtPlugin( "me.lessis" % "bintray-sbt" % "0.3.0" )
-		
-resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")
+//addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "1.2.0-RC1")
+		
+//resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
+
+//addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.4")

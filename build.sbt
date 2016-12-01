@@ -70,8 +70,8 @@ pomExtra := (
     </developer>
   </developers>)
 
-enablePlugins(HugoPlugin)
+//enablePlugins(HugoPlugin)
 
-ghpages.settings
+//ghpages.settings
 
-git.remoteRepo := s"git@github.com:edadma/${name.value}.git"
+//git.remoteRepo := s"git@github.com:edadma/${name.value}.git"
