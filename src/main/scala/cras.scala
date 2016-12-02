@@ -25,16 +25,16 @@ package object cras {
 
 	val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
-	def process( reqmethod: String, requri: String, reqbody: String, tables: Map[String, Table], routes: List[Route], statement: Statement ) = {
+	def process( reqmethod: String, requri: String, reqbody: String, env: Env ) = {
 		val reqpath = requri
 		
-		find( reqmethod, reqpath, routes ) match {
+		find( reqmethod, reqpath, env.routes ) match {
 			case None =>
 				None
-			case Some( (vars, expr) ) =>
+			case Some( (urivars, expr) ) =>
 				Some( DefaultJSONWriter.toString(
 					try {
-						Map("status" -> "ok", "data" -> eval( expr, vars, tables, reqbody, statement ))
+						Map("status" -> "ok", "data" -> eval( expr, env add urivars, reqbody ))
 					} catch {
 						case e: CrasInternalException => Map("status" -> "error", "reason" -> e.getMessage)
 					}
@@ -51,11 +51,11 @@ package object cras {
 				case Some( s ) => s
 			}
 	
-	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Any =
+	def eval( expr: ExpressionAST, env: Env, reqbody: String ): Any =
 		expr match {
 			case ApplyExpression( "insert", List(table, json) ) =>
-				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
-				val j = evalj( json, vars, tables, reqbody, statement )
+				val t = eval( table, env, reqbody ).asInstanceOf[Table]
+				val j = evalj( json, env, reqbody )
 				val com = new StringBuilder( "insert into " )
 				val last = t.names.last
 				
@@ -79,12 +79,12 @@ package object cras {
 				}
 				
 				com += ')'				
-				statement.executeUpdate( com.toString )
+				env.statement.executeUpdate( com.toString )
 			case ApplyExpression( "update", List(table, json, id, all) ) =>
-				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
-				val j = evalj( json, vars, tables, reqbody, statement )
-				val idv = evali( id, vars, tables, reqbody, statement )
-				val allf = evalb( all, vars, tables, reqbody, statement )
+				val t = eval( table, env, reqbody ).asInstanceOf[Table]
+				val j = evalj( json, env, reqbody )
+				val idv = evali( id, env, reqbody )
+				val allf = evalb( all, env, reqbody )
 				
 				if (allf && j.keySet != (t.columns.keySet - "id"))
 					throw new CrasInternalException( "update: missing column(s) in PUT request" )
@@ -101,15 +101,15 @@ package object cras {
 						} mkString ", "
 					com ++= " where id="
 					com ++= idv.toString
-					statement.executeUpdate( com.toString )
+					env.statement.executeUpdate( com.toString )
 				}
 			case ApplyExpression( "command", List(sql) ) =>
-				val com = evals( sql, vars, tables, reqbody, statement )
+				val com = evals( sql, env, reqbody )
 				
-				statement.executeUpdate( com.toString )
+				env.statement.executeUpdate( com.toString )
 			case ApplyExpression( "query", List(sql) ) =>
-				val com = evals( sql, vars, tables, reqbody, statement )
-				val res = statement.executeQuery( com )
+				val com = evals( sql, env, reqbody )
+				val res = env.statement.executeQuery( com )
 				val list = new ListBuffer[Map[String, Any]]
 				val md = res.getMetaData
 				val count = md.getColumnCount
@@ -118,34 +118,34 @@ package object cras {
 					list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
 				
 				list.toList
-			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(vars) )
+			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env.variables) )
 			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>
 				v match {
 					case "json" =>
 						DefaultJSONReader.fromString( reqbody )
-					case _ if vars contains v => vars(v)
-					case _ if tables contains v => tables(v)
+					case _ if env.variables contains v => env.variables(v)
+					case _ if env.tables contains v => env.tables(v)
 					case _ => sys.error( "variable not found: " + v )
 				}
 			case ObjectExpression( pairs ) =>
-				Map( pairs map {case (k, v) => (k, eval(v, vars, tables, reqbody, statement))}: _* )
+				Map( pairs map {case (k, v) => (k, eval(v, env, reqbody))}: _* )
 			case _ => sys.error( "error evaluating expression" )
 		}
 	
-	def evals( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ) =
-		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[String]
+	def evals( expr: ExpressionAST, env: Env, reqbody: String ) =
+		eval( expr, env, reqbody ).asInstanceOf[String]
 	
-	def evali( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ) =
-		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[String].toInt
+	def evali( expr: ExpressionAST, env: Env, reqbody: String ) =
+		eval( expr, env, reqbody ).asInstanceOf[String].toInt
 	
-	def evalj( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement )=
-		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[Map[String, Any]]
+	def evalj( expr: ExpressionAST, env: Env, reqbody: String )=
+		eval( expr, env, reqbody ).asInstanceOf[Map[String, Any]]
 	
-	def evalb( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ) =
-		eval( expr, vars, tables, reqbody, statement ).asInstanceOf[Boolean]
+	def evalb( expr: ExpressionAST, env: Env, reqbody: String ) =
+		eval( expr, env, reqbody ).asInstanceOf[Boolean]
 	
-	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String,String], ExpressionAST)] = {
+	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, String], ExpressionAST)] = {
 		if (routes eq null)
 			sys.error( "no routes loaded" )
 			
@@ -166,18 +166,18 @@ package object cras {
 					l.tail
 		}
 		val len = segments.length
-		val vars = new HashMap[String, String]
+		val urivars = new HashMap[String, String]
 		
 		for (Route( rmethod, uri, action) <- routes) {
-			vars.clear
+			urivars.clear
 			
 			if (len == uri.length && method.toUpperCase == rmethod && uri.zip( segments ).forall {
 				case (NameURISegment( route ), request) => route == request
 				case (ParameterURISegment( name ), request) =>
-					vars(name) = request
+					urivars(name) = request
 					true
 			})
-				return Some( (vars.toMap, action) )
+				return Some( (urivars.toMap, action) )
 		}
 		
 		None
@@ -185,8 +185,7 @@ package object cras {
 	
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
-	def configuration( src: io.Source, connection: Connection ): (Map[String, Table], List[Route]) = {
-		val statement = connection.createStatement
+	def configuration( src: io.Source, connection: Connection, statement: Statement ): Env = {
 		val p = new CrasParser
 		val ast =
 			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
@@ -197,6 +196,7 @@ package object cras {
 		
 		val tables = new HashMap[String, LinkedHashMap[String, Column]]
 		val routes = new ListBuffer[Route]
+		var results: FunctionExpression = null
 		
 		interpret( ast )
 		
@@ -274,7 +274,7 @@ package object cras {
 					}
 					
 					for (URIPath( base ) <- bases) {
-						val (_, r) = configuration( io.Source.fromString(
+						val Env( _, r, _, _, _, _ ) = configuration( io.Source.fromString(
 							"""
 							|route <base>/<table>
 							|  GET    :id    query( "select * from <table> where id = '$id';" )
@@ -283,13 +283,8 @@ package object cras {
 							|  PATCH  :id    update( <table>, json, id, false )
 							|  PUT    :id    update( <table>, json, id, true )
 							|  DELETE :id    command( "delete from <table> where id = '$id';" )
-							|
-							|result
-							|  ("exception", message) -> {status: "error", message: error}
-							|  (_, json)              -> {status: "ok", data: json}
 							""".stripMargin.replaceAll("<table>", name).
-								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), connection
-						)
+								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
 						
 						routes ++= r
 					}
@@ -315,7 +310,18 @@ package object cras {
 			}
 		} toMap
 		
-		(tableMap, routes.toList)
+		if (results eq null) {
+			val Env( _, _, r, _, _, _ ) = configuration( io.Source.fromString(
+				"""
+				|result
+				|  ("exception", message) -> {status: "error", message: error}
+				|  (_, json)              -> {status: "ok", data: json}
+				""".stripMargin), null, null )
+
+			results = r
+		}
+		
+		Env( tableMap, routes.toList, results, Map(), connection, statement )
 	}
 	
 }
