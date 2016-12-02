@@ -94,7 +94,8 @@ class Server( port: Int, env: Env ) {
 			} catch {
 				case e: Exception =>
 					response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
-					response.setEntity( new NStringEntity("<html><body><h1>500: Internal Server Error</h1></body></html>", ContentType.TEXT_HTML) )
+					response.setEntity(
+						new NStringEntity(s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p></body></html>", ContentType.TEXT_HTML) )
 			}
 		}
 	}

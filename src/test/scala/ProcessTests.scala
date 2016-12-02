@@ -11,9 +11,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val config =
 			"""
 			|table todo api/v1
-			|	name        string  required
-			|	description string  optional
-			|	status      integer required
+			|  name        string  required
+			|  description string  optional
+			|  status      integer required
 			""".trim.stripMargin
 			
 		val env = configure( io.Source.fromString(config), c, s )

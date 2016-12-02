@@ -53,75 +53,16 @@ package object cras {
 	
 	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
-			case ApplyExpression( VariableExpression("insert"), List(table, json) ) =>
-				val t = eval( table, env ).asInstanceOf[Table]
-				val j = evalj( json, env )
-				val com = new StringBuilder( "insert into " )
-				val last = t.names.last
-				
-				com ++= t.name
-				com ++= t.names.mkString( "(", ", ", ") values(" )
-				
-				for (c <- t.names) {
-					j get c match {
-						case None => com ++= "null"
-						case Some( v ) =>
-							if (t.columns(c).typ == StringType) {
-								com += '\''
-								com ++= String.valueOf( v )
-								com += '\''
-							} else
-								com ++= String.valueOf( v )
-					}
-					
-					if (c != last)
-						com ++= ", "
-				}
-				
-				com += ')'				
-				env.statement.executeUpdate( com.toString )
-			case ApplyExpression( VariableExpression("update"), List(table, json, id, all) ) =>
-				val t = eval( table, env ).asInstanceOf[Table]
-				val j = evalj( json, env )
-				val idv = evali( id, env )
-				val allf = evalb( all, env )
-				
-				if (allf && j.keySet != (t.columns.keySet - "id"))
-					throw new CrasInternalException( "update: missing column(s) in PUT request" )
-				else {
-					val com = new StringBuilder( "update " )
-					val last = t.names.last
-					
-					com ++= t.name
-					com ++= " set "
-					com ++=
-						j.toList map {
-							case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
-							case (k, v) => k + "=" + String.valueOf( v )
-						} mkString ", "
-					com ++= " where id="
-					com ++= idv.toString
-					env.statement.executeUpdate( com.toString )
-				}
-			case ApplyExpression( VariableExpression("command"), List(sql) ) =>
-				val com = evals( sql, env )
-				
-				env.statement.executeUpdate( com.toString )
-			case ApplyExpression( VariableExpression("query"), List(sql) ) =>
-				val com = evals( sql, env )
-				val res = env.statement.executeQuery( com )
-				val list = new ListBuffer[Map[String, Any]]
-				val md = res.getMetaData
-				val count = md.getColumnCount
-				
-				while (res.next)
-					list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
-				
-				list.toList
 			case ApplyExpression( function, args ) =>
 				eval( function, env ) match {
-					case f: Native => f( args, env )
-					case f: FunctionExpression => 
+					case f: Native =>
+						val list = args map (a => eval( a, env ))
+						
+						if (list.length != f.argc)
+							sys.error( "wrong number of arguments for native function: " + f )
+							
+						f( list, env )
+					case f: FunctionExpression =>
 				}
 			case ApplyExpression( f: FunctionExpression, args ) =>
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env.variables) )
@@ -130,7 +71,7 @@ package object cras {
 				v match {
 					case _ if env.variables contains v => env.variables(v)
 					case _ if env.tables contains v => env.tables(v)
-					case _ => sys.error( "variable not found: " + v )
+					case _ => throw new CrasInternalException( "variable not found: " + v )
 				}
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, eval(v, env))}: _* )
