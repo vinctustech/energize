@@ -1,4 +1,4 @@
-CRAS [![Build Status](https://travis-ci.org/edadma/cras.svg?branch=dev)](https://travis-ci.org/edadma/cras)
+CRAS [![Build Status](https://travis-ci.org/edadma/cras.svg?branch=0.2)](https://travis-ci.org/edadma/cras) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ====
 
 Configurable ReST API Server

@@ -34,13 +34,15 @@ package object cras {
 			case Some( (vars, expr) ) =>
 				Some( DefaultJSONWriter.toString(
 					try {
-						eval( expr, vars, tables, reqbody, statement )
+						Map("status" -> "ok", "data" -> eval( expr, vars, tables, reqbody, statement ))
 					} catch {
-						e: CrasInternalException => ("error", e.message)
+						case e: CrasInternalException => Map("status" -> "error", "reason" -> e.getMessage)
 					}
-				)
+				) )
 		}
 	}
+	
+	class CrasInternalException( message: String ) extends Exception( message )
 	
 	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Any =
 		expr match {
@@ -70,7 +72,7 @@ package object cras {
 				}
 				
 				com += ')'				
-				("update", statement.executeUpdate( com.toString ))
+				statement.executeUpdate( com.toString )
 			case FunctionExpression( "update", List(table, json, id, all) ) =>
 				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
 				val j = evalj( json, vars, tables, reqbody, statement )
@@ -92,12 +94,12 @@ package object cras {
 						} mkString ", "
 					com ++= " where id="
 					com ++= idv.toString
-					("update", statement.executeUpdate( com.toString ))
+					statement.executeUpdate( com.toString )
 				}
 			case FunctionExpression( "command", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				
-				("update", statement.executeUpdate( com.toString ))
+				statement.executeUpdate( com.toString )
 			case FunctionExpression( "query", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				val res = statement.executeQuery( com )
@@ -108,7 +110,7 @@ package object cras {
 				while (res.next)
 					list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
 				
-				("query" -> list.toList)
+				list.toList
 			case LiteralExpression( s: String ) =>
 				def replacer( m: Regex.Match ): String = {
 					vars get m.group(1) match {
