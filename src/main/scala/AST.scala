@@ -6,6 +6,9 @@ import util.parsing.input.Position
 trait AST
 
 
+case class SourceAST( statements: List[StatementAST] ) extends AST
+
+
 trait StatementAST extends AST
 
 case class TableDefinition( pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn] ) extends StatementAST
@@ -56,7 +59,7 @@ case class FunctionExpression( parts: List[FunctionPart] ) extends ExpressionAST
 	
 case class FunctionPart( pattern: PatternAST, expr: ExpressionAST )
 	
-
+	
 trait PatternAST extends AST
 
 case class VariablePattern( name: String ) extends PatternAST
@@ -67,3 +70,6 @@ case class TuplePattern( components: List[PatternAST] ) extends PatternAST
 
 
 case class ResultsDefinition( func: FunctionExpression ) extends StatementAST
+
+
+case class FunctionDefinition( name: String, function: FunctionPart ) extends StatementAST

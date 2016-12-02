@@ -5,3 +5,5 @@ table todo api/v1
 
 route
 	GET json {a: 123}
+
+def f(x) = {a: 123}

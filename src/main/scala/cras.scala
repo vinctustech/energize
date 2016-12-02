@@ -199,101 +199,109 @@ package object cras {
 		val tables = new HashMap[String, LinkedHashMap[String, Column]]
 		val routes = new ListBuffer[Route]
 		
-		ast foreach {
-			case TableDefinition( pos, name, bases, columns ) =>
-				if (tables contains name)
-					problem( pos, s"table '$name' defined twice" )
-				
-				val cols = new LinkedHashMap[String, Column]
-				val f =
-					columns map {
-						case TableColumn( pos, modifiers, typ, cname ) =>
-							if (cols contains cname)
-								problem( pos, s"column '$cname' defined twice" )
+		interpret( ast )
+		
+		def traverse( list: List[AST] ) = list foreach interpret
+		
+		def interpret( ast: AST ): Unit =
+			ast match {
+				case SourceAST( list ) => traverse( list )
+				case FunctionDefinition( name, function ) =>
+					
+				case TableDefinition( pos, name, bases, columns ) =>
+					if (tables contains name)
+						problem( pos, s"table '$name' defined twice" )
+					
+					val cols = new LinkedHashMap[String, Column]
+					val f =
+						columns map {
+							case TableColumn( pos, modifiers, typ, cname ) =>
+								if (cols contains cname)
+									problem( pos, s"column '$cname' defined twice" )
+									
+								val t =
+									typ match {
+										case StringType => "VARCHAR(255)"
+										case IntegerType => "INT"
+										case UUIDType => "UUID"
+										case DateType => "DATE"
+									}
+								var secret = false
+								var required = false
+								var optional = false
+								var unique = false
+								var m = ""
 								
-							val t =
-								typ match {
-									case StringType => "VARCHAR(255)"
-									case IntegerType => "INT"
-									case UUIDType => "UUID"
-									case DateType => "DATE"
+								modifiers foreach {
+									case ColumnTypeModifier( "unique", pos ) =>
+										if (unique)
+											problem( pos, "modifier 'unique' encountered more than once" )
+											
+										unique = true
+										m += " unique"
+									case ColumnTypeModifier( "required", pos ) =>
+										if (required)
+											problem( pos, "modifier 'required' encountered more than once" )
+											
+										if (optional)
+											problem( pos, "modifier 'required' encountered along with 'optional'" )
+											
+										m += " not null"
+										required = true
+									case ColumnTypeModifier( "optional", pos ) =>
+										if (optional)
+											problem( pos, "modifier 'optional' encountered more than once" )
+											
+										if (required)
+											problem( pos, "modifier 'optional' encountered along with 'required'" )
+											
+										optional = true
+									case ColumnTypeModifier( "secret", pos ) =>
+										if (secret)
+											problem( pos, "modifier 'secret' encountered more than once" )
+											
+										secret = true	
 								}
-							var secret = false
-							var required = false
-							var optional = false
-							var unique = false
-							var m = ""
-							
-							modifiers foreach {
-								case ColumnTypeModifier( "unique", pos ) =>
-									if (unique)
-										problem( pos, "modifier 'unique' encountered more than once" )
-										
-									unique = true
-									m += " unique"
-								case ColumnTypeModifier( "required", pos ) =>
-									if (required)
-										problem( pos, "modifier 'required' encountered more than once" )
-										
-									if (optional)
-										problem( pos, "modifier 'required' encountered along with 'optional'" )
-										
-									m += " not null"
-									required = true
-								case ColumnTypeModifier( "optional", pos ) =>
-									if (optional)
-										problem( pos, "modifier 'optional' encountered more than once" )
-										
-									if (required)
-										problem( pos, "modifier 'optional' encountered along with 'required'" )
-										
-									optional = true
-								case ColumnTypeModifier( "secret", pos ) =>
-									if (secret)
-										problem( pos, "modifier 'secret' encountered more than once" )
-										
-									secret = true	
-							}
-							
-							cols(cname) = Column( cname, typ, secret, required )
-							cname + " " + t + m
-					} mkString ", "
-				
-				tables(name) = cols
+								
+								cols(cname) = Column( cname, typ, secret, required )
+								cname + " " + t + m
+						} mkString ", "
 					
-				if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
-//					println( "creating table '" + name.toUpperCase + "'" )
-					statement.execute( "CREATE TABLE " + name + "(id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
-				}
-				
-				for (URIPath( base ) <- bases) {
-					val (_, r) = configuration( io.Source.fromString(
-						"""
-						|route <base>/<table>
-						|  GET    :id    query( "select * from <table> where id = '$id';" )
-						|  GET           query( "select * from <table>;" )
-						|  POST          insert( <table>, json )
-						|  PATCH  :id    update( <table>, json, id, false )
-						|  PUT    :id    update( <table>, json, id, true )
-						|  DELETE :id    command( "delete from <table> where id = '$id';" )
-						|
-						|result
-						|  ("exception", message) -> {status: "error", message: error}
-						|  (_, json)              -> {status: "ok", data: json}
-						""".stripMargin.replaceAll("<table>", name).
-							replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), connection
-					)
+					tables(name) = cols
+						
+					if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
+	//					println( "creating table '" + name.toUpperCase + "'" )
+						statement.execute( "CREATE TABLE " + name + "(id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
+					}
 					
-					routes ++= r
-				}
+					for (URIPath( base ) <- bases) {
+						val (_, r) = configuration( io.Source.fromString(
+							"""
+							|route <base>/<table>
+							|  GET    :id    query( "select * from <table> where id = '$id';" )
+							|  GET           query( "select * from <table>;" )
+							|  POST          insert( <table>, json )
+							|  PATCH  :id    update( <table>, json, id, false )
+							|  PUT    :id    update( <table>, json, id, true )
+							|  DELETE :id    command( "delete from <table> where id = '$id';" )
+							|
+							|result
+							|  ("exception", message) -> {status: "error", message: error}
+							|  (_, json)              -> {status: "ok", data: json}
+							""".stripMargin.replaceAll("<table>", name).
+								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), connection
+						)
+						
+						routes ++= r
+					}
+						
+				case RoutesDefinition( URIPath(base), mappings ) =>
+					mappings foreach {
+						case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
+					}
+				case ResultsDefinition( func ) =>
 					
-			case RoutesDefinition( URIPath(base), mappings ) =>
-				mappings foreach {
-					case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
-				}
-			case ResultsDefinition( func ) =>
-				
-		}
+			}
 		
 		val tableMap = tables.map {
 			case (tname, tinfo) => {
