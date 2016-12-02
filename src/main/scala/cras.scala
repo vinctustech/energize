@@ -293,8 +293,7 @@ package object cras {
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
 					}
-				case ResultsDefinition( func ) =>
-					
+				case ResultsDefinition( func ) => results = func
 			}
 		
 		val tableMap = tables.map {
@@ -310,16 +309,16 @@ package object cras {
 			}
 		} toMap
 		
-// 		if (results eq null) {
-// 			val Env( _, _, r, _, _, _ ) = configuration( io.Source.fromString(
-// 				"""
-// 				|result
-// 				|  ("exception", message) -> {status: "error", message: error}
-// 				|  (_, json)              -> {status: "ok", data: json}
-// 				""".stripMargin), null, null )
-// 
-// 			results = r
-// 		}
+		if (results eq null) {
+			val Env( _, _, r, _, _, _ ) = configuration( io.Source.fromString(
+				"""
+				|result
+				|  ("exception", message) -> {status: "error", message: error}
+				|  (_, json)              -> {status: "ok", data: json}
+				""".stripMargin), null, null )
+
+			results = r
+		}
 		
 		Env( tableMap, routes.toList, results, Map(), connection, statement )
 	}
