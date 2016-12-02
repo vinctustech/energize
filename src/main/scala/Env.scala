@@ -3,12 +3,12 @@ package xyz.hyperreal.cras
 import java.sql._
 
 
-case class Env( tables: Map[String, Table], routes: List[Route], results: FunctionExpression, variables: Map[String, String],
+case class Env( tables: Map[String, Table], routes: List[Route], results: FunctionExpression, variables: Map[String, Any],
 	connection: Connection, statement: Statement ) {
 
-	def add( k: String, v: String ) = Env( tables, routes, results, variables + (k -> v), connection, statement )
+	def add( kv: (String, Any) ) = Env( tables, routes, results, variables + kv, connection, statement )
 	
-	def add( m: Map[String,String] ) = Env( tables, routes, results, variables ++ m, connection, statement )
+	def add( m: Map[String, Any] ) = Env( tables, routes, results, variables ++ m, connection, statement )
 
 }
 

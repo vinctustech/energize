@@ -34,7 +34,7 @@ package object cras {
 			case Some( (urivars, expr) ) =>
 				Some( DefaultJSONWriter.toString(
 					try {
-						Map("status" -> "ok", "data" -> eval( expr, env add urivars, reqbody ))
+						Map("status" -> "ok", "data" -> eval( expr, env add urivars add "json" -> DefaultJSONReader.fromString(reqbody) ))
 					} catch {
 						case e: CrasInternalException => Map("status" -> "error", "reason" -> e.getMessage)
 					}
@@ -44,18 +44,18 @@ package object cras {
 	
 	class CrasInternalException( message: String ) extends Exception( message )
 	
-	def replacer( vars: Map[String, String] ) =
+	def replacer( vars: Map[String, Any] ) =
 		(m: Regex.Match) =>
 			vars get m.group(1) match {
 				case None => sys.error( "variable not found: " + m.group(1) )
-				case Some( s ) => s
+				case Some( s ) => s.asInstanceOf[String]
 			}
 	
-	def eval( expr: ExpressionAST, env: Env, reqbody: String ): Any =
+	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
 			case ApplyExpression( "insert", List(table, json) ) =>
-				val t = eval( table, env, reqbody ).asInstanceOf[Table]
-				val j = evalj( json, env, reqbody )
+				val t = eval( table, env ).asInstanceOf[Table]
+				val j = evalj( json, env )
 				val com = new StringBuilder( "insert into " )
 				val last = t.names.last
 				
@@ -81,10 +81,10 @@ package object cras {
 				com += ')'				
 				env.statement.executeUpdate( com.toString )
 			case ApplyExpression( "update", List(table, json, id, all) ) =>
-				val t = eval( table, env, reqbody ).asInstanceOf[Table]
-				val j = evalj( json, env, reqbody )
-				val idv = evali( id, env, reqbody )
-				val allf = evalb( all, env, reqbody )
+				val t = eval( table, env ).asInstanceOf[Table]
+				val j = evalj( json, env )
+				val idv = evali( id, env )
+				val allf = evalb( all, env )
 				
 				if (allf && j.keySet != (t.columns.keySet - "id"))
 					throw new CrasInternalException( "update: missing column(s) in PUT request" )
@@ -104,11 +104,11 @@ package object cras {
 					env.statement.executeUpdate( com.toString )
 				}
 			case ApplyExpression( "command", List(sql) ) =>
-				val com = evals( sql, env, reqbody )
+				val com = evals( sql, env )
 				
 				env.statement.executeUpdate( com.toString )
 			case ApplyExpression( "query", List(sql) ) =>
-				val com = evals( sql, env, reqbody )
+				val com = evals( sql, env )
 				val res = env.statement.executeQuery( com )
 				val list = new ListBuffer[Map[String, Any]]
 				val md = res.getMetaData
@@ -122,28 +122,26 @@ package object cras {
 			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>
 				v match {
-					case "json" =>
-						DefaultJSONReader.fromString( reqbody )
 					case _ if env.variables contains v => env.variables(v)
 					case _ if env.tables contains v => env.tables(v)
 					case _ => sys.error( "variable not found: " + v )
 				}
 			case ObjectExpression( pairs ) =>
-				Map( pairs map {case (k, v) => (k, eval(v, env, reqbody))}: _* )
+				Map( pairs map {case (k, v) => (k, eval(v, env))}: _* )
 			case _ => sys.error( "error evaluating expression" )
 		}
 	
-	def evals( expr: ExpressionAST, env: Env, reqbody: String ) =
-		eval( expr, env, reqbody ).asInstanceOf[String]
+	def evals( expr: ExpressionAST, env: Env ) =
+		eval( expr, env ).asInstanceOf[String]
 	
-	def evali( expr: ExpressionAST, env: Env, reqbody: String ) =
-		eval( expr, env, reqbody ).asInstanceOf[String].toInt
+	def evali( expr: ExpressionAST, env: Env ) =
+		eval( expr, env ).asInstanceOf[String].toInt
 	
-	def evalj( expr: ExpressionAST, env: Env, reqbody: String )=
-		eval( expr, env, reqbody ).asInstanceOf[Map[String, Any]]
+	def evalj( expr: ExpressionAST, env: Env )=
+		eval( expr, env ).asInstanceOf[Map[String, Any]]
 	
-	def evalb( expr: ExpressionAST, env: Env, reqbody: String ) =
-		eval( expr, env, reqbody ).asInstanceOf[Boolean]
+	def evalb( expr: ExpressionAST, env: Env ) =
+		eval( expr, env ).asInstanceOf[Boolean]
 	
 	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, String], ExpressionAST)] = {
 		if (routes eq null)
@@ -314,7 +312,7 @@ package object cras {
 				"""
 				|result
 				|  ("exception", message) -> {status: "error", message: error}
-				|  (_, json)              -> {status: "ok", data: json}
+				|  (_, output)              -> {status: "ok", data: output}
 				""".stripMargin), null, null )
 
 			results = r
