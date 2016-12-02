@@ -95,6 +95,22 @@ object REPLMain extends App {
 					new File( sys.props("user.home"), db + ".mv.db" ).delete
 					new File( sys.props("user.home"), db + ".trace.db" ).delete
 					connect( db )
+				case List( "routes"|"r" ) =>
+					for (Route(method, path, action) <- routes ) {
+						val pathbuf = new StringBuilder
+						
+						path foreach {
+							case NameURISegment( name ) =>
+								pathbuf += '/'
+								pathbuf ++= name
+							case ParameterURISegment( parm ) =>
+								pathbuf += '/'
+								pathbuf += ':'
+								pathbuf ++= parm
+						}
+						
+						println( method + " " + pathbuf + " " + action )
+					}
 				case Nil|List( "" ) =>
 				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
 					result( method, path, line1.split("\\s+", 3)(2) )

@@ -46,7 +46,7 @@ package object cras {
 	
 	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Any =
 		expr match {
-			case FunctionExpression( "insert", List(table, json) ) =>
+			case ApplyExpression( "insert", List(table, json) ) =>
 				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
 				val j = evalj( json, vars, tables, reqbody, statement )
 				val com = new StringBuilder( "insert into " )
@@ -73,7 +73,7 @@ package object cras {
 				
 				com += ')'				
 				statement.executeUpdate( com.toString )
-			case FunctionExpression( "update", List(table, json, id, all) ) =>
+			case ApplyExpression( "update", List(table, json, id, all) ) =>
 				val t = eval( table, vars, tables, reqbody, statement ).asInstanceOf[Table]
 				val j = evalj( json, vars, tables, reqbody, statement )
 				val idv = evali( id, vars, tables, reqbody, statement )
@@ -96,11 +96,11 @@ package object cras {
 					com ++= idv.toString
 					statement.executeUpdate( com.toString )
 				}
-			case FunctionExpression( "command", List(sql) ) =>
+			case ApplyExpression( "command", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				
 				statement.executeUpdate( com.toString )
-			case FunctionExpression( "query", List(sql) ) =>
+			case ApplyExpression( "query", List(sql) ) =>
 				val com = evals( sql, vars, tables, reqbody, statement )
 				val res = statement.executeQuery( com )
 				val list = new ListBuffer[Map[String, Any]]
@@ -129,6 +129,8 @@ package object cras {
 					case _ if tables contains v => tables(v)
 					case _ => sys.error( "variable not found: " + v )
 				}
+			case ObjectExpression( pairs ) =>
+				Map( pairs map {case (k, v) => (k, eval(v, vars, tables, reqbody, statement))}: _* )
 			case _ => sys.error( "error evaluating expression" )
 		}
 	
@@ -274,6 +276,10 @@ package object cras {
 						|  PATCH  :id    update( <table>, json, id, false )
 						|  PUT    :id    update( <table>, json, id, true )
 						|  DELETE :id    command( "delete from <table> where id = '$id';" )
+						|
+						|result
+						|  ("exception", message) -> {status: "error", message: error}
+						|  (_, json)              -> {status: "ok", data: json}
 						""".stripMargin.replaceAll("<table>", name).
 							replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), connection
 					)
@@ -285,6 +291,8 @@ package object cras {
 				mappings foreach {
 					case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
 				}
+			case ResultsDefinition( func ) =>
+				
 		}
 		
 		val tableMap = tables.map {

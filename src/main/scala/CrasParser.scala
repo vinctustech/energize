@@ -14,7 +14,7 @@ import xyz.hyperreal.indentation_lexical._
 class CrasParser extends StandardTokenParsers with PackratParsers
 {
 	override val lexical: IndentationLexical =
-		new IndentationLexical( false, true, List("[", "("), List("]", ")"), "//", "/*", "*/" )
+		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "//", "/*", "*/" )
 		{
 			override def token: Parser[Token] = decimalParser | super.token
 
@@ -30,7 +30,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			private def decimalParser: Parser[Token] =
 				rep1(digit) ~ optFraction ~ optExponent ^^
 					{case intPart ~ frac ~ exp =>
-						NumericLit( (intPart mkString "") :: frac :: exp :: Nil mkString "")} |
+						NumericLit( (intPart mkString "") :: frac :: exp :: Nil mkString)} |
 				fraction ~ optExponent ^^
 					{case frac ~ exp => NumericLit( frac + exp )}
 
@@ -63,13 +63,12 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				}
 
 			reserved += (
-				"if", "then", "else", "elif", "true", "false", "or", "and", "not",
+				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
 				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
-				"exception"
+				"result"
 				)
 			delimiters += (
-				"+", "*", "-", "/", "^", "(", ")", "[", "]", ",", "=", "==", "/=", "<", ">", "<=", ">=",
-				":"
+				"+", "*", "-", "/", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->"
 				)
 		}
 
@@ -86,12 +85,12 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val statement: PackratParser[StatementAST] =
 		tableDefinition |
 		routesDefinition |
-		exceptionsDefinition
+		resultsDefinition
 	
 	lazy val pos = positioned( success(new Positional{}) )
 	
-	lazy val exceptionsDefinition =
-		"exception" ~> ident ^^ (ExceptionDefinition)
+	lazy val resultsDefinition =
+		"result" ~> functionLiteral ^^ (ResultsDefinition)
 	
 	lazy val tableDefinition: PackratParser[TableDefinition] =
 		"table" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
@@ -130,10 +129,31 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		":" ~> ident ^^ (ParameterURISegment)
 	
 	lazy val expression: PackratParser[ExpressionAST] =
-		ident ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => FunctionExpression( name, args )} |
+		numericLit ^^
+			{n =>
+				if (n matches ".*(\\.|e|E).*")
+					LiteralExpression( n.toDouble )
+				else
+					LiteralExpression( n.toInt )
+			} |
+		ident ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
 		ident ^^ (VariableExpression) |
 		stringLit ^^ (LiteralExpression) |
-		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean ))
+		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
+		"null" ^^^ (LiteralExpression( null )) |
+		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
+	
+	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
+		
+	lazy val functionLiteral =
+		functionPart ^^ (p => FunctionExpression( List(p) )) |
+		Indent ~> rep1(functionPart <~ Newline) <~ Dedent ^^ (FunctionExpression)
+	
+	lazy val functionPart =
+		pattern ~ ("->" ~> expression) ^^ {case p ~ e => FunctionPart( p, e )}
+		
+	lazy val pattern: PackratParser[PatternAST] =
+		ident ^^ (VariablePattern) |
+		stringLit ^^ (StringPattern) |
+		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
 }
-
-case class PositionalString( s: String ) extends Positional

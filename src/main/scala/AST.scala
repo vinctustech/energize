@@ -44,11 +44,26 @@ case class ParameterURISegment( name: String ) extends URISegment
 
 trait ExpressionAST extends AST
 
-case class FunctionExpression( name: String, args: List[ExpressionAST] ) extends ExpressionAST
+case class ApplyExpression( name: String, args: List[ExpressionAST] ) extends ExpressionAST
 
 case class VariableExpression( name: String ) extends ExpressionAST
 	
 case class LiteralExpression( value: Any ) extends ExpressionAST
 
+case class ObjectExpression( pairs: List[(String, ExpressionAST)] ) extends ExpressionAST
 
-case class ExceptionDefinition( name: String ) extends StatementAST
+case class FunctionExpression( parts: List[FunctionPart] ) extends ExpressionAST
+	
+case class FunctionPart( pattern: PatternAST, expr: ExpressionAST )
+	
+
+trait PatternAST extends AST
+
+case class VariablePattern( name: String ) extends PatternAST
+
+case class StringPattern( s: String ) extends PatternAST
+
+case class TuplePattern( components: List[PatternAST] ) extends PatternAST
+
+
+case class ResultsDefinition( func: FunctionExpression ) extends StatementAST
