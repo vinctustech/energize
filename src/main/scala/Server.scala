@@ -14,7 +14,7 @@ import org.apache.http.protocol.{HttpContext, HttpCoreContext}
 import org.apache.http.ssl.SSLContexts
 
 
-class Server( port: Int, tables: Map[String, Table], routes: List[Route], statement: Statement ) {
+class Server( port: Int, env: Env ) {
 	val config = IOReactorConfig.custom
 		.setSoTimeout(15000)
 		.setTcpNoDelay(true)
@@ -78,9 +78,9 @@ class Server( port: Int, tables: Map[String, Table], routes: List[Route], statem
 							val entity = withEntity.getEntity
 								
 							entity.writeTo( buf )
-							process( method, target, buf.toString, tables, routes, statement )
+							process( method, target, buf.toString, env )
 						case noEntity =>
-							process( method, target, "{}", tables, routes, statement )
+							process( method, target, "{}", env )
 					}
 					
 				data match {

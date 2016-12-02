@@ -22,8 +22,8 @@ object ServerMain extends App {
 	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	println( "loading " + config )
 
-	val (tables, routes) = configuration( io.Source.fromFile(config), connection )
+	val env = configuration( io.Source.fromFile(config), connection, statement )
 	
 	println( "starting server" )
-	new Server( 8080, tables, routes, statement ).start
+	new Server( 8080, env ).start
 }

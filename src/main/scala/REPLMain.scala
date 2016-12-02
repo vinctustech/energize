@@ -25,8 +25,7 @@ object REPLMain extends App {
 	""".trim.stripMargin.lines foreach println
 	println
 
-	var tables: Map[String, Table] = null
-	var routes: List[Route] = null
+	var env: Env = null
 	var connection: Connection = null
 	var statement: Statement = null
 	var db = "./test"
@@ -53,7 +52,7 @@ object REPLMain extends App {
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, path: String, json: String ) =
-			process( method, path, json, tables, routes, statement ) match {
+			process( method, path, json, env ) match {
 				case None => println( "route not found" )
 				case Some( data ) => println( data )
 			}
@@ -66,37 +65,35 @@ object REPLMain extends App {
 						
 					connect( dbfile )
 					db = dbfile
-					tables = null
-					routes = null
+					env = null
 				case List( "help"|"h" ) =>
 					"""
 					|connect (c) <database>               connect to <database> (relative to user folder) clearing in-memory table and routing information
 					|load (l) <config>                    load a <config> (".cras" file) creating all tables and routes as specified
 					|help (h)                             print this summary
 					|quit (q)                             exit the REPL
+					|routes (r)                           print all routes showing absolute paths
 					|stack (t) on/off                     turn exception stack trace on or off
-					|wipe (w)															wipe current database clean and reconnect
+					|wipe (w)                             wipe current database clean and reconnect
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					val (t, r) = configuration( io.Source.fromFile(config + ".cras"), connection )
-
-					tables = t
-					routes = r
+					env = configuration( io.Source.fromFile(config + ".cras"), connection, statement )
 				case List( "quit"|"q" ) =>
 					connection.close
 					sys.exit
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
 				case List( "wipe"|"w" ) =>
-					statement.close
+					connection.close
 					new File( sys.props("user.home"), db + ".mv.db" ).delete
 					new File( sys.props("user.home"), db + ".trace.db" ).delete
 					connect( db )
+					env = null
 				case List( "routes"|"r" ) =>
-					for (Route(method, path, action) <- routes ) {
+					for (Route(method, path, action) <- env.routes ) {
 						val pathbuf = new StringBuilder
 						
 						path foreach {

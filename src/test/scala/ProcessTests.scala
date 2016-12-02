@@ -16,16 +16,16 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|	status      integer required
 			""".trim.stripMargin
 			
-		val (tables, routes) = configuration( io.Source.fromString(config), c )
+		val env = configuration( io.Source.fromString(config), c, s )
 
-		process( "GET", "/api/v1/todo", "", tables, routes, s ) shouldBe
+		process( "GET", "/api/v1/todo", "", env ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/tod", "", tables, routes, s ) shouldBe None
+		process( "GET", "/api/v1/tod", "", env ) shouldBe None
 		
 		c.close
 	}
@@ -40,9 +40,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|	status      integer required
 			""".trim.stripMargin
 			
-		val (tables, routes) = configuration( io.Source.fromString(config), c )
+		val env = configuration( io.Source.fromString(config), c, s )
 
-		process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""", tables, routes, s ) shouldBe
+		process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""", env ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -50,7 +50,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 
-		process( "GET", "/api/v1/todo", "", tables, routes, s ) shouldBe
+		process( "GET", "/api/v1/todo", "", env ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -64,7 +64,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		  |  ]
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/tod", "", tables, routes, s ) shouldBe None
+		process( "GET", "/api/v1/tod", "", env ) shouldBe None
 		
 		c.close
 	}
