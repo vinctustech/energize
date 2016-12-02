@@ -22,7 +22,7 @@ object ServerMain extends App {
 	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	println( "loading " + config )
 
-	val env = configuration( io.Source.fromFile(config), connection, statement )
+	val env = configure( io.Source.fromFile(config), connection, statement )
 	
 	println( "starting server" )
 	new Server( 8080, env ).start

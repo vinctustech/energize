@@ -16,7 +16,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|	status      integer required
 			""".trim.stripMargin
 			
-		val env = configuration( io.Source.fromString(config), c, s )
+		val env = configure( io.Source.fromString(config), c, s )
 
 		process( "GET", "/api/v1/todo", "{}", env ) shouldBe
 			Some( """
@@ -40,7 +40,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|	status      integer required
 			""".trim.stripMargin
 			
-		val env = configuration( io.Source.fromString(config), c, s )
+		val env = configure( io.Source.fromString(config), c, s )
 
 		process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""", env ) shouldBe
 			Some( """

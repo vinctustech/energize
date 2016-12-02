@@ -7,7 +7,7 @@ object Main extends App {
 
 	def test {
 		val (c, s) = dbconnect( "test", true )
-		val env = configuration( io.Source.fromFile("todo.cras"), c, s )
+		val env = configure( io.Source.fromFile("todo.cras"), c, s )
 		
 		println( process("GET", "/api/v1/todo", "{}", env) )
 		

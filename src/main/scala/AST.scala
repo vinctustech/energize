@@ -47,7 +47,7 @@ case class ParameterURISegment( name: String ) extends URISegment
 
 trait ExpressionAST extends AST
 
-case class ApplyExpression( name: String, args: List[ExpressionAST] ) extends ExpressionAST
+case class ApplyExpression( function: ExpressionAST, args: List[ExpressionAST] ) extends ExpressionAST
 
 case class VariableExpression( name: String ) extends ExpressionAST
 	

@@ -80,7 +80,7 @@ object REPLMain extends App {
 					|<SQL>                                execute <SQL> non-query command
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					env = configuration( io.Source.fromFile(config + ".cras"), connection, statement )
+					env = configure( io.Source.fromFile(config + ".cras"), connection, statement )
 				case List( "quit"|"q" ) =>
 					connection.close
 					sys.exit

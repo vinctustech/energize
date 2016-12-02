@@ -142,7 +142,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				else
 					LiteralExpression( n.toInt )
 			} |
-		ident ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		expression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
 		ident ^^ (VariableExpression) |
 		stringLit ^^ (LiteralExpression) |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |

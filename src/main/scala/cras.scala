@@ -53,7 +53,7 @@ package object cras {
 	
 	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
-			case ApplyExpression( "insert", List(table, json) ) =>
+			case ApplyExpression( VariableExpression("insert"), List(table, json) ) =>
 				val t = eval( table, env ).asInstanceOf[Table]
 				val j = evalj( json, env )
 				val com = new StringBuilder( "insert into " )
@@ -80,7 +80,7 @@ package object cras {
 				
 				com += ')'				
 				env.statement.executeUpdate( com.toString )
-			case ApplyExpression( "update", List(table, json, id, all) ) =>
+			case ApplyExpression( VariableExpression("update"), List(table, json, id, all) ) =>
 				val t = eval( table, env ).asInstanceOf[Table]
 				val j = evalj( json, env )
 				val idv = evali( id, env )
@@ -103,11 +103,11 @@ package object cras {
 					com ++= idv.toString
 					env.statement.executeUpdate( com.toString )
 				}
-			case ApplyExpression( "command", List(sql) ) =>
+			case ApplyExpression( VariableExpression("command"), List(sql) ) =>
 				val com = evals( sql, env )
 				
 				env.statement.executeUpdate( com.toString )
-			case ApplyExpression( "query", List(sql) ) =>
+			case ApplyExpression( VariableExpression("query"), List(sql) ) =>
 				val com = evals( sql, env )
 				val res = env.statement.executeQuery( com )
 				val list = new ListBuffer[Map[String, Any]]
@@ -118,6 +118,12 @@ package object cras {
 					list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
 				
 				list.toList
+			case ApplyExpression( function, args ) =>
+				eval( function, env ) match {
+					case f: Native => f( args, env )
+					case f: FunctionExpression => 
+				}
+			case ApplyExpression( f: FunctionExpression, args ) =>
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env.variables) )
 			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>
@@ -128,7 +134,7 @@ package object cras {
 				}
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, eval(v, env))}: _* )
-			case _ => sys.error( "error evaluating expression" )
+					case _ => sys.error( "error evaluating expression: " + expr )
 		}
 	
 	def evals( expr: ExpressionAST, env: Env ) =
@@ -183,7 +189,7 @@ package object cras {
 	
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
-	def configuration( src: io.Source, connection: Connection, statement: Statement ): Env = {
+	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
 		val p = new CrasParser
 		val ast =
 			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
@@ -272,7 +278,7 @@ package object cras {
 					}
 					
 					for (URIPath( base ) <- bases) {
-						val Env( _, r, _, _, _, _ ) = configuration( io.Source.fromString(
+						val Env( _, r, _, _, _, _ ) = configure( io.Source.fromString(
 							"""
 							|route <base>/<table>
 							|  GET    :id    query( "select * from <table> where id = '$id';" )
@@ -308,7 +314,7 @@ package object cras {
 		} toMap
 		
 		if (results eq null) {
-			val Env( _, _, r, _, _, _ ) = configuration( io.Source.fromString(
+			val Env( _, _, r, _, _, _ ) = configure( io.Source.fromString(
 				"""
 				|result
 				|  ("exception", message) -> {status: "error", message: error}
@@ -318,7 +324,7 @@ package object cras {
 			results = r
 		}
 		
-		Env( tableMap, routes.toList, results, Map(), connection, statement )
+		Env( tableMap, routes.toList, results, Builtins.map, connection, statement )
 	}
 	
 }
