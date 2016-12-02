@@ -35,7 +35,8 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "indentation-lexical" % "0.6",
 	"xyz.hyperreal" %% "json" % "0.5",
-	"xyz.hyperreal" %% "table" % "0.2"
+	"xyz.hyperreal" %% "table" % "0.2",
+	"xyz.hyperreal" %% "lia" % "0.19"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".REPLMain" )

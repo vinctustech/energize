@@ -44,6 +44,13 @@ package object cras {
 	
 	class CrasInternalException( message: String ) extends Exception( message )
 	
+	def replacer( vars: Map[String, String] ) =
+		(m: Regex.Match) =>
+			vars get m.group(1) match {
+				case None => sys.error( "variable not found: " + m.group(1) )
+				case Some( s ) => s
+			}
+	
 	def eval( expr: ExpressionAST, vars: Map[String, String], tables: Map[String, Table], reqbody: String, statement: Statement ): Any =
 		expr match {
 			case ApplyExpression( "insert", List(table, json) ) =>
@@ -111,15 +118,7 @@ package object cras {
 					list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
 				
 				list.toList
-			case LiteralExpression( s: String ) =>
-				def replacer( m: Regex.Match ): String = {
-					vars get m.group(1) match {
-						case None => sys.error( "variable not found: " + m.group(1) )
-						case Some( s ) => s
-					}
-				}
-	
-				varRegex.replaceAllIn( s, replacer _ )
+			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(vars) )
 			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>
 				v match {
