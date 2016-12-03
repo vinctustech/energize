@@ -112,7 +112,7 @@ object REPLMain extends App {
 				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
 					result( method, path, line1.split("\\s+", 3)(2) )
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
-					result( method, path, "{}" )
+					result( method, path, null )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )
 				case _ => //sql non-query command

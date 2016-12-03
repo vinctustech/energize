@@ -80,7 +80,7 @@ class Server( port: Int, env: Env ) {
 							entity.writeTo( buf )
 							process( method, target, buf.toString, env )
 						case noEntity =>
-							process( method, target, "{}", env )
+							process( method, target, null, env )
 					}
 					
 				data match {

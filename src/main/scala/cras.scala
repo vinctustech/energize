@@ -32,17 +32,20 @@ package object cras {
 			case None =>
 				None
 			case Some( (urivars, expr) ) =>
-				Some( DefaultJSONWriter.toString(
-					try {
-						evalm( expr, env add urivars add "json" -> DefaultJSONReader.fromString(reqbody) )
-					} catch {
-						case e: CrasInternalException => Map("status" -> "error", "reason" -> e.getMessage)
-					}
-				) )
+				try {
+					val reqvars =
+						if (reqbody eq null)
+							urivars
+						else
+							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))
+							
+					Some( DefaultJSONWriter.toString(evalm( expr, env add reqvars )) )
+				} catch {
+					case e: CrasErrorException => Some( DefaultJSONWriter.toString(Map("status" -> "error", "reason" -> e.getMessage)) )
+					case e: CrasNotFoundException => None
+				}
 		}
 	}
-	
-	class CrasInternalException( message: String ) extends Exception( message )
 	
 	def replacer( vars: Map[String, Any] ) =
 		(m: Regex.Match) =>
@@ -71,7 +74,7 @@ package object cras {
 				v match {
 					case _ if env.variables contains v => env.variables(v)
 					case _ if env.tables contains v => env.tables(v)
-					case _ => throw new CrasInternalException( "variable not found: " + v )
+					case _ => throw new CrasErrorException( "variable not found: " + v )
 				}
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, eval(v, env))}: _* )
@@ -225,7 +228,7 @@ package object cras {
 						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
 							"""
 							|route <base>/<table>
-							|  GET    :id    OK( query("select * from <table> where id = '$id';") )
+							|  GET    :id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
 							|  GET           OK( query("select * from <table>;") )
 							|  POST          OK( insert(<table>, json) )
 							|  PATCH  :id    OK( update(<table>, json, id, false) )
@@ -264,5 +267,9 @@ package object cras {
 		
 		Env( tableMap, routes.toList, Builtins.map ++ defines, connection, statement )
 	}
+	
+	class CrasErrorException( message: String ) extends Exception( message )
+	
+	class CrasNotFoundException extends Exception
 	
 }

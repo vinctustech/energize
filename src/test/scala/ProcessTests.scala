@@ -18,15 +18,15 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "GET", "/api/v1/todo", "{}", env ) shouldBe
+		process( "GET", "/api/v1/todo", null, env ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/tod", "{}", env ) shouldBe None
-		
+		process( "GET", "/api/v1/todo/1", null, env ) shouldBe None
+		process( "GET", "/api/v1/tod", null, env ) shouldBe None
 		c.close
 	}
 	
@@ -49,8 +49,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-
-		process( "GET", "/api/v1/todo", "{}", env ) shouldBe
+		process( "GET", "/api/v1/todo", null, env ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -64,8 +63,18 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		  |  ]
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/tod", "{}", env ) shouldBe None
-		
+		process( "GET", "/api/v1/todo/1", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": {
+			|    "ID": 1,
+			|    "NAME": "do something",
+			|    "DESCRIPTION": null,
+			|    "STATUS": 1
+			|  }
+			|}
+			""".trim.stripMargin )
 		c.close
 	}
 	

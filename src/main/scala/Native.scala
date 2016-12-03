@@ -4,7 +4,7 @@ import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 
 object Builtins {
-	val list = List( QueryNative, InsertNative, UpdateNative, CommandNative )
+	val list = List( QueryNative, InsertNative, UpdateNative, CommandNative, SingleOrNotFoundNative )
 	
 	def map = list map (n => (n.name -> n)) toMap
 }
@@ -76,7 +76,7 @@ object UpdateNative extends Native( "update" ) {
 		val allf = args.last.asInstanceOf[Boolean]
 		
 		if (allf && j.keySet != (t.columns.keySet - "id"))
-			throw new CrasInternalException( "update: missing column(s) in PUT request" )
+			throw new CrasErrorException( "update: missing column(s) in PUT request" )
 		else {
 			val com = new StringBuilder( "update " )
 			val last = t.names.last
@@ -111,4 +111,18 @@ object ErrorNative extends Native( "Error" ) {
 	val argc = 1
 	
 	def apply( args: List[Any], env: Env ) = Map( "status" -> "error", "error" -> args.head )
+}
+
+object SingleOrNotFoundNative extends Native( "singleOrNotFound" ) {
+	val argc = 1
+	
+	def apply( args: List[Any], env: Env ) = {
+		val list = args.head.asInstanceOf[List[Any]]
+		
+		list.length match {
+			case 0 => throw new CrasNotFoundException
+			case 1 => list.head
+			case _ => throw new CrasErrorException( "more than one item in list" )
+		}
+	}
 }
