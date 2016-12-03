@@ -68,6 +68,7 @@ package object cras {
 					case f: FunctionExpression =>
 				}
 			case ApplyExpression( f: FunctionExpression, args ) =>
+				
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env.variables) )
 			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>
@@ -93,7 +94,7 @@ package object cras {
 	def evalb( expr: ExpressionAST, env: Env ) =
 		eval( expr, env ).asInstanceOf[Boolean]
 	
-	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, String], ExpressionAST)] = {
+	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, Any], ExpressionAST)] = {
 		if (routes eq null)
 			sys.error( "no routes loaded" )
 			
@@ -231,9 +232,9 @@ package object cras {
 							|  GET    :id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
 							|  GET           OK( query("select * from <table>;") )
 							|  POST          OK( insert(<table>, json) )
-							|  PATCH  :id    OK( update(<table>, json, id, false) )
-							|  PUT    :id    OK( update(<table>, json, id, true) )
-							|  DELETE :id    OK( command("delete from <table> where id = '$id';") )
+							|  PATCH  :id    OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
+							|  PUT    :id    OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
+							|  DELETE :id    OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
 							""".stripMargin.replaceAll("<table>", name).
 								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
 						

@@ -4,7 +4,7 @@ import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 
 object Builtins {
-	val list = List( QueryNative, InsertNative, UpdateNative, CommandNative, SingleOrNotFoundNative )
+	val list = List( QueryNative, InsertNative, UpdateNative, CommandNative, SingleOrNotFoundNative, AtLeastOneOrNotFoundNative )
 	
 	def map = list map (n => (n.name -> n)) toMap
 }
@@ -123,6 +123,20 @@ object SingleOrNotFoundNative extends Native( "singleOrNotFound" ) {
 			case 0 => throw new CrasNotFoundException
 			case 1 => list.head
 			case _ => throw new CrasErrorException( "more than one item in list" )
+		}
+	}
+}
+
+object AtLeastOneOrNotFoundNative extends Native( "atLeastOneOrNotFound" ) {
+	val argc = 1
+	
+	def apply( args: List[Any], env: Env ) = {
+		val a = args.head.asInstanceOf[Int]
+		
+		a match {
+			case 0 => throw new CrasNotFoundException
+			case _ => a
+//			case _ => throw new CrasErrorException( "more than one row updated" )
 		}
 	}
 }
