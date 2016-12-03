@@ -69,7 +69,4 @@ case class StringPattern( s: String ) extends PatternAST
 case class TuplePattern( components: List[PatternAST] ) extends PatternAST
 
 
-case class ResultsDefinition( func: FunctionExpression ) extends StatementAST
-
-
-case class FunctionDefinition( name: String, function: FunctionPart ) extends StatementAST
+case class FunctionDefinition( pos: Position, name: String, function: FunctionPart ) extends StatementAST

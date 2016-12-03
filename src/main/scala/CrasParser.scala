@@ -65,7 +65,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
 				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
-				"result", "def"
+				"def"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->"
@@ -85,18 +85,16 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val statements: PackratParser[List[StatementAST]] =
 		tablesDefinition |
 		routesDefinition |
-		resultsDefinition |
 		functionsDefinition
 	
 	lazy val functionsDefinition =
-		"def" ~> functionDefinition ^^ {f => List( f )}
+		"def" ~> functionDefinition ^^ {f => List( f )} |
+		"def" ~> (Indent ~> rep1(functionDefinition <~ Newline) <~ Dedent)
 		
-	lazy val functionDefinition = ident ~ ("(" ~> pattern <~ ")") ~ ("=" ~> expression) ^^ {case n ~ p ~ e => FunctionDefinition( n, FunctionPart(p, e) )}
+	lazy val functionDefinition =
+		pos ~ ident ~ ("(" ~> pattern <~ ")") ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
 	
 	lazy val pos = positioned( success(new Positional{}) )
-	
-	lazy val resultsDefinition =
-		"result" ~> functionLiteral ^^ (r => List( ResultsDefinition(r) ))
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
 		"table" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {

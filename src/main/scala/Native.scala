@@ -98,7 +98,17 @@ object UpdateNative extends Native( "update" ) {
 object CommandNative extends Native( "command" ) {
 	val argc = 1
 	
-	def apply( args: List[Any], env: Env ) = {
-		env.statement.executeUpdate( args.head.asInstanceOf[String] )
-	}
+	def apply( args: List[Any], env: Env ) = env.statement.executeUpdate( args.head.asInstanceOf[String] )
+}
+
+object OKNative extends Native( "OK" ) {
+	val argc = 1
+	
+	def apply( args: List[Any], env: Env ) = Map( "status" -> "ok", "data" -> args.head )
+}
+
+object ErrorNative extends Native( "Error" ) {
+	val argc = 1
+	
+	def apply( args: List[Any], env: Env ) = Map( "status" -> "error", "error" -> args.head )
 }

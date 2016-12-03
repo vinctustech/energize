@@ -34,7 +34,7 @@ package object cras {
 			case Some( (urivars, expr) ) =>
 				Some( DefaultJSONWriter.toString(
 					try {
-						Map("status" -> "ok", "data" -> eval( expr, env add urivars add "json" -> DefaultJSONReader.fromString(reqbody) ))
+						evalm( expr, env add urivars add "json" -> DefaultJSONReader.fromString(reqbody) )
 					} catch {
 						case e: CrasInternalException => Map("status" -> "error", "reason" -> e.getMessage)
 					}
@@ -84,7 +84,7 @@ package object cras {
 	def evali( expr: ExpressionAST, env: Env ) =
 		eval( expr, env ).asInstanceOf[String].toInt
 	
-	def evalj( expr: ExpressionAST, env: Env )=
+	def evalm( expr: ExpressionAST, env: Env )=
 		eval( expr, env ).asInstanceOf[Map[String, Any]]
 	
 	def evalb( expr: ExpressionAST, env: Env ) =
@@ -141,7 +141,7 @@ package object cras {
 		
 		val tables = new HashMap[String, LinkedHashMap[String, Column]]
 		val routes = new ListBuffer[Route]
-		var results: FunctionExpression = null
+		val defines = new HashMap[String, Any]
 		
 		interpret( ast )
 		
@@ -150,8 +150,11 @@ package object cras {
 		def interpret( ast: AST ): Unit =
 			ast match {
 				case SourceAST( list ) => traverse( list )
-				case FunctionDefinition( name, function ) =>
-					
+				case FunctionDefinition( pos, name, function ) =>
+					if (defines contains name)
+						problem( pos, s"function '$name' defined twice" )
+						
+					defines(name) = function
 				case TableDefinition( pos, name, bases, columns ) =>
 					if (tables contains name)
 						problem( pos, s"table '$name' defined twice" )
@@ -219,15 +222,15 @@ package object cras {
 					}
 					
 					for (URIPath( base ) <- bases) {
-						val Env( _, r, _, _, _, _ ) = configure( io.Source.fromString(
+						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
 							"""
 							|route <base>/<table>
-							|  GET    :id    query( "select * from <table> where id = '$id';" )
-							|  GET           query( "select * from <table>;" )
-							|  POST          insert( <table>, json )
-							|  PATCH  :id    update( <table>, json, id, false )
-							|  PUT    :id    update( <table>, json, id, true )
-							|  DELETE :id    command( "delete from <table> where id = '$id';" )
+							|  GET    :id    OK( query("select * from <table> where id = '$id';") )
+							|  GET           OK( query("select * from <table>;") )
+							|  POST          OK( insert(<table>, json) )
+							|  PATCH  :id    OK( update(<table>, json, id, false) )
+							|  PUT    :id    OK( update(<table>, json, id, true) )
+							|  DELETE :id    OK( command("delete from <table> where id = '$id';") )
 							""".stripMargin.replaceAll("<table>", name).
 								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
 						
@@ -238,7 +241,6 @@ package object cras {
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
 					}
-				case ResultsDefinition( func ) => results = func
 			}
 		
 		val tableMap = tables.map {
@@ -254,18 +256,13 @@ package object cras {
 			}
 		} toMap
 		
-		if (results eq null) {
-			val Env( _, _, r, _, _, _ ) = configure( io.Source.fromString(
-				"""
-				|result
-				|  ("exception", message) -> {status: "error", message: error}
-				|  (_, output)              -> {status: "ok", data: output}
-				""".stripMargin), null, null )
-
-			results = r
-		}
+		if (!defines.contains( "OK" ))
+			defines("OK") = OKNative
+			
+		if (!defines.contains( "Error" ))
+			defines("Error") = ErrorNative
 		
-		Env( tableMap, routes.toList, results, Builtins.map, connection, statement )
+		Env( tableMap, routes.toList, Builtins.map ++ defines, connection, statement )
 	}
 	
 }
