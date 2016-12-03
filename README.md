@@ -136,15 +136,15 @@ The `description` is `null` in the first one because we marked that column as `o
 	
 to get
 
-{
-  "status": "ok",
-  "data": {
-    "ID": 2,
-    "NAME": "write readme",
-    "DESCRIPTION": "add example involving finishing 0.1 and writing the readme",
-    "STATUS": 1
-  }
-}
+	{
+		"status": "ok",
+		"data": {
+			"ID": 2,
+			"NAME": "write readme",
+			"DESCRIPTION": "add example involving finishing 0.1 and writing the readme",
+			"STATUS": 1
+		}
+	}
 
 Notice that with this response, the `data` field is not an array but a single object since the URI path is pointing to a single item within the `todo` resource.  Lastly, if we try querying the server for an item that does not exist from a resource that does exist, we should get a `404` status code from the server because what is being requested doesn't exist. Try it
 
