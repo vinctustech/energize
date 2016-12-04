@@ -8,6 +8,16 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	def add( kv: (String, Any) ) = Env( tables, routes, variables + kv, connection, statement )
 	
 	def add( m: Map[String, Any] ) = Env( tables, routes, variables ++ m, connection, statement )
+	
+	def lookup( name: String ) =
+		variables get name match {
+			case None =>
+				tables get name.toUpperCase match {
+					case None => throw new CrasErrorException( "variable not found: " + name )
+					case Some( v ) => v
+				}
+			case Some( v ) => v
+		}
 
 }
 

@@ -28,7 +28,7 @@ object REPLMain extends App {
 	var env: Env = null
 	var connection: Connection = null
 	var statement: Statement = null
-	var db = "./test"
+	var db = "./repl"
 		
 	sys.addShutdownHook {
 		connection.close

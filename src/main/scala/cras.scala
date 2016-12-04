@@ -48,12 +48,7 @@ package object cras {
 		}
 	}
 	
-	def replacer( vars: Map[String, Any] ) =
-		(m: Regex.Match) =>
-			vars get m.group(1) match {
-				case None => sys.error( "variable not found: " + m.group(1) )
-				case Some( s ) => s.asInstanceOf[String]
-			}
+	def replacer( env: Env ) = (m: Regex.Match) => env lookup m.group(1) toString
 	
 	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
@@ -75,14 +70,9 @@ package object cras {
 							
 						eval( f.expr, env add (f.params zip (args map (a => eval( a, env )))).toMap )
 				}
-			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env.variables) )
+			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env) )
 			case LiteralExpression( v ) => v
-			case VariableExpression( v ) =>
-				v match {
-					case _ if env.variables contains v => env.variables(v)
-					case _ if env.tables contains v => env.tables(v)
-					case _ => throw new CrasErrorException( "variable not found: " + v )
-				}
+			case VariableExpression( n ) => env lookup n
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, eval(v, env))}: _* )
 					case _ => sys.error( "error evaluating expression: " + expr )
@@ -143,7 +133,7 @@ package object cras {
 	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
 		val p = new CrasParser
 		val ast = p.parseFromSource( src, p.source )
-		val tables = new HashMap[String, LinkedHashMap[String, Column]]
+		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
 		
@@ -160,14 +150,14 @@ package object cras {
 						
 					defines(name) = function
 				case TableDefinition( pos, name, bases, columns ) =>
-					if (tables contains name)
+					if (tables contains name.toUpperCase)
 						problem( pos, s"table '$name' defined twice" )
 					
 					val cols = new LinkedHashMap[String, Column]
 					val f =
 						columns map {
 							case TableColumn( pos, modifiers, typ, cname ) =>
-								if (cols contains cname)
+								if (cols contains cname.toUpperCase)
 									problem( pos, s"column '$cname' defined twice" )
 									
 								val t =
@@ -214,11 +204,11 @@ package object cras {
 										secret = true	
 								}
 								
-								cols(cname) = Column( cname, typ, secret, required )
+								cols(cname.toUpperCase) = Column( cname, typ, secret, required )
 								cname + " " + t + m
 						} mkString ", "
 					
-					tables(name) = cols
+					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 						
 					if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
 	//					println( "creating table '" + name.toUpperCase + "'" )
@@ -247,26 +237,13 @@ package object cras {
 					}
 			}
 		
-		val tableMap = tables.map {
-			case (tname, tinfo) => {
-				val cnames = new ListBuffer[String]
-				
-				tinfo foreach {
-					case (cname, cinfo) =>
-						cnames += cname
-				}
-				
-				(tname, Table( tname, cnames.toList, tinfo.toMap ))
-			}
-		} toMap
-		
 		if (!defines.contains( "OK" ))
 			defines("OK") = OKNative
 			
 		if (!defines.contains( "Error" ))
 			defines("Error") = ErrorNative
 		
-		Env( tableMap, routes.toList, Builtins.map ++ defines, connection, statement )
+		Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 	}
 	
 	class CrasErrorException( message: String ) extends Exception( message )

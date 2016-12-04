@@ -32,7 +32,23 @@ object QueryNative extends Native( "query" ) {
 		val count = md.getColumnCount
 		
 		while (res.next)
-			list += Map( (for (i <- 1 to count) yield (md.getColumnName(i), res.getObject(i))): _* )
+			list +=
+				Map(
+					(for (i <- 1 to count) yield {
+						val dbtable = md.getTableName(i)
+						val dbcol = md.getColumnName(i)
+						val col =
+							env.tables get dbtable match {
+								case None => dbcol
+								case Some( t ) =>
+									t.columns get dbcol match {
+										case None => dbcol
+										case Some( c ) => c.name
+									}
+							}
+							
+						(col, res.getObject(i))
+					}): _* )
 		
 		list.toList
 	}
@@ -54,7 +70,7 @@ object InsertNative extends Native( "insert" ) {
 			j get c match {
 				case None => com ++= "null"
 				case Some( v ) =>
-					if (t.columns(c).typ == StringType) {
+					if (t.columns(c.toUpperCase).typ == StringType) {
 						com += '\''
 						com ++= String.valueOf( v )
 						com += '\''
@@ -90,7 +106,7 @@ object UpdateNative extends Native( "update" ) {
 			com ++= " set "
 			com ++=
 				j.toList map {
-					case (k, v) if t.columns(k).typ == StringType => k + "='" + String.valueOf( v ) + "'"
+					case (k, v) if t.columns(k.toUpperCase).typ == StringType => k + "='" + String.valueOf( v ) + "'"
 					case (k, v) => k + "=" + String.valueOf( v )
 				} mkString ", "
 			com ++= " where id="

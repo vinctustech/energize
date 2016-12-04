@@ -56,9 +56,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": [
 			|    {
 			|      "ID": 1,
-			|      "NAME": "do something",
-			|      "DESCRIPTION": null,
-			|      "STATUS": 1
+			|      "name": "do something",
+			|      "description": null,
+			|      "status": 1
 			|    }
 		  |  ]
 			|}
@@ -69,9 +69,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "status": "ok",
 			|  "data": {
 			|    "ID": 1,
-			|    "NAME": "do something",
-			|    "DESCRIPTION": null,
-			|    "STATUS": 1
+			|    "name": "do something",
+			|    "description": null,
+			|    "status": 1
 			|  }
 			|}
 			""".trim.stripMargin )
