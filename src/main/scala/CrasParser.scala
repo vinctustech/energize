@@ -9,6 +9,7 @@ import util.parsing.combinator.lexical.StdLexical
 import util.parsing.input.{Positional, Reader}
 
 import xyz.hyperreal.indentation_lexical._
+import xyz.hyperreal.lia.Math
 
 
 class CrasParser extends StandardTokenParsers with PackratParsers
@@ -92,7 +93,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"def" ~> (Indent ~> rep1(functionDefinition <~ Newline) <~ Dedent)
 		
 	lazy val functionDefinition =
-		pos ~ ident ~ ("(" ~> pattern <~ ")") ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
+// 		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
+		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionExpression(pat, e) )}
 	
 	lazy val pos = positioned( success(new Positional{}) )
 	
@@ -132,7 +134,54 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		ident ^^ (NameURISegment) |
 		":" ~> ident ^^ (ParameterURISegment)
 	
+	lazy val mathSymbols = Set( '+, '-, '*, '/, '//, Symbol("\\"), Symbol("\\%"), '^, '%, 'mod, '|, '/|, '==, '!=, '<, '>, '<=, '>= )
+	
+	def lookup( s: Symbol ) =
+		if (mathSymbols contains s)
+			Math.lookup( s )
+		else
+			null
+	
 	lazy val expression: PackratParser[ExpressionAST] =
+		additiveExpression
+		
+	lazy val additiveExpression: PackratParser[ExpressionAST] =
+		additiveExpression ~ ("+" | "-") ~ applyExpression ^^ //multiplicativeExpression ^^
+			{case l ~ o ~ r =>
+				val s = Symbol(o)
+				
+				BinaryExpression( l, s, lookup(s), r )} |
+//		multiplicativeExpression
+		applyExpression
+		
+// 	lazy val multiplicativeExpression: PackratParser[ExprAST] =
+// 		multiplicativeExpression ~ ("*" | "/" | """\""" | "%" | "\\%" | "//" | "mod" | "rotateright" | "rotateleft" | ">>>" | "<<") ~ exponentialExpression ^^
+// 			{case l ~ o ~ r =>
+// 				val s = Symbol(o)
+// 				
+// 				BinaryExprAST( l, s, lookup(s), r )} |
+// 		multiplicativeExpression ~ applyExpression ^^
+// 			{case l ~ r => BinaryExprAST( l, '*, lookup('*), r )} |
+// 		exponentialExpression
+// 
+// 	lazy val exponentialExpression: PackratParser[ExprAST] =
+// 		exponentialExpression ~ "^" ~ negationExpression ^^
+// 			{case l ~ _ ~ r => BinaryExprAST( l, '^, lookup('^), r )} |
+// 		negationExpression
+// 
+// 	lazy val negationExpression: PackratParser[ExprAST] =
+// 		"-" ~> negationExpression ^^
+// 			{
+// 				case LiteralExprAST( n: Number ) => LiteralExprAST( Math('-, n) )
+// 				case v                           => UnaryExprAST( '-, v )
+// 			} |
+// 		applyExpression
+		
+	lazy val applyExpression: PackratParser[ExpressionAST] =
+		expression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		primaryExpression
+		
+	lazy val primaryExpression: PackratParser[ExpressionAST] =
 		numericLit ^^
 			{n =>
 				if (n matches ".*(\\.|e|E).*")
@@ -140,24 +189,33 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				else
 					LiteralExpression( n.toInt )
 			} |
-		expression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
 		ident ^^ (VariableExpression) |
 		stringLit ^^ (LiteralExpression) |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
 		"null" ^^^ (LiteralExpression( null )) |
+		"(" ~> expression <~ ")" |
 		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
 	
 	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
 		
 	lazy val functionLiteral =
-		functionPart ^^ (p => FunctionExpression( List(p) )) |
-		Indent ~> rep1(functionPart <~ Newline) <~ Dedent ^^ (FunctionExpression)
-	
-	lazy val functionPart =
-		pattern ~ ("->" ~> expression) ^^ {case p ~ e => FunctionPart( p, e )}
+		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionExpression( p, e )}
 		
-	lazy val pattern: PackratParser[PatternAST] =
-		ident ^^ (VariablePattern) |
-		stringLit ^^ (StringPattern) |
-		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
+// 	lazy val functionLiteral =
+// 		functionPart ^^ (p => FunctionExpression( List(p) )) |
+// 		Indent ~> rep1(functionPart <~ Newline) <~ Dedent ^^ (FunctionExpression)
+// 	
+// 	lazy val functionPart =
+// 		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionPart( p, e )}
+		
+	lazy val parameters =
+		ident ^^ {p => List(p)} |
+		parenparameters
+		
+	lazy val parenparameters = "(" ~> rep1sep(ident, ",") <~ ")"
+		
+// 	lazy val pattern: PackratParser[PatternAST] =
+// 		ident ^^ (VariablePattern) |
+// 		stringLit ^^ (StringPattern) |
+// 		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
 }

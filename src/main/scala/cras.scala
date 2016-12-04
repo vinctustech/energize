@@ -9,6 +9,7 @@ import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 import xyz.hyperreal.table.TextTable
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
+import xyz.hyperreal.lia.Math
 
 
 package object cras {
@@ -56,6 +57,8 @@ package object cras {
 	
 	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
+			case BinaryExpression( left, op, func, right ) =>
+				Math( func, eval(left, env), eval(right, env) )
 			case ApplyExpression( function, args ) =>
 				eval( function, env ) match {
 					case f: Native =>
@@ -66,9 +69,11 @@ package object cras {
 							
 						f( list, env )
 					case f: FunctionExpression =>
+						if (f.params.length != args.length)
+							sys.error( "wrong number of arguments for function: " + f )
+							
+						eval( f.expr, env add (f.params zip (args map (a => eval( a, env )))).toMap )
 				}
-			case ApplyExpression( f: FunctionExpression, args ) =>
-				
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env.variables) )
 			case LiteralExpression( v ) => v
 			case VariableExpression( v ) =>

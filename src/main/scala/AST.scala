@@ -2,6 +2,8 @@ package xyz.hyperreal.cras
 
 import util.parsing.input.Position
 
+import xyz.hyperreal.lia.FunctionMap
+
 
 trait AST
 
@@ -55,18 +57,22 @@ case class LiteralExpression( value: Any ) extends ExpressionAST
 
 case class ObjectExpression( pairs: List[(String, ExpressionAST)] ) extends ExpressionAST
 
-case class FunctionExpression( parts: List[FunctionPart] ) extends ExpressionAST
+//case class FunctionExpression( parts: List[FunctionPart] ) extends ExpressionAST
 	
-case class FunctionPart( pattern: PatternAST, expr: ExpressionAST )
+// case class FunctionPart( pattern: PatternAST, expr: ExpressionAST )
+case class FunctionExpression( params: List[String], expr: ExpressionAST ) extends ExpressionAST
+
+case class BinaryExpression( left: ExpressionAST, op: Symbol, func: FunctionMap, right: ExpressionAST ) extends ExpressionAST
+
 	
-	
-trait PatternAST extends AST
+// trait PatternAST extends AST
+// 
+// case class VariablePattern( name: String ) extends PatternAST
+// 
+// case class StringPattern( s: String ) extends PatternAST
+// 
+// case class TuplePattern( components: List[PatternAST] ) extends PatternAST
 
-case class VariablePattern( name: String ) extends PatternAST
 
-case class StringPattern( s: String ) extends PatternAST
-
-case class TuplePattern( components: List[PatternAST] ) extends PatternAST
-
-
-case class FunctionDefinition( pos: Position, name: String, function: FunctionPart ) extends StatementAST
+// case class FunctionDefinition( pos: Position, name: String, function: FunctionPart ) extends StatementAST
+case class FunctionDefinition( pos: Position, name: String, function: FunctionExpression ) extends StatementAST

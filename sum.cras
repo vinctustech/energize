@@ -1,0 +1,4 @@
+def f( x, y ) = {"a": x, "b": y, "sum": x + y}
+
+route
+	GET   test/:a/:b   f( int(a), int(b) )
