@@ -6,7 +6,7 @@ import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.input.CharArrayReader.EofCh
 import util.parsing.combinator.lexical.StdLexical
-import util.parsing.input.{Positional, Reader}
+import util.parsing.input.{Positional, Reader, Position, CharSequenceReader}
 
 import xyz.hyperreal.indentation_lexical._
 import xyz.hyperreal.lia.Math
@@ -17,7 +17,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	override val lexical: IndentationLexical =
 		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "//", "/*", "*/" )
 		{
-			override def token: Parser[Token] = decimalParser | super.token
+//			override def token: Parser[Token] = decimalParser | super.token
 
 			override def identChar = letter | elem('_') | elem('$')
 			
@@ -31,9 +31,9 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			private def decimalParser: Parser[Token] =
 				rep1(digit) ~ optFraction ~ optExponent ^^
 					{case intPart ~ frac ~ exp =>
-						NumericLit( (intPart mkString "") :: frac :: exp :: Nil mkString)} |
-				fraction ~ optExponent ^^
-					{case frac ~ exp => NumericLit( frac + exp )}
+						NumericLit( (intPart mkString "") :: frac :: exp :: Nil mkString)} //|
+// 				fraction ~ optExponent ^^
+// 					{case frac ~ exp => NumericLit( frac + exp )}
 
 			private def chr( c: Char ) = elem( "", ch => ch == c )
 
@@ -69,21 +69,33 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				"def"
 				)
 			delimiters += (
-				"+", "*", "-", "/", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->"
+				"+", "*", "-", "/", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", "."
 				)
 		}
 
-	def parse( r: Reader[Char] ) = phrase( source )( lexical.read(r) )
+	def parse[T <: AST]( grammar: PackratParser[T], r: Reader[Char] ) = phrase( grammar )( lexical.read(r) )
+	
+	def parseFromSource[T <: AST]( src: io.Source, grammar: PackratParser[T] ) = parseFromString( src.getLines.map(l => l + '\n').mkString, grammar )
+	
+	def parseFromString[T <: AST]( src: String, grammar: PackratParser[T] ) = {
+		parse( grammar, new CharSequenceReader(src) ) match {
+			case Success( tree, _ ) => tree
+			case NoSuccess( error, rest ) =>
+				problem( rest.pos, error )
+		}
+	}
 
 	import lexical.{Newline, Indent, Dedent}
 
 	lazy val onl = opt(Newline)
 
-	lazy val source =
-		rep1(statements <~ Newline) ^^ (s => SourceAST( s.flatten )) |
+	lazy val source: PackratParser[SourceAST] =
+		rep1(definitionStatement <~ Newline | (expressionStatement ^^ (e => List( e )))) ^^ (s => SourceAST( s.flatten )) |
 		Newline ^^^ SourceAST( Nil )
 
-	lazy val statements: PackratParser[List[StatementAST]] =
+	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ Newline ^^ (ExpressionStatement)
+	
+	lazy val definitionStatement: PackratParser[List[StatementAST]] =
 		tablesDefinition |
 		routesDefinition |
 		functionsDefinition
@@ -178,7 +190,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 // 		applyExpression
 		
 	lazy val applyExpression: PackratParser[ExpressionAST] =
-		expression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		applyExpression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		applyExpression ~ ("." ~> ident) ^^ {case o ~ p => DotExpression( o, p )} |
 		primaryExpression
 		
 	lazy val primaryExpression: PackratParser[ExpressionAST] =
@@ -212,7 +225,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		ident ^^ {p => List(p)} |
 		parenparameters
 		
-	lazy val parenparameters = "(" ~> rep1sep(ident, ",") <~ ")"
+	lazy val parenparameters = "(" ~> repsep(ident, ",") <~ ")"
 		
 // 	lazy val pattern: PackratParser[PatternAST] =
 // 		ident ^^ (VariablePattern) |

@@ -4,7 +4,12 @@ import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 
 object Builtins {
-	val list = List( QueryNative, InsertNative, UpdateNative, CommandNative, SingleOrNotFoundNative, AtLeastOneOrNotFoundNative, IntNative )
+	val list =
+		List(
+			QueryNative, InsertNative, UpdateNative, CommandNative,
+			SingleOrNotFoundNative, AtLeastOneOrNotFoundNative,
+			IntNative, EvalNative
+		)
 	
 	def map = list map (n => (n.name -> n)) toMap
 }
@@ -145,4 +150,15 @@ object IntNative extends Native( "int" ) {
 	val argc = 1
 	
 	def apply( args: List[Any], env: Env ) = args.head.asInstanceOf[String].toInt
+}
+
+object EvalNative extends Native( "eval" ) {
+	val argc = 1
+	
+	def apply( args: List[Any], env: Env ) = {
+		val p = new CrasParser
+		val ast = p.parseFromString( args.head.asInstanceOf[String], p.expressionStatement )
+		
+		eval( ast.expr, env )	
+	}
 }

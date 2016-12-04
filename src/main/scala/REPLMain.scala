@@ -19,7 +19,7 @@ object REPLMain extends App {
 	reader.setPrompt( "> " )
 
 	"""
-	|Welcome to CRAS version 0.2.
+	|Welcome to CRAS version 0.3.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
 	""".trim.stripMargin.lines foreach println
@@ -73,7 +73,7 @@ object REPLMain extends App {
 					|help (h)                             print this summary
 					|quit (q)                             exit the REPL
 					|routes (r)                           print all routes showing absolute paths
-					|stack (t) on/off                     turn exception stack trace on or off
+					|stack (s) on/off                     turn exception stack trace on or off
 					|wipe (w)                             wipe current database clean and reconnect
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
@@ -109,7 +109,7 @@ object REPLMain extends App {
 						println( method + " " + pathbuf + " " + action )
 					}
 				case Nil|List( "" ) =>
-				case (method@("POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
+				case (method@("GET"|"get"|"POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
 					result( method, path, line1.split("\\s+", 3)(2) )
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )

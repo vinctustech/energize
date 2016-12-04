@@ -4,7 +4,7 @@ import java.sql._
 
 import collection.mutable.{ListBuffer, HashMap}
 import util.matching.Regex
-import util.parsing.input.{Position, CharSequenceReader}
+import util.parsing.input.{Position}
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 import xyz.hyperreal.table.TextTable
@@ -57,6 +57,7 @@ package object cras {
 	
 	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
+			case DotExpression( obj, field ) => evalm( obj, env )( field )
 			case BinaryExpression( left, op, func, right ) =>
 				Math( func, eval(left, env), eval(right, env) )
 			case ApplyExpression( function, args ) =>
@@ -141,13 +142,7 @@ package object cras {
 	
 	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
 		val p = new CrasParser
-		val ast =
-			p.parse( new CharSequenceReader(src.getLines.map(l => l + '\n').mkString) ) match {
-				case p.Success( tree, _ ) => tree
-				case p.NoSuccess( error, rest ) =>
-					problem( rest.pos, error )
-			}
-		
+		val ast = p.parseFromSource( src, p.source )
 		val tables = new HashMap[String, LinkedHashMap[String, Column]]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]

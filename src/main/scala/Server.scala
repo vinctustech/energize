@@ -22,7 +22,7 @@ class Server( port: Int, env: Env ) {
 
 	val server = ServerBootstrap.bootstrap
 		.setListenerPort(port)
-		.setServerInfo("CRAS/0.1")
+		.setServerInfo("CRAS/0.3")
 		.setIOReactorConfig(config)
 		.setSslContext(null)
 		.setExceptionLogger(ExceptionLogger.STD_ERR)
