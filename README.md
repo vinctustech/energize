@@ -117,20 +117,20 @@ getting the response
 		"data": [
 			{
 				"ID": 1,
-				"NAME": "finish 0.1",
-				"DESCRIPTION": null,
-				"STATUS": 1
+				"name": "finish 0.1",
+				"description": null,
+				"status": 1
 			},
 			{
 				"ID": 2,
-				"NAME": "write readme",
-				"DESCRIPTION": "add example involving finishing 0.1 and writing the readme",
-				"STATUS": 1
+				"name": "write readme",
+				"description": "add example involving finishing 0.1 and writing the readme",
+				"status": 1
 			}
 		]
 	}
 
-The `description` is `null` in the first one because we marked that column as `optional` and did not provide data for it in our post. We can retrieve just the second item with the command
+The `description` is `null` in the first one because we marked that column as `optional` and did not provide data for it in our post. Also, notice that the property names are the column names originally provided in the configuration and not the case-insensitive uppercase names that are returned by the database. We can retrieve just the second item with the command
 
 	curl http://localhost:8080/api/v1/todo/2
 	
@@ -140,9 +140,9 @@ to get
 		"status": "ok",
 		"data": {
 			"ID": 2,
-			"NAME": "write readme",
-			"DESCRIPTION": "add example involving finishing 0.1 and writing the readme",
-			"STATUS": 1
+			"name": "write readme",
+			"description": "add example involving finishing 0.1 and writing the readme",
+			"status": 1
 		}
 	}
 
