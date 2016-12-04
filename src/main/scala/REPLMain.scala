@@ -109,10 +109,10 @@ object REPLMain extends App {
 						println( method + " " + pathbuf + " " + action )
 					}
 				case Nil|List( "" ) =>
-				case (method@("GET"|"get"|"POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
-					result( method, path, line1.split("\\s+", 3)(2) )
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )
+				case (method@("GET"|"get"|"POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
+					result( method, path, line1.split("\\s+", 3)(2) )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )
 				case _ => //sql non-query command

@@ -54,7 +54,19 @@ package object cras {
 		expr match {
 			case DotExpression( obj, field ) => evalm( obj, env )( field )
 			case BinaryExpression( left, op, func, right ) =>
-				Math( func, eval(left, env), eval(right, env) )
+				val l = eval( left, env )
+				val r = eval( right, env )
+				
+				if (op == '+) {
+					if (l.isInstanceOf[String] || r.isInstanceOf[String])
+						String.valueOf( l ) + String.valueOf( r )
+					else if (l.isInstanceOf[Map[String, Any]] && r.isInstanceOf[Map[String, Any]])
+						l.asInstanceOf[Map[String, Any]] ++ r.asInstanceOf[Map[String, Any]]
+					else
+						Math( func, l, r )
+				}
+				else
+					Math( func, l, r )
 			case ApplyExpression( function, args ) =>
 				eval( function, env ) match {
 					case f: Native =>
