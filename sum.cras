@@ -4,4 +4,4 @@ route
 	GET   /f/:a/:b           OK( f(int(a), int(b)) )
 	GET   /plus/:a/:b        OK( a + b )
 	GET   /combine           OK( {"a": 1} + json )
-	GET   /eval              OK( eval(json.expr) )			// GET /eval {"expr": "3 + 4"}
+	GET   /eval              OK( eval(json.expr) )			# GET /eval {"expr": "3 + 4"}

@@ -24,7 +24,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			override def whitespace: Parser[Any] = rep[Any](
 				whitespaceChar
 				| '/' ~ '*' ~ comment
-				| '/' ~ '/' ~ rep( chrExcept(EofCh, '\n') )
+				| '#' ~ rep( chrExcept(EofCh, '\n') )
 				| '/' ~ '*' ~ failure("unclosed comment")
 				)
 			
@@ -133,8 +133,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
-		httpMethod ~ uriPath ~ expression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )} |
-		httpMethod ~ expression <~ Newline ^^ {case method ~ action => URIMapping( method, URIPath(Nil), action )}
+		httpMethod ~ "/" ~ actionExpression <~ Newline ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
+		httpMethod ~ uriPath ~ actionExpression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
 		
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ (HTTPMethod)
@@ -229,4 +229,16 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 // 		ident ^^ (VariablePattern) |
 // 		stringLit ^^ (StringPattern) |
 // 		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
+	
+	lazy val actionExpression: PackratParser[ExpressionAST] =
+		actionApplyExpression
+		
+	lazy val actionApplyExpression: PackratParser[ExpressionAST] =
+		actionApplyExpression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		actionPrimaryExpression
+		
+	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
+		ident ^^ (VariableExpression) |
+		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
+
 }

@@ -3,17 +3,6 @@ package xyz.hyperreal.cras
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 
-object Builtins {
-	val list =
-		List(
-			QueryNative, InsertNative, UpdateNative, CommandNative,
-			SingleOrNotFoundNative, AtLeastOneOrNotFoundNative,
-			IntNative, EvalNative
-		)
-	
-	def map = list map (n => (n.name -> n)) toMap
-}
-
 abstract class Native( val name: String ) extends ((List[Any], Env) => Any) {
 	val argc: Int
 	

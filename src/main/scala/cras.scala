@@ -121,16 +121,14 @@ package object cras {
 			
 			if (l == List( "" ))
 				return None
-			else if (l == List() && trimed.length > 1)
-				return None
-			else if (l.head != "")
+			else if (!l.isEmpty && l.head != "")
 				return None
 			else
 				if (l == List())
 					l
 				else
 					l.tail
-		}
+			}
 		val len = segments.length
 		val urivars = new HashMap[String, String]
 		
@@ -241,8 +239,8 @@ package object cras {
 							"""
 							|route /<base>/<table>
 							|  GET    /:id   OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
-							|  GET           OK( query("select * from <table>;") )
-							|  POST          OK( insert(<table>, json) )
+							|  GET    /      OK( query("select * from <table>;") )
+							|  POST   /      OK( insert(<table>, json) )
 							|  PATCH  /:id   OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
 							|  PUT    /:id   OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
 							|  DELETE /:id   OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )

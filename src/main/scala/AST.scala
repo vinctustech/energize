@@ -81,3 +81,6 @@ case class DotExpression( obj: ExpressionAST, prop: String ) extends ExpressionA
 case class FunctionDefinition( pos: Position, name: String, function: FunctionExpression ) extends StatementAST
 
 case class ExpressionStatement( expr: ExpressionAST ) extends StatementAST
+	
+	
+case class RouteActionAST( expr: ExpressionAST ) extends AST
