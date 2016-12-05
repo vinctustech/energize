@@ -1,6 +1,6 @@
 package xyz.hyperreal.cras
 
-import java.sql._
+//import java.sql._
 import java.util.concurrent.TimeUnit
 import java.io.ByteArrayOutputStream
 
@@ -8,7 +8,7 @@ import org.apache.http.{MethodNotSupportedException, HttpStatus, HttpResponse, E
 import org.apache.http.entity.ContentType
 import org.apache.http.impl.nio.bootstrap.{HttpServer, ServerBootstrap}
 import org.apache.http.impl.nio.reactor.IOReactorConfig
-import org.apache.http.nio.entity.{NFileEntity, NStringEntity}
+import org.apache.http.nio.entity.{NByteArrayEntity, NStringEntity}
 import org.apache.http.nio.protocol.{BasicAsyncRequestConsumer, BasicAsyncResponseProducer, HttpAsyncExchange, HttpAsyncRequestConsumer, HttpAsyncRequestHandler}
 import org.apache.http.protocol.{HttpContext, HttpCoreContext}
 import org.apache.http.ssl.SSLContexts
@@ -19,7 +19,6 @@ class Server( port: Int, env: Env ) {
 		.setSoTimeout(15000)
 		.setTcpNoDelay(true)
 		.build
-
 	val server = ServerBootstrap.bootstrap
 		.setListenerPort(port)
 		.setServerInfo("CRAS/0.3")
@@ -65,11 +64,16 @@ class Server( port: Int, env: Env ) {
 
 			val method = request.getRequestLine.getMethod.toUpperCase
 			
-			if (method == "OPTION" || method == "HEAD")
+			if (method == "OPTION")
 					throw new MethodNotSupportedException(method + " method not supported")
 
 			val target = request.getRequestLine.getUri
-			
+			val method1 =
+				if (method == "HEAD")
+					"GET"
+				else
+					method
+					
 			try {
 				val data =
 					request match {
@@ -78,15 +82,26 @@ class Server( port: Int, env: Env ) {
 							val entity = withEntity.getEntity
 								
 							entity.writeTo( buf )
-							process( method, target, buf.toString, env )
+							process( method1, target, buf.toString, env )
 						case noEntity =>
-							process( method, target, null, env )
+							process( method1, target, null, env )
 					}
 					
 				data match {
 					case Some( d ) =>
-						response.setStatusCode( HttpStatus.SC_OK )
-						response.setEntity( new NStringEntity(d, ContentType.APPLICATION_JSON) )
+						response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
+						
+						val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
+						
+						if (method == "HEAD") {
+							val empty =
+								new NByteArrayEntity( new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON ) {
+									override def getContentLength = entity.getContentLength
+								}
+								
+							response.setEntity( empty )
+						} else
+							response.setEntity( entity )
 					case None => 
 						response.setStatusCode( HttpStatus.SC_NOT_FOUND )
 						response.setEntity( new NStringEntity("<html><body><h1>404: Not Found</h1></body></html>", ContentType.TEXT_HTML) )
