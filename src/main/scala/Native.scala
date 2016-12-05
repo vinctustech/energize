@@ -171,10 +171,5 @@ object IntNative extends Native( "int" ) {
 object EvalNative extends Native( "eval" ) {
 	val argc = 1
 	
-	def apply( args: List[Any], env: Env ) = {
-		val p = new CrasParser
-		val ast = p.parseFromString( args.head.asInstanceOf[String], p.expressionStatement )
-		
-		eval( ast.expr, env )	
-	}
+	def apply( args: List[Any], env: Env ) = eval( args.head.asInstanceOf[String], env )
 }
