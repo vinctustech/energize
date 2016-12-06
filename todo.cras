@@ -1,4 +1,4 @@
-table todo /api/v1
+resource todo /api/v1
 	name        string  required
 	description string  optional
 	status      integer required

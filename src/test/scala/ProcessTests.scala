@@ -10,7 +10,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
-			|table todo /api/v1
+			|resource todo /api/v1
 			|  name        string  required
 			|  description string  optional
 			|  status      integer required
@@ -34,7 +34,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
-			|table todo /api/v1
+			|resource todo /api/v1
 			|	name        string  required
 			|	description string  optional
 			|	status      integer required

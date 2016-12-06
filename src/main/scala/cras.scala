@@ -14,7 +14,7 @@ import xyz.hyperreal.lia.Math
 
 package object cras {
 	
-	private val varRegex = "\\$([a-zA-Z][a-zA-Z0-9]*)".r
+	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
 	
 	def dbconnect( dbfile: String, memory: Boolean = false ) = {
 		Class.forName( "org.h2.Driver" )

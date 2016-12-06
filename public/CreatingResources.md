@@ -21,7 +21,7 @@ Let's say we have another resource called `roles`.
 	resource roles
 		required string name
 
-If we want our `users` resource to have a relationship with our `roles` resource, we simply include it as a composite type and give it a name. This allows us to represent a data model with a one-to-one relationship.
+If we want our `users` resource to have a relationship with our `roles` resource, we simply include it as a composite type and give it a name. This allows us to represent a data model with a many-to-one relationship.
 
 	table users
 	  // ...
