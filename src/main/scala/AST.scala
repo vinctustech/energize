@@ -28,6 +28,9 @@ case object UUIDType extends ColumnType
 
 case object DateType extends ColumnType
 
+case class TableType( table: String ) extends ColumnType
+
+
 case class ColumnTypeModifier( modifier: String, pos: Position )
 
 

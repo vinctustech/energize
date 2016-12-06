@@ -7,9 +7,10 @@ object Main extends App {
 
 	def test {
 		val (c, s) = dbconnect( "test", true )
-		val env = configure( io.Source.fromFile("sum.cras"), c, s )
+		val env = configure( io.Source.fromFile("users.cras"), c, s )
 		
-		println( process("GET", "/eval", """ {"expr": "(i + 2)/2*i"} """, env) )
+		println( env.tables )
+//		println( process("GET", "/eval", """ {"expr": "(i + 2)/2*i"} """, env) )
 		
 		c.close
 	}

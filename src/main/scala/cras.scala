@@ -185,6 +185,7 @@ package object cras {
 										case IntegerType => "INT"
 										case UUIDType => "UUID"
 										case DateType => "DATE"
+										case TableType( _ ) => "INT"
 									}
 								var secret = false
 								var required = false
@@ -228,11 +229,6 @@ package object cras {
 						} mkString ", "
 					
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
-						
-					if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
-	//					println( "creating table '" + name.toUpperCase + "'" )
-						statement.execute( "CREATE TABLE " + name + "(id INT AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
-					}
 					
 					for (URIPath( base ) <- bases) {
 						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
@@ -262,6 +258,13 @@ package object cras {
 			
 		if (!defines.contains( "Error" ))
 			defines("Error") = ErrorNative
+			
+		for ((_, t) <- tables) {
+			if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
+				statement.execute( "CREATE TABLE " + name + "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
+				
+			}
+		}
 		
 		Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 	}
