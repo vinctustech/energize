@@ -3,17 +3,6 @@ package xyz.hyperreal.cras
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 
-object Builtins {
-	val list =
-		List(
-			QueryNative, InsertNative, UpdateNative, CommandNative,
-			SingleOrNotFoundNative, AtLeastOneOrNotFoundNative,
-			IntNative, EvalNative
-		)
-	
-	def map = list map (n => (n.name -> n)) toMap
-}
-
 abstract class Native( val name: String ) extends ((List[Any], Env) => Any) {
 	val argc: Int
 	
@@ -171,10 +160,5 @@ object IntNative extends Native( "int" ) {
 object EvalNative extends Native( "eval" ) {
 	val argc = 1
 	
-	def apply( args: List[Any], env: Env ) = {
-		val p = new CrasParser
-		val ast = p.parseFromString( args.head.asInstanceOf[String], p.expressionStatement )
-		
-		eval( ast.expr, env )	
-	}
+	def apply( args: List[Any], env: Env ) = eval( args.head.asInstanceOf[String], env )
 }

@@ -24,7 +24,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			override def whitespace: Parser[Any] = rep[Any](
 				whitespaceChar
 				| '/' ~ '*' ~ comment
-				| '/' ~ '/' ~ rep( chrExcept(EofCh, '\n') )
+				| '#' ~ rep( chrExcept(EofCh, '\n') )
 				| '/' ~ '*' ~ failure("unclosed comment")
 				)
 			
@@ -65,11 +65,11 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
-				"table", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
+				"resource", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
 				"def"
 				)
 			delimiters += (
-				"+", "*", "-", "/", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", "."
+				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", "."
 				)
 		}
 
@@ -111,7 +111,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		"table" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+		"resource" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
 			case p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns ) )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
@@ -133,14 +133,14 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
-		httpMethod ~ expression <~ Newline ^^ {case method ~ action => URIMapping( method, URIPath(Nil), action )} |
-		httpMethod ~ uriPath ~ expression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
+		httpMethod ~ "/" ~ actionExpression <~ Newline ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
+		httpMethod ~ uriPath ~ actionExpression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
 		
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ (HTTPMethod)
 		
 	lazy val uriPath: PackratParser[URIPath] =
-		rep1sep(uriSegment, "/") ^^ (URIPath)
+		"/" ~> rep1sep(uriSegment, "/") ^^ (URIPath)
 	
 	lazy val uriSegment: PackratParser[URISegment] =
 		ident ^^ (NameURISegment) |
@@ -158,36 +158,34 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		additiveExpression
 		
 	lazy val additiveExpression: PackratParser[ExpressionAST] =
-		additiveExpression ~ ("+" | "-") ~ applyExpression ^^ //multiplicativeExpression ^^
+		additiveExpression ~ ("+" | "-") ~ multiplicativeExpression ^^
 			{case l ~ o ~ r =>
 				val s = Symbol(o)
 				
 				BinaryExpression( l, s, lookup(s), r )} |
-//		multiplicativeExpression
-		applyExpression
+		multiplicativeExpression
 		
-// 	lazy val multiplicativeExpression: PackratParser[ExprAST] =
-// 		multiplicativeExpression ~ ("*" | "/" | """\""" | "%" | "\\%" | "//" | "mod" | "rotateright" | "rotateleft" | ">>>" | "<<") ~ exponentialExpression ^^
-// 			{case l ~ o ~ r =>
-// 				val s = Symbol(o)
-// 				
-// 				BinaryExprAST( l, s, lookup(s), r )} |
-// 		multiplicativeExpression ~ applyExpression ^^
-// 			{case l ~ r => BinaryExprAST( l, '*, lookup('*), r )} |
-// 		exponentialExpression
-// 
-// 	lazy val exponentialExpression: PackratParser[ExprAST] =
-// 		exponentialExpression ~ "^" ~ negationExpression ^^
-// 			{case l ~ _ ~ r => BinaryExprAST( l, '^, lookup('^), r )} |
-// 		negationExpression
-// 
-// 	lazy val negationExpression: PackratParser[ExprAST] =
-// 		"-" ~> negationExpression ^^
-// 			{
-// 				case LiteralExprAST( n: Number ) => LiteralExprAST( Math('-, n) )
-// 				case v                           => UnaryExprAST( '-, v )
-// 			} |
-// 		applyExpression
+	lazy val multiplicativeExpression: PackratParser[ExpressionAST] =
+		multiplicativeExpression ~ ("*" | "/" | "\\" | "%" | "//") ~ exponentialExpression ^^
+			{case l ~ o ~ r =>
+				val s = Symbol(o)
+				
+				BinaryExpression( l, s, lookup(s), r )} |
+		multiplicativeExpression ~ applyExpression ^^
+			{case l ~ r => BinaryExpression( l, '*, lookup('*), r )} |
+		exponentialExpression
+
+	lazy val exponentialExpression: PackratParser[ExpressionAST] =
+		exponentialExpression ~ "^" ~ negationExpression ^^
+			{case l ~ _ ~ r => BinaryExpression( l, '^, lookup('^), r )} |
+		negationExpression
+
+	lazy val negationExpression: PackratParser[ExpressionAST] =
+		"-" ~> negationExpression ^^ {
+			case LiteralExpression( n: Number ) => LiteralExpression( Math('-, n) )
+			case v => UnaryExpression( '-, v )
+			} |
+		applyExpression
 		
 	lazy val applyExpression: PackratParser[ExpressionAST] =
 		applyExpression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
@@ -231,4 +229,16 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 // 		ident ^^ (VariablePattern) |
 // 		stringLit ^^ (StringPattern) |
 // 		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
+	
+	lazy val actionExpression: PackratParser[ExpressionAST] =
+		actionApplyExpression
+		
+	lazy val actionApplyExpression: PackratParser[ExpressionAST] =
+		actionApplyExpression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		actionPrimaryExpression
+		
+	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
+		ident ^^ (VariableExpression) |
+		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
+
 }

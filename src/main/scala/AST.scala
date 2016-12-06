@@ -64,6 +64,8 @@ case class FunctionExpression( params: List[String], expr: ExpressionAST ) exten
 
 case class BinaryExpression( left: ExpressionAST, op: Symbol, func: FunctionMap, right: ExpressionAST ) extends ExpressionAST
 
+case class UnaryExpression( op: Symbol, expr: ExpressionAST ) extends ExpressionAST
+
 case class DotExpression( obj: ExpressionAST, prop: String ) extends ExpressionAST
 	
 // trait PatternAST extends AST
@@ -79,3 +81,6 @@ case class DotExpression( obj: ExpressionAST, prop: String ) extends ExpressionA
 case class FunctionDefinition( pos: Position, name: String, function: FunctionExpression ) extends StatementAST
 
 case class ExpressionStatement( expr: ExpressionAST ) extends StatementAST
+	
+	
+case class RouteActionAST( expr: ExpressionAST ) extends AST

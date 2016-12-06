@@ -14,7 +14,7 @@ import xyz.hyperreal.lia.Math
 
 package object cras {
 	
-	private val varRegex = "\\$([a-zA-Z][a-zA-Z0-9]*)".r
+	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
 	
 	def dbconnect( dbfile: String, memory: Boolean = false ) = {
 		Class.forName( "org.h2.Driver" )
@@ -47,6 +47,13 @@ package object cras {
 				}
 		}
 	}
+
+	def eval( expr: String, env: Env ): Any = {
+		val p = new CrasParser
+		val ast = p.parseFromString( expr, p.expressionStatement )
+		
+		eval( ast.expr, env )	
+	}
 	
 	def replacer( env: Env ) = (m: Regex.Match) => env lookup m.group(1) toString
 	
@@ -65,6 +72,8 @@ package object cras {
 					else
 						Math( func, l, r )
 				}
+				else if (op == '* && l.isInstanceOf[String] && r.isInstanceOf[Int])
+					l.asInstanceOf[String]*r.asInstanceOf[Int]
 				else
 					Math( func, l, r )
 			case ApplyExpression( function, args ) =>
@@ -112,16 +121,14 @@ package object cras {
 			
 			if (l == List( "" ))
 				return None
-			else if (l == List() && trimed.length > 1)
-				return None
-			else if (l.head != "")
+			else if (!l.isEmpty && l.head != "")
 				return None
 			else
 				if (l == List())
 					l
 				else
 					l.tail
-		}
+			}
 		val len = segments.length
 		val urivars = new HashMap[String, String]
 		
@@ -230,13 +237,13 @@ package object cras {
 					for (URIPath( base ) <- bases) {
 						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
 							"""
-							|route <base>/<table>
-							|  GET    :id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
-							|  GET           OK( query("select * from <table>;") )
-							|  POST          OK( insert(<table>, json) )
-							|  PATCH  :id    OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
-							|  PUT    :id    OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
-							|  DELETE :id    OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
+							|route /<base>/<table>
+							|  GET    /:id   OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
+							|  GET    /      OK( query("select * from <table>;") )
+							|  POST   /      OK( insert(<table>, json) )
+							|  PATCH  /:id   OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
+							|  PUT    /:id   OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
+							|  DELETE /:id   OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
 							""".stripMargin.replaceAll("<table>", name).
 								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
 						
@@ -245,7 +252,8 @@ package object cras {
 						
 				case RoutesDefinition( URIPath(base), mappings ) =>
 					mappings foreach {
-						case URIMapping( HTTPMethod(method), URIPath(path), action ) => routes += Route( method, base ++ path, action )
+						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
+							routes += Route( method, base ++ path, action )
 					}
 			}
 		
