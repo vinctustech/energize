@@ -29,6 +29,29 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
+	"empty database (no base)" in {
+		val (c, s) = dbconnect( "test", true )
+		val config =
+			"""
+			|resource todo
+			|  name        string  required
+			|  description string  optional
+			|  status      integer required
+			""".trim.stripMargin
+		val env = configure( io.Source.fromString(config), c, s )
+
+		process( "GET", "/todo", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": []
+			|}
+			""".trim.stripMargin )
+		process( "GET", "/todo/1", null, env ) shouldBe None
+		process( "GET", "/tod", null, env ) shouldBe None
+		c.close
+	}
+	
 	"post/get one item" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =

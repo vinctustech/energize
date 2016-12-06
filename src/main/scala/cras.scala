@@ -158,7 +158,7 @@ package object cras {
 		
 		interpret( ast )
 		
-		def env = Env(tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement)
+		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 		
 		def traverse( list: List[AST] ) = list foreach interpret
 		
@@ -248,31 +248,13 @@ package object cras {
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
 					if (bases isEmpty) {
-						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
-							"""
-							|route /<table>
-							|  GET    /:id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
-							|  GET    /       OK( query("select * from <table>;") )
-							|  POST   /       OK( insert(<table>, json) )
-							|  PATCH  /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
-							|  PUT    /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
-							|  DELETE /:id    OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
-							""".stripMargin.replaceAll("<table>", name)), null, null )
+						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<table>", name)), null, null )
 							
-							routes ++= r
+						routes ++= r
 					} else {
 						for (URIPath( base ) <- bases) {
-							val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
-								"""
-								|route /<base>/<table>
-								|  GET    /:id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
-								|  GET    /       OK( query("select * from <table>;") )
-								|  POST   /       OK( insert(<table>, json) )
-								|  PATCH  /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
-								|  PUT    /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
-								|  DELETE /:id    OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
-								""".stripMargin.replaceAll("<table>", name).
-									replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
+							val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<table>", name).
+								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString ("/", "/", ""))), null, null )
 							
 							routes ++= r
 						}
@@ -291,7 +273,7 @@ package object cras {
 		if (!defines.contains( "Error" ))
 			defines("Error") = ErrorNative
 		
-		Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
+		env
 	}
 	
 	class CrasErrorException( message: String ) extends Exception( message )
