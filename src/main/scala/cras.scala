@@ -247,20 +247,35 @@ package object cras {
 		
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
-					for (URIPath( base ) <- bases) {
+					if (bases isEmpty) {
 						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
 							"""
-							|route /<base>/<table>
-							|  GET    /:id   OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
-							|  GET    /      OK( query("select * from <table>;") )
-							|  POST   /      OK( insert(<table>, json) )
-							|  PATCH  /:id   OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
-							|  PUT    /:id   OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
-							|  DELETE /:id   OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
-							""".stripMargin.replaceAll("<table>", name).
-								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
-						
-						routes ++= r
+							|route /<table>
+							|  GET    /:id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
+							|  GET    /       OK( query("select * from <table>;") )
+							|  POST   /       OK( insert(<table>, json) )
+							|  PATCH  /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
+							|  PUT    /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
+							|  DELETE /:id    OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
+							""".stripMargin.replaceAll("<table>", name)), null, null )
+							
+							routes ++= r
+					} else {
+						for (URIPath( base ) <- bases) {
+							val Env( _, r, _, _, _ ) = configure( io.Source.fromString(
+								"""
+								|route /<base>/<table>
+								|  GET    /:id    OK( singleOrNotFound(query("select * from <table> where id = '$id';")) )
+								|  GET    /       OK( query("select * from <table>;") )
+								|  POST   /       OK( insert(<table>, json) )
+								|  PATCH  /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, false)) )
+								|  PUT    /:id    OK( atLeastOneOrNotFound(update(<table>, json, id, true)) )
+								|  DELETE /:id    OK( atLeastOneOrNotFound(command("delete from <table> where id = '$id';")) )
+								""".stripMargin.replaceAll("<table>", name).
+									replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString "/")), null, null )
+							
+							routes ++= r
+						}
 					}
 				case RoutesDefinition( URIPath(base), mappings ) =>
 					mappings foreach {

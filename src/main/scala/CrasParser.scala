@@ -119,7 +119,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		"resource" ~> pos ~ ident ~ repsep(uriPath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+		"resource" ~> pos ~ ident ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
 			case p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns ) )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
@@ -138,9 +138,11 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		pos ~ ("unique" | "required" | "optional" | "secret") ^^ {case p ~ m => ColumnTypeModifier( m, p.pos )}
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
-		"route" ~> opt(uriPath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
-			case Some( base ) ~ mappings => List( RoutesDefinition( base, mappings ) )
-			case None ~ mappings => List( RoutesDefinition( URIPath(Nil), mappings ) )
+		"route" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
+			case Some( base ) ~ mappings => 
+				List( RoutesDefinition( base, mappings ) )
+			case None ~ mappings =>
+				List( RoutesDefinition( URIPath(Nil), mappings ) )
 		}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
@@ -150,6 +152,9 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ (HTTPMethod)
 		
+	lazy val basePath: PackratParser[URIPath] =
+		"/" ~> rep1sep(nameSegment, "/") ^^ (URIPath)
+		
 	lazy val uriPath: PackratParser[URIPath] =
 		"/" ~> rep1sep(uriSegment, "/") ^^ (URIPath)
 	
@@ -157,6 +162,9 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		ident ^^ (NameURISegment) |
 		":" ~> ident ^^ (ParameterURISegment)
 	
+	lazy val nameSegment: PackratParser[NameURISegment] =
+		ident ^^ (NameURISegment)
+		
 	lazy val mathSymbols = Set( '+, '-, '*, '/, '//, Symbol("\\"), Symbol("\\%"), '^, '%, 'mod, '|, '/|, '==, '!=, '<, '>, '<=, '>= )
 	
 	def lookup( s: Symbol ) =

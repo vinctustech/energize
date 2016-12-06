@@ -9,7 +9,7 @@ object Main extends App {
 		val (c, s) = dbconnect( "test", true )
 		val env = configure( io.Source.fromFile("users.cras"), c, s )
 		
-		println( process("GET", "/api/users", null, env) )
+		println( process("GET", "/users", null, env) )
 		
 		c.close
 	}

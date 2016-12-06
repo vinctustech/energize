@@ -1,8 +1,8 @@
-resource users /api
+resource users
 	name string unique required
 	#role roles required
 	
-resource roles /api
+resource roles
 	type string unique required
-
+	
 insert( users, {name: "asdf"} )
