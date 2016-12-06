@@ -8,7 +8,7 @@ object Builtins {
 		List(
 			QueryNative, InsertNative, UpdateNative, CommandNative,
 			SingleOrNotFoundNative, AtLeastOneOrNotFoundNative,
-			IntNative, EvalNative, PrintNative
+			IntNative, EvalNative, PrintNative, OKNative, ErrorNative
 		)
 	val constants =
 		List(

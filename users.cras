@@ -4,5 +4,5 @@ resource users
 	
 resource roles
 	type string unique required
-	
+
 insert( users, {name: "asdf"} )
