@@ -1,6 +1,7 @@
 package xyz.hyperreal.cras
 
 import util.parsing.input.Position
+import util.parsing.input.Positional
 
 import xyz.hyperreal.lia.FunctionMap
 
@@ -82,6 +83,8 @@ case class DotExpression( obj: ExpressionAST, prop: String ) extends ExpressionA
 
 // case class FunctionDefinition( pos: Position, name: String, function: FunctionPart ) extends StatementAST
 case class FunctionDefinition( pos: Position, name: String, function: FunctionExpression ) extends StatementAST
+
+case class VariableDefinition( name: String, value: ExpressionAST ) extends StatementAST with Positional
 
 case class ExpressionStatement( expr: ExpressionAST ) extends StatementAST
 	

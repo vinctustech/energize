@@ -158,22 +158,34 @@ package object cras {
 		
 		interpret( ast )
 		
+		def env = Env(tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement)
+		
 		def traverse( list: List[AST] ) = list foreach interpret
 		
 		def interpret( ast: AST ): Unit =
 			ast match {
 				case SourceAST( list ) => traverse( list )
+				case d@VariableDefinition( name, expr ) =>
+					if (defines contains name)
+						problem( d.pos, s"'$name' already defined" )
+						
+					defines(name) = eval( expr, env )
 				case FunctionDefinition( pos, name, function ) =>
 					if (defines contains name)
-						problem( pos, s"function '$name' defined twice" )
+						problem( pos, s"'$name' already defined" )
 						
 					defines(name) = function
 				case TableDefinition( pos, name, bases, columns ) =>
 					if (tables contains name.toUpperCase)
-						problem( pos, s"table '$name' defined twice" )
+						problem( pos, s"'$name' already defined" )
 					
 					val cols = new LinkedHashMap[String, Column]
-					val f =
+					val create = new StringBuilder
+					
+					create ++= "CREATE TABLE "
+					create ++= name
+					create ++= "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+					create ++=
 						columns map {
 							case TableColumn( pos, modifiers, typ, cname ) =>
 								if (cols contains cname.toUpperCase)
@@ -227,7 +239,12 @@ package object cras {
 								cols(cname.toUpperCase) = Column( cname, typ, secret, required )
 								cname + " " + t + m
 						} mkString ", "
-					
+					create ++= ");"
+			
+					if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
+						statement.execute( create.toString )
+					}
+		
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
 					for (URIPath( base ) <- bases) {
@@ -245,12 +262,12 @@ package object cras {
 						
 						routes ++= r
 					}
-						
 				case RoutesDefinition( URIPath(base), mappings ) =>
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
 							routes += Route( method, base ++ path, action )
 					}
+				case ExpressionStatement( expr ) => eval( expr, env )
 			}
 		
 		if (!defines.contains( "OK" ))
@@ -258,13 +275,6 @@ package object cras {
 			
 		if (!defines.contains( "Error" ))
 			defines("Error") = ErrorNative
-			
-		for ((_, t) <- tables) {
-			if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
-				statement.execute( "CREATE TABLE " + name + "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " + f + ")" )
-				
-			}
-		}
 		
 		Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 	}

@@ -9,8 +9,7 @@ object Main extends App {
 		val (c, s) = dbconnect( "test", true )
 		val env = configure( io.Source.fromFile("users.cras"), c, s )
 		
-		println( env.tables )
-//		println( process("GET", "/eval", """ {"expr": "(i + 2)/2*i"} """, env) )
+		println( process("GET", "/api/users", null, env) )
 		
 		c.close
 	}

@@ -162,3 +162,9 @@ object EvalNative extends Native( "eval" ) {
 	
 	def apply( args: List[Any], env: Env ) = eval( args.head.asInstanceOf[String], env )
 }
+
+object PrintNative extends Native( "print" ) {
+	val argc = 1
+	
+	def apply( args: List[Any], env: Env ) = println( args.head )
+}

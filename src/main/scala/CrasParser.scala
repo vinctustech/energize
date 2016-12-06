@@ -66,7 +66,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
 				"resource", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
-				"def"
+				"def", "var"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", "."
@@ -87,27 +87,35 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 	import lexical.{Newline, Indent, Dedent}
 
-	lazy val onl = opt(Newline)
+	lazy val nl = rep1(Newline)
 
 	lazy val source: PackratParser[SourceAST] =
-		rep1(definitionStatement <~ Newline | (expressionStatement ^^ (e => List( e )))) ^^ (s => SourceAST( s.flatten )) |
-		Newline ^^^ SourceAST( Nil )
+		rep1(definitionStatement <~ nl | (expressionStatement ^^ (e => List( e )))) ^^ (s => SourceAST( s.flatten )) |
+		nl ^^^ SourceAST( Nil )
 
-	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ Newline ^^ (ExpressionStatement)
+	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ (ExpressionStatement)
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
 		tablesDefinition |
 		routesDefinition |
-		functionsDefinition
+		functionsDefinition |
+		variablesDefinition
 	
-	lazy val functionsDefinition =
+	lazy val functionsDefinition: PackratParser[List[FunctionDefinition]] =
 		"def" ~> functionDefinition ^^ {f => List( f )} |
-		"def" ~> (Indent ~> rep1(functionDefinition <~ Newline) <~ Dedent)
+		"def" ~> (Indent ~> rep1(functionDefinition <~ nl) <~ Dedent)
 		
-	lazy val functionDefinition =
+	lazy val functionDefinition: PackratParser[FunctionDefinition] =
 // 		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
 		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionExpression(pat, e) )}
 	
+	lazy val variablesDefinition: PackratParser[List[VariableDefinition]] =
+		"var" ~> variableDefinition ^^ {v => List( v )} |
+		"var" ~> (Indent ~> rep1(variableDefinition <~ nl) <~ Dedent)
+	
+	lazy val variableDefinition: PackratParser[VariableDefinition] =
+		positioned( ident ~ ("=" ~> expression) ^^ {case n ~ e => VariableDefinition( n, e )} )
+		
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
@@ -115,7 +123,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			case p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns ) )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
-		pos ~ ident ~ columnType ~ rep(columnModifier) <~ Newline ^^ {
+		pos ~ ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
 			case p ~ name ~ typ ~ modifiers =>
 				TableColumn( p.pos, modifiers, typ, name )}
 
@@ -136,8 +144,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		}
 		
 	lazy val uriMapping: PackratParser[URIMapping] =
-		httpMethod ~ "/" ~ actionExpression <~ Newline ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
-		httpMethod ~ uriPath ~ actionExpression <~ Newline ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
+		httpMethod ~ "/" ~ actionExpression <~ nl ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
+		httpMethod ~ uriPath ~ actionExpression <~ nl ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
 		
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ (HTTPMethod)
@@ -217,7 +225,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		
 // 	lazy val functionLiteral =
 // 		functionPart ^^ (p => FunctionExpression( List(p) )) |
-// 		Indent ~> rep1(functionPart <~ Newline) <~ Dedent ^^ (FunctionExpression)
+// 		Indent ~> rep1(functionPart <~ nl) <~ Dedent ^^ (FunctionExpression)
 // 	
 // 	lazy val functionPart =
 // 		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionPart( p, e )}
