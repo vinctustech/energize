@@ -248,12 +248,12 @@ package object cras {
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
 					if (bases isEmpty) {
-						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<table>", name)), null, null )
+						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
 							
 						routes ++= r
 					} else {
 						for (URIPath( base ) <- bases) {
-							val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<table>", name).
+							val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<resource>", name).
 								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString ("/", "/", ""))), null, null )
 							
 							routes ++= r
