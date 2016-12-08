@@ -85,6 +85,13 @@ package object cras {
 							sys.error( "wrong number of arguments for native function: " + f )
 							
 						f( list, env )
+					case f: Native2 =>
+						val list = args map (a => eval( a, env ))
+						
+						if (f.applicable( list ))
+							f( list, env )
+						else
+							sys.error( "wrong number or type of arguments for native function: " + f )
 					case f: FunctionExpression =>
 						if (f.params.length != args.length)
 							sys.error( "wrong number of arguments for function: " + f )
@@ -272,7 +279,6 @@ package object cras {
 			
 		interpretDefinitions( ast )	
 			
-		println(create)
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
 			statement.execute( create.toString )
 		}

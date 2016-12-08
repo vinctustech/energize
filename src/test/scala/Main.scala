@@ -5,15 +5,11 @@ import java.io.File
 
 object Main extends App {
 
-	def test {
-		val (c, s) = dbconnect( "test", true )
-		val env = configure( io.Source.fromFile("users.cras"), c, s )
-		
-		println( process("GET", "/users", null, env) )
-		println( process("GET", "/roles", null, env) )
-		
-		c.close
-	}
+	val (c, s) = dbconnect( "test", true )
+	val env = configure( io.Source.fromFile("test.cras"), c, s )
 	
-	test
+// 		println( process("GET", "/users", null, env) )
+// 		println( process("GET", "/roles", null, env) )
+	
+	c.close
 }

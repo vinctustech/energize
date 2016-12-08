@@ -15,7 +15,7 @@ object Builtins {
 			"i" -> ComplexBigInt.i
 		)
 	
-	def map = (natives map (n => (n.name -> n))) ++ constants toMap
+	def map = (Native( Support ) map (n => (n.name -> n))) ++ (natives map (n => (n.name -> n))) ++ constants toMap 
 	
 	val routes =
 		"""
