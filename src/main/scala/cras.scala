@@ -155,16 +155,15 @@ package object cras {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
-		
-		interpret( ast )
+		val create = new StringBuilder
 		
 		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 		
-		def traverse( list: List[AST] ) = list foreach interpret
+		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
-		def interpret( ast: AST ): Unit =
+		def interpretDefinitions( ast: AST ): Unit =
 			ast match {
-				case SourceAST( list ) => traverse( list )
+				case SourceAST( list ) => traverseDefinitions( list )
 				case d@VariableDefinition( name, expr ) =>
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
@@ -180,7 +179,6 @@ package object cras {
 						problem( pos, s"'$name' already defined" )
 					
 					val cols = new LinkedHashMap[String, Column]
-					val create = new StringBuilder
 					
 					create ++= "CREATE TABLE "
 					create ++= name
@@ -211,7 +209,7 @@ package object cras {
 											problem( pos, "modifier 'unique' encountered more than once" )
 											
 										unique = true
-										m += " unique"
+										m += " UNIQUE"
 									case ColumnTypeModifier( "required", pos ) =>
 										if (required)
 											problem( pos, "modifier 'required' encountered more than once" )
@@ -219,7 +217,7 @@ package object cras {
 										if (optional)
 											problem( pos, "modifier 'required' encountered along with 'optional'" )
 											
-										m += " not null"
+										m += " NOT NULL"
 										required = true
 									case ColumnTypeModifier( "optional", pos ) =>
 										if (optional)
@@ -239,11 +237,7 @@ package object cras {
 								cols(cname.toUpperCase) = Column( cname, typ, secret, required )
 								cname + " " + t + m
 						} mkString ", "
-					create ++= ");"
-			
-					if (!connection.getMetaData.getTables( null, "PUBLIC", name.toUpperCase, null ).next) {
-						statement.execute( create.toString )
-					}
+					create ++= ");\n"
 		
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
@@ -264,15 +258,26 @@ package object cras {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
 							routes += Route( method, base ++ path, action )
 					}
-				case ExpressionStatement( expr ) => eval( expr, env )
+				case _ =>
 			}
 		
-		if (!defines.contains( "OK" ))
-			defines("OK") = OKNative
-			
-		if (!defines.contains( "Error" ))
-			defines("Error") = ErrorNative
+		def traverseExpressions( list: List[AST] ) = list foreach interpretExpressions
 		
+		def interpretExpressions( ast: AST ): Unit =
+			ast match {
+				case SourceAST( list ) => traverseExpressions( list )
+				case ExpressionStatement( expr ) => eval( expr, env )
+				case _ =>
+			}
+			
+		interpretDefinitions( ast )	
+			
+		println(create)
+		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
+			statement.execute( create.toString )
+		}
+		
+		interpretExpressions( ast )	
 		env
 	}
 	
