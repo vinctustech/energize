@@ -10,6 +10,7 @@ object Main extends App {
 		val env = configure( io.Source.fromFile("users.cras"), c, s )
 		
 		println( process("GET", "/users", null, env) )
+		println( process("GET", "/roles", null, env) )
 		
 		c.close
 	}
