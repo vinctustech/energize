@@ -15,9 +15,12 @@ object Native {
 						classOf[java.lang.Integer]
 					else
 						p} toList
-						
+			
+			if (classes.last != classOf[Env])
+				sys.error( "last parameter should be of type Env" )
+				
 			new Native2( m.getName, classes ) {
-				def apply( args: List[Any], env: Env ) = m.invoke( f, args.asInstanceOf[List[AnyRef]]: _* )
+				def apply( args: List[Any], env: Env ) = m.invoke( f, (args :+ env).asInstanceOf[List[AnyRef]]: _* )
 			}
 		}) toList
 	}
@@ -54,8 +57,8 @@ abstract class Native2( val name: String, val classes: List[Class[_]] ) extends 
 	val argc = classes.length
 
 	def applicable( args: List[Any] ) =
-		if (args.length == argc) {
-			args zip classes forall {case (arg, cla) => cla.isInstance( arg )}
+		if (args.length == argc - 1) {
+			args zip classes.dropRight(1) forall {case (arg, cla) => cla.isInstance( arg )}
 		} else
 			false
 			
