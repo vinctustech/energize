@@ -116,13 +116,13 @@ getting the response
 		"status": "ok",
 		"data": [
 			{
-				"ID": 1,
+				"id": 1,
 				"name": "finish 0.1",
 				"description": null,
 				"status": 1
 			},
 			{
-				"ID": 2,
+				"id": 2,
 				"name": "write readme",
 				"description": "add example involving finishing 0.1 and writing the readme",
 				"status": 1
@@ -139,7 +139,7 @@ to get
 	{
 		"status": "ok",
 		"data": {
-			"ID": 2,
+			"id": 2,
 			"name": "write readme",
 			"description": "add example involving finishing 0.1 and writing the readme",
 			"status": 1

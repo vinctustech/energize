@@ -52,7 +52,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"post/get one item" in {
+	"post/get one item/delete" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
@@ -76,7 +76,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "status": "ok",
 			|  "data": [
 			|    {
-			|      "ID": 1,
+			|      "id": 1,
 			|      "name": "do something",
 			|      "description": null,
 			|      "status": 1
@@ -89,13 +89,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|{
 			|  "status": "ok",
 			|  "data": {
-			|    "ID": 1,
+			|    "id": 1,
 			|    "name": "do something",
 			|    "description": null,
 			|    "status": 1
 			|  }
 			|}
 			""".trim.stripMargin )
+		process( "DELETE", "/api/v1/todo/1", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": 1
+			|}
+			""".trim.stripMargin )
+		process( "GET", "/api/v1/todo/1", null, env ) shouldBe None
 		c.close
 	}
 	

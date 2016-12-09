@@ -1,3 +1,4 @@
-f0()
-f1( 5 )
-print( f2(3, "asdf") )
+resource test
+	a integer
+
+insert( test, {a: 123} )

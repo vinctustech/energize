@@ -1,6 +1,6 @@
 package xyz.hyperreal.cras
 
-import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
+import collection.mutable.{LinkedHashMap, HashMap}
 
 
 object Native {
@@ -8,19 +8,16 @@ object Native {
 		val cla = f.getClass
 		val methods = cla.getDeclaredMethods
 
-		(for (m <- methods) yield {
+		(for (m <- methods if !m.getName.startsWith("$")) yield {
 			val classes = m.getParameterTypes map {
 				p =>
 					if (p.getName == "int")
 						classOf[java.lang.Integer]
 					else
 						p} toList
-			
-			if (classes.last != classOf[Env])
-				sys.error( "last parameter should be of type Env" )
 				
 			new Native2( m.getName, classes ) {
-				def apply( args: List[Any], env: Env ) = m.invoke( f, (args :+ env).asInstanceOf[List[AnyRef]]: _* )
+				def apply( args: List[Any], env: Env ) = m.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
 			}
 		}) toList
 	}
@@ -48,17 +45,19 @@ object Native {
 			sys.error( "wrong number of parameters" )
 		
 		new Native2( name, classes ) {
-			def apply( args: List[Any], env: Env ) = method.invoke( f, args.asInstanceOf[List[AnyRef]]: _* )
+			def apply( args: List[Any], env: Env ) = method.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
 		}
 	}
 }
 
 abstract class Native2( val name: String, val classes: List[Class[_]] ) extends ((List[Any], Env) => Any) {
 	val argc = classes.length
+			
+	require( classes.head == classOf[Env], "first parameter should be of type Env" )
 
 	def applicable( args: List[Any] ) =
 		if (args.length == argc - 1) {
-			args zip classes.dropRight(1) forall {case (arg, cla) => cla.isInstance( arg )}
+			args zip classes.drop(1) forall {case (arg, cla) => cla.isInstance( arg )}
 		} else
 			false
 			
@@ -73,38 +72,6 @@ abstract class Native( val name: String ) extends ((List[Any], Env) => Any) {
 	def apply( args: List[Any], env: Env ): Any
 	
 	override def toString = name + "/" + argc
-}
-
-object QueryNative extends Native( "query" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = {
-		val res = env.statement.executeQuery( args.head.asInstanceOf[String] )
-		val list = new ListBuffer[Map[String, Any]]
-		val md = res.getMetaData
-		val count = md.getColumnCount
-		
-		while (res.next)
-			list +=
-				Map(
-					(for (i <- 1 to count) yield {
-						val dbtable = md.getTableName(i)
-						val dbcol = md.getColumnName(i)
-						val col =
-							env.tables get dbtable match {
-								case None => dbcol
-								case Some( t ) =>
-									t.columns get dbcol match {
-										case None => dbcol
-										case Some( c ) => c.name
-									}
-							}
-							
-						(col, res.getObject(i))
-					}): _* )
-		
-		list.toList
-	}
 }
 
 object InsertNative extends Native( "insert" ) {
@@ -167,24 +134,6 @@ object UpdateNative extends Native( "update" ) {
 			env.statement.executeUpdate( com.toString )
 		}
 	}
-}
-
-object CommandNative extends Native( "command" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = env.statement.executeUpdate( args.head.asInstanceOf[String] )
-}
-
-object OKNative extends Native( "OK" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = Map( "status" -> "ok", "data" -> args.head )
-}
-
-object ErrorNative extends Native( "Error" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = Map( "status" -> "error", "error" -> args.head )
 }
 
 object SingleOrNotFoundNative extends Native( "singleOrNotFound" ) {
