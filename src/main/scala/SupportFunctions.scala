@@ -16,5 +16,11 @@ object SupportFunctions {
 			case _ => throw new CrasErrorException( "more than one item in list" )
 		}
 	
+	def atLeastOneOrNotFound( env: Env, count: Int ) =
+		count match {
+			case 0 => throw new CrasNotFoundException
+			case _ => count
+		}
+		
 	def eval( env: Env, expr: String ) = evaluate( expr, env )
 }

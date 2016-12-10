@@ -14,6 +14,8 @@ import xyz.hyperreal.lia.Math
 
 package object cras {
 	
+//	type JSON = Map[String, Any]
+	
 	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
 	
 	def dbconnect( dbfile: String, memory: Boolean = false ) = {
@@ -43,7 +45,7 @@ package object cras {
 					Some( DefaultJSONWriter.toString(evalm( expr, env add reqvars )) )
 				} catch {
 					case e: CrasErrorException =>
-						Some( DefaultJSONWriter.toString(env.variables("errorResult").asInstanceOf[Native2](List(e.getMessage), env).asInstanceOf[Map[String, Any]]) )
+						Some( DefaultJSONWriter.toString(env.variables("errorResult").asInstanceOf[Native](List(e.getMessage), env).asInstanceOf[Map[String, Any]]) )
 					case e: CrasNotFoundException => None
 				}
 		}
@@ -80,13 +82,6 @@ package object cras {
 			case ApplyExpression( function, args ) =>
 				deref( function, env ) match {
 					case f: Native =>
-						val list = args map (a => deref( a, env ))
-						
-						if (list.length != f.argc)
-							sys.error( "wrong number of arguments for native function: " + f )
-							
-						f( list, env )
-					case f: Native2 =>
 						val list = args map (a => deref( a, env ))
 						
 						if (f.applicable( list ))
