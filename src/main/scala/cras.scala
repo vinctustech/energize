@@ -186,7 +186,12 @@ package object cras {
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
 						
-					defines(name) = new Variable( deref( expr, env ) )
+					defines(name) = new Variable( deref(expr, env) )
+				case d@ValueDefinition( name, expr ) =>
+					if (defines contains name)
+						problem( d.pos, s"'$name' already defined" )
+						
+					defines(name) = deref( expr, env )
 				case FunctionDefinition( pos, name, function ) =>
 					if (defines contains name)
 						problem( pos, s"'$name' already defined" )

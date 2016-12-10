@@ -66,7 +66,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
 				"resource", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
-				"def", "var"
+				"def", "var", "val"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", "."
@@ -99,7 +99,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		tablesDefinition |
 		routesDefinition |
 		functionsDefinition |
-		variablesDefinition
+		variablesDefinition |
+		valuesDefinition
 	
 	lazy val functionsDefinition: PackratParser[List[FunctionDefinition]] =
 		"def" ~> functionDefinition ^^ {f => List( f )} |
@@ -113,8 +114,15 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"var" ~> variableDefinition ^^ {v => List( v )} |
 		"var" ~> (Indent ~> rep1(variableDefinition <~ nl) <~ Dedent)
 	
+	lazy val valuesDefinition: PackratParser[List[ValueDefinition]] =
+		"val" ~> valueDefinition ^^ {v => List( v )} |
+		"val" ~> (Indent ~> rep1(valueDefinition <~ nl) <~ Dedent)
+	
 	lazy val variableDefinition: PackratParser[VariableDefinition] =
 		positioned( ident ~ ("=" ~> expression) ^^ {case n ~ e => VariableDefinition( n, e )} )
+	
+	lazy val valueDefinition: PackratParser[ValueDefinition] =
+		positioned( ident ~ ("=" ~> expression) ^^ {case n ~ e => ValueDefinition( n, e )} )
 		
 	lazy val pos = positioned( success(new Positional{}) )
 	

@@ -86,6 +86,8 @@ case class FunctionDefinition( pos: Position, name: String, function: FunctionEx
 
 case class VariableDefinition( name: String, value: ExpressionAST ) extends StatementAST with Positional
 
+case class ValueDefinition( name: String, value: ExpressionAST ) extends StatementAST with Positional
+
 case class ExpressionStatement( expr: ExpressionAST ) extends StatementAST
 	
 	
