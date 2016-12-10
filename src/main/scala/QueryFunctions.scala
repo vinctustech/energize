@@ -3,7 +3,7 @@ package xyz.hyperreal.cras
 import collection.mutable.{ListBuffer}
 
 
-object Queries {
+object QueryFunctions {
 	def query( env: Env, sql: String ) = {
 		val res = env.statement.executeQuery( sql )
 		val list = new ListBuffer[Map[String, Any]]

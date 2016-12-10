@@ -42,13 +42,14 @@ package object cras {
 							
 					Some( DefaultJSONWriter.toString(evalm( expr, env add reqvars )) )
 				} catch {
-					case e: CrasErrorException => Some( DefaultJSONWriter.toString(Map("status" -> "error", "reason" -> e.getMessage)) )
+					case e: CrasErrorException =>
+						Some( DefaultJSONWriter.toString(env.variables("errorResult").asInstanceOf[Native2](List(e.getMessage), env).asInstanceOf[Map[String, Any]]) )
 					case e: CrasNotFoundException => None
 				}
 		}
 	}
 
-	def eval( expr: String, env: Env ): Any = {
+	def evaluate( expr: String, env: Env ): Any = {
 		val p = new CrasParser
 		val ast = p.parseFromString( expr, p.expressionStatement )
 		

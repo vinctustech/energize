@@ -1,5 +1,7 @@
 package xyz.hyperreal.cras
 
+import java.lang.reflect.InvocationTargetException
+
 import collection.mutable.{LinkedHashMap, HashMap}
 
 
@@ -17,7 +19,14 @@ object Native {
 						p} toList
 				
 			new Native2( m.getName, classes ) {
-				def apply( args: List[Any], env: Env ) = m.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
+				def apply( args: List[Any], env: Env ) =
+					try {
+						m.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
+					} catch {
+						case e: InvocationTargetException => throw e.getCause
+// 							if (e.getCause.isInstanceOf[CrasNotFoundException])
+// 								throw new CrasNotFoundException
+					}
 			}
 		}) toList
 	}
@@ -53,7 +62,7 @@ object Native {
 abstract class Native2( val name: String, val classes: List[Class[_]] ) extends ((List[Any], Env) => Any) {
 	val argc = classes.length
 			
-	require( classes.head == classOf[Env], "first parameter should be of type Env" )
+	require( classes.head == classOf[Env], "first parameter should be of type Env: " + name )
 
 	def applicable( args: List[Any] ) =
 		if (args.length == argc - 1) {
@@ -136,19 +145,19 @@ object UpdateNative extends Native( "update" ) {
 	}
 }
 
-object SingleOrNotFoundNative extends Native( "singleOrNotFound" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = {
-		val list = args.head.asInstanceOf[List[Any]]
-		
-		list.length match {
-			case 0 => throw new CrasNotFoundException
-			case 1 => list.head
-			case _ => throw new CrasErrorException( "more than one item in list" )
-		}
-	}
-}
+// object SingleOrNotFoundNative extends Native( "singleOrNotFound" ) {
+// 	val argc = 1
+// 	
+// 	def apply( args: List[Any], env: Env ) = {
+// 		val list = args.head.asInstanceOf[List[Any]]
+// 		
+// 		list.length match {
+// 			case 0 => throw new CrasNotFoundException
+// 			case 1 => list.head
+// 			case _ => throw new CrasErrorException( "more than one item in list" )
+// 		}
+// 	}
+// }
 
 object AtLeastOneOrNotFoundNative extends Native( "atLeastOneOrNotFound" ) {
 	val argc = 1
@@ -164,20 +173,7 @@ object AtLeastOneOrNotFoundNative extends Native( "atLeastOneOrNotFound" ) {
 	}
 }
 
-object IntNative extends Native( "int" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = args.head.asInstanceOf[String].toInt
-}
+// object EvalNative extends Native2( "eval", List(classOf[Env], classOf[String]) ) {
+// 	def apply( args: List[Any], env: Env ) = eval( args.head.asInstanceOf[String], env )
+// }
 
-object EvalNative extends Native( "eval" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = eval( args.head.asInstanceOf[String], env )
-}
-
-object PrintNative extends Native( "print" ) {
-	val argc = 1
-	
-	def apply( args: List[Any], env: Env ) = println( args.head )
-}
