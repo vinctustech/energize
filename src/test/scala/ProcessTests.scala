@@ -114,10 +114,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 			|
 			|route
-			|	GET   /f/:a/:b           OK( f(int(a), int(b)) )
-			|	GET   /plus/:a/:b        OK( a + b )
-			|	GET   /combine           OK( {"a": 1} + json )
-			|	GET   /eval              OK( eval(json.expr) )			# GET /eval {"expr": "3 + 4"}
+			|	GET   /f/:a/:b           OK( null, f(int(a), int(b)) )
+			|	GET   /plus/:a/:b        OK( null, a + b )
+			|	GET   /combine           OK( null, {"a": 1} + json )
+			|	GET   /eval              OK( null, eval(json.expr) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 

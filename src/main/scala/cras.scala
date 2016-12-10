@@ -52,7 +52,7 @@ package object cras {
 		val p = new CrasParser
 		val ast = p.parseFromString( expr, p.expressionStatement )
 		
-		eval( ast.expr, env )	
+		deref( ast.expr, env )	
 	}
 	
 	def replacer( env: Env ) = (m: Regex.Match) => env lookup m.group(1) toString
@@ -61,8 +61,8 @@ package object cras {
 		expr match {
 			case DotExpression( obj, field ) => evalm( obj, env )( field )
 			case BinaryExpression( left, op, func, right ) =>
-				val l = eval( left, env )
-				val r = eval( right, env )
+				val l = deref( left, env )
+				val r = deref( right, env )
 				
 				if (op == '+) {
 					if (l.isInstanceOf[String] || r.isInstanceOf[String])
@@ -77,46 +77,57 @@ package object cras {
 				else
 					Math( func, l, r )
 			case ApplyExpression( function, args ) =>
-				eval( function, env ) match {
+				deref( function, env ) match {
 					case f: Native =>
-						val list = args map (a => eval( a, env ))
+						val list = args map (a => deref( a, env ))
 						
 						if (list.length != f.argc)
 							sys.error( "wrong number of arguments for native function: " + f )
 							
 						f( list, env )
 					case f: Native2 =>
-						val list = args map (a => eval( a, env ))
+						val list = args map (a => deref( a, env ))
 						
 						if (f.applicable( list ))
 							f( list, env )
-						else
+						else {
+							println( list )
 							sys.error( "wrong number or type of arguments for native function: " + f )
+						}
 					case f: FunctionExpression =>
 						if (f.params.length != args.length)
 							sys.error( "wrong number of arguments for function: " + f )
 							
-						eval( f.expr, env add (f.params zip (args map (a => eval( a, env )))).toMap )
+						deref( f.expr, env add (f.params zip (args map (a => deref( a, env )))).toMap )
 				}
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env) )
 			case LiteralExpression( v ) => v
 			case VariableExpression( n ) => env lookup n
 			case ObjectExpression( pairs ) =>
-				Map( pairs map {case (k, v) => (k, eval(v, env))}: _* )
+				Map( pairs map {case (k, v) => (k, deref(v, env))}: _* )
 					case _ => sys.error( "error evaluating expression: " + expr )
 		}
 	
+	def deref( expr: ExpressionAST, env: Env ) =
+		eval( expr, env ) match {
+			case h: Variable => h.value
+			case v => v
+		}
+
+	def evalv( expr: ExpressionAST, env: Env ) =
+		eval( expr, env ).asInstanceOf[Variable]
+
 	def evals( expr: ExpressionAST, env: Env ) =
-		eval( expr, env ).asInstanceOf[String]
+		deref( expr, env ).asInstanceOf[String]
 	
 	def evali( expr: ExpressionAST, env: Env ) =
-		eval( expr, env ).asInstanceOf[String].toInt
+		deref( expr, env ).asInstanceOf[String].toInt
 	
 	def evalm( expr: ExpressionAST, env: Env )=
-		eval( expr, env ).asInstanceOf[Map[String, Any]]
+		deref( expr, env ).asInstanceOf[Map[String, Any]]
 	
 	def evalb( expr: ExpressionAST, env: Env ) =
-		eval( expr, env ).asInstanceOf[Boolean]
+		deref( expr, env ).asInstanceOf[Boolean]
 	
 	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, Any], ExpressionAST)] = {
 		if (routes eq null)
@@ -175,7 +186,7 @@ package object cras {
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
 						
-					defines(name) = eval( expr, env )
+					defines(name) = new Variable( deref( expr, env ) )
 				case FunctionDefinition( pos, name, function ) =>
 					if (defines contains name)
 						problem( pos, s"'$name' already defined" )
@@ -273,7 +284,7 @@ package object cras {
 		def interpretExpressions( ast: AST ): Unit =
 			ast match {
 				case SourceAST( list ) => traverseExpressions( list )
-				case ExpressionStatement( expr ) => eval( expr, env )
+				case ExpressionStatement( expr ) => deref( expr, env )
 				case _ =>
 			}
 			
@@ -291,4 +302,5 @@ package object cras {
 	
 	class CrasNotFoundException extends Exception
 	
+	class Variable( var value: Any )
 }
