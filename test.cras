@@ -2,3 +2,5 @@ resource test
 	a integer
 
 insert( test, {a: 123} )
+insert( test, {a: 123} )
+insert( test, {a: 123} )

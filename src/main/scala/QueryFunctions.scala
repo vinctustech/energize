@@ -38,5 +38,5 @@ object QueryFunctions {
 	
 	def list( env: Env, resource: Table ) = query( env, s"select * from ${resource.name};" )
 	
-	def find( env: Env, resource: Table, id: String ) = query( env, s"select * from ${resource.name} where id = '$id';" )
+	def find( env: Env, resource: Table, id: Long ) = query( env, s"select * from ${resource.name} where id = $id;" )
 }

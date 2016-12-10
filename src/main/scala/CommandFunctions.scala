@@ -4,7 +4,7 @@ package xyz.hyperreal.cras
 object CommandFunctions {
 	def command( env: Env, sql: String ) = env.statement.executeUpdate( sql )
 	
-	def delete( env: Env, resource: Table, id: String ) = command( env, s"delete from ${resource.name} where id = '$id';" )
+	def delete( env: Env, resource: Table, id: Long ) = command( env, s"delete from ${resource.name} where id = $id;" )
 	
 	def insert( env: Env, resource: Table, json: Map[String, Any] ) = {
 		val com = new StringBuilder( "insert into " )
@@ -29,11 +29,16 @@ object CommandFunctions {
 				com ++= ", "
 		}
 		
-		com += ')'				
+		com += ')'
 		env.statement.executeUpdate( com.toString )
+		
+		val g = env.statement.getGeneratedKeys
+		
+		g.next
+		g.getLong(1)
 	}
 	
-	def update( env: Env, resource: Table, json: Map[String, Any], id: Int, all: Boolean ) = {
+	def update( env: Env, resource: Table, json: Map[String, Any], id: Long, all: Boolean ) = {
 		if (all && json.keySet != (resource.columns.keySet - "id"))
 			throw new CrasErrorException( "update: missing column(s) in PUT request" )
 		else {

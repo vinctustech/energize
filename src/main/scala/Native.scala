@@ -61,7 +61,7 @@ object Native {
 
 abstract class Native( val name: String, val classes: List[Class[_]] ) extends ((List[Any], Env) => Any) {
 	val argc = classes.length
-			
+	
 	require( classes.head == classOf[Env], "first parameter should be of type Env: " + name )
 
 	def applicable( args: List[Any] ) =

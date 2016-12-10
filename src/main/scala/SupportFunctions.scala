@@ -7,6 +7,8 @@ object SupportFunctions {
 	
 	def int( env: Env, v: String ) = v.toInt
 	
+	def long( env: Env, v: String ) = v.toLong
+	
 	def str( env: Env, o: Any ) = o.toString
 	
 	def singleOrNotFound( env: Env, list: List[Any] ) =
