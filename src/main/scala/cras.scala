@@ -63,6 +63,9 @@ package object cras {
 	def eval( expr: ExpressionAST, env: Env ): Any =
 		expr match {
 			case DotExpression( obj, field ) => evalm( obj, env )( field )
+			case CompoundExpression( left, right ) =>
+				deref( left, env )
+				deref( right, env )
 			case BinaryExpression( left, op, func, right ) =>
 				val l = deref( left, env )
 				val r = deref( right, env )

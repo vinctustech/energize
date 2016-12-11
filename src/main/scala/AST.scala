@@ -71,7 +71,9 @@ case class BinaryExpression( left: ExpressionAST, op: Symbol, func: FunctionMap,
 case class UnaryExpression( op: Symbol, expr: ExpressionAST ) extends ExpressionAST
 
 case class DotExpression( obj: ExpressionAST, prop: String ) extends ExpressionAST
-	
+
+case class CompoundExpression( left: ExpressionAST, right: ExpressionAST ) extends ExpressionAST
+
 // trait PatternAST extends AST
 // 
 // case class VariablePattern( name: String ) extends PatternAST

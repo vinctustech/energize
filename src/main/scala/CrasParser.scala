@@ -69,7 +69,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				"def", "var", "val"
 				)
 			delimiters += (
-				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", "."
+				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", ".", ";"
 				)
 		}
 
@@ -182,8 +182,12 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			null
 	
 	lazy val expression: PackratParser[ExpressionAST] =
+		compoundExpression
+	
+	lazy val compoundExpression: PackratParser[ExpressionAST] =
+		(compoundExpression <~ ";") ~ additiveExpression ^^ {case left ~ right => CompoundExpression( left, right )} |
 		additiveExpression
-		
+	
 	lazy val additiveExpression: PackratParser[ExpressionAST] =
 		additiveExpression ~ ("+" | "-") ~ multiplicativeExpression ^^
 			{case l ~ o ~ r =>
@@ -258,6 +262,10 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 // 		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
 	
 	lazy val actionExpression: PackratParser[ExpressionAST] =
+		actionCompoundExpression
+		
+	lazy val actionCompoundExpression: PackratParser[ExpressionAST] =
+		(actionCompoundExpression <~ ";") ~ actionApplyExpression ^^ {case left ~ right => CompoundExpression( left, right )} |
 		actionApplyExpression
 		
 	lazy val actionApplyExpression: PackratParser[ExpressionAST] =
@@ -266,6 +274,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
 		ident ^^ (VariableExpression) |
+		"null" ^^^ (LiteralExpression( null )) |
 		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
 
 }

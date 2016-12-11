@@ -89,19 +89,23 @@ class Server( port: Int, env: Env ) {
 					
 				data match {
 					case Some( d ) =>
-						response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
-						
-						val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
-						
-						if (method == "HEAD") {
-							val empty =
-								new NByteArrayEntity( new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON ) {
-									override def getContentLength = entity.getContentLength
-								}
-								
-							response.setEntity( empty )
-						} else
-							response.setEntity( entity )
+						if (d eq null) {
+							response.setStatusCode( HttpStatus.SC_NO_CONTENT )
+						} else {
+							response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
+							
+							val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
+							
+							if (method == "HEAD") {
+								val empty =
+									new NByteArrayEntity( new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON ) {
+										override def getContentLength = entity.getContentLength
+									}
+									
+								response.setEntity( empty )
+							} else
+								response.setEntity( entity )
+						}
 					case None => 
 						response.setStatusCode( HttpStatus.SC_NOT_FOUND )
 						response.setEntity( new NStringEntity("<html><body><h1>404: Not Found</h1></body></html>", ContentType.TEXT_HTML) )
