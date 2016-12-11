@@ -15,6 +15,8 @@ object Native {
 				p =>
 					if (p.getName == "int")
 						classOf[java.lang.Integer]
+					else if (p.getName == "long")
+						classOf[java.lang.Long]
 					else
 						p} toList
 				
@@ -65,9 +67,9 @@ abstract class Native( val name: String, val classes: List[Class[_]] ) extends (
 	require( classes.head == classOf[Env], "first parameter should be of type Env: " + name )
 
 	def applicable( args: List[Any] ) =
-		if (args.length == argc - 1) {
+		if (args.length == argc - 1)
 			args zip classes.drop(1) forall {case (arg, cla) => arg == null || cla.isInstance( arg )}
-		} else
+		else
 			false
 			
 	def apply( args: List[Any], env: Env ): Any

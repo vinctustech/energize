@@ -23,7 +23,7 @@ object Builtins {
 		|route <base>/<resource>
 		|  GET    /:id    dataResult( "<resource>", singleOrNotFound(find(<resource>, long(id))) )
 		|  GET    /       dataResult( "<resource>", list(<resource>) )
-		|  POST   /       dataResult( "<resource>", singleOrNotFound(find(<resource>, insert(<resource>, json))) )
+		|  POST   /       dataResult( "<resource>", insert(<resource>, json) )
 		|  PATCH  /:id    dataResult( "<resource>", atLeastOneOrNotFound(update(<resource>, json, long(id), false)) )
 		|  PUT    /:id    dataResult( "<resource>", atLeastOneOrNotFound(update(<resource>, json, long(id), true)) )
 		|  DELETE /:id    dataResult( "<resource>", atLeastOneOrNotFound(delete(<resource>, long(id))) )

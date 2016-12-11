@@ -86,10 +86,8 @@ package object cras {
 						
 						if (f.applicable( list ))
 							f( list, env )
-						else {
-							println( list map (v => v.getClass) )
+						else
 							sys.error( "wrong number or type of arguments for native function: " + f )
-						}
 					case f: FunctionExpression =>
 						if (f.params.length != args.length)
 							sys.error( "wrong number of arguments for function: " + f )
