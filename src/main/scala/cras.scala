@@ -41,8 +41,9 @@ package object cras {
 							urivars
 						else
 							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))
-							
-					Some( DefaultJSONWriter.toString(evalm( expr, env add reqvars )) )
+					val res = evalm( expr, env add reqvars )
+					
+					Some( if (res eq null) null else DefaultJSONWriter.toString(res) )
 				} catch {
 					case e: CrasErrorException =>
 						Some( DefaultJSONWriter.toString(env.variables("errorResult").asInstanceOf[Native](List(e.getMessage), env).asInstanceOf[Map[String, Any]]) )

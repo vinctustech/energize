@@ -47,7 +47,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-// 		process( "GET", "/todo/1", null, env ) shouldBe None
+ 		process( "GET", "/todo/1", null, env ) shouldBe None
  		process( "GET", "/tod", null, env ) shouldBe None
 		c.close
 	}
@@ -84,26 +84,20 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-// 		process( "GET", "/api/v1/todo/1", null, env ) shouldBe
-// 			Some( """
-// 			|{
-// 			|  "status": "ok",
-// 			|  "data": {
-// 			|    "id": 1,
-// 			|    "name": "do something",
-// 			|    "description": null,
-// 			|    "status": 1
-// 			|  }
-// 			|}
-// 			""".trim.stripMargin )
-		process( "DELETE", "/api/v1/todo/1", null, env ) shouldBe
+		process( "GET", "/api/v1/todo/1", null, env ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
-			|  "data": 1
+			|  "data": {
+			|    "id": 1,
+			|    "name": "do something",
+			|    "description": null,
+			|    "status": 1
+			|  }
 			|}
 			""".trim.stripMargin )
-// 		process( "GET", "/api/v1/todo/1", null, env ) shouldBe None
+		process( "DELETE", "/api/v1/todo/1", null, env ) shouldBe Some( null )
+ 		process( "GET", "/api/v1/todo/1", null, env ) shouldBe None
 		c.close
 	}
 	

@@ -6,7 +6,7 @@ import java.io.File
 object ServerMain extends App {
 	
 	if (args.length < 2) {
-		println( "usage: java -cp cras-0.1.jar xyz.hyperreal.cras.ServerMain <db> <config>" )
+		println( "usage: java -cp cras-0.3.jar xyz.hyperreal.cras.ServerMain <db> <config>" )
 		sys.exit( 1 )
 	}
 	
