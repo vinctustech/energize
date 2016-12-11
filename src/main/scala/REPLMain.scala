@@ -100,10 +100,11 @@ object REPLMain extends App {
 							case NameURISegment( name ) =>
 								pathbuf += '/'
 								pathbuf ++= name
-							case ParameterURISegment( parm ) =>
+							case ParameterURISegment( parm, typ ) =>
 								pathbuf += '/'
-								pathbuf += ':'
 								pathbuf ++= parm
+								pathbuf += ':'
+								pathbuf ++= typ
 						}
 						
 						println( method + " " + pathbuf + " " + action )

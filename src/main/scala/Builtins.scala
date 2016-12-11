@@ -21,11 +21,11 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET    /:id    dataResult( "<resource>", singleOrNotFound(find(<resource>, long(id))) )
-		|  GET    /       dataResult( "<resource>", list(<resource>) )
-		|  POST   /       dataResult( "<resource>", insert(<resource>, json) )
-		|  PATCH  /:id    atLeastOneOrNotFound( update(<resource>, json, long(id), false) ); null
-		|  PUT    /:id    atLeastOneOrNotFound( update(<resource>, json, long(id), true) ); null
-		|  DELETE /:id    atLeastOneOrNotFound( delete(<resource>, long(id)) ); null
+		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(find(<resource>, id)) )
+		|  GET     /         dataResult( "<resource>", list(<resource>) )
+		|  POST    /         dataResult( "<resource>", insert(<resource>, json) )
+		|  PATCH   /id:long  atLeastOneOrNotFound( update(<resource>, json, id, false) ); null
+		|  PUT     /id:long  atLeastOneOrNotFound( update(<resource>, json, id, true) ); null
+		|  DELETE  /id:long  atLeastOneOrNotFound( delete(<resource>, id) ); null
 		""".stripMargin
 }

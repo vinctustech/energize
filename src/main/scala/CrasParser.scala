@@ -65,8 +65,9 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
-				"resource", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date", "GET", "POST", "PUT", "PATCH", "DELETE",
-				"def", "var", "val"
+				"resource", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
+				"GET", "POST", "PUT", "PATCH", "DELETE",
+				"def", "var", "val", "long"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", ".", ";"
@@ -167,9 +168,16 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"/" ~> rep1sep(uriSegment, "/") ^^ (URIPath)
 	
 	lazy val uriSegment: PackratParser[URISegment] =
-		ident ^^ (NameURISegment) |
-		":" ~> ident ^^ (ParameterURISegment)
+		ident ~ (":" ~> opt(segmentType)) ^^ {
+			case n ~ Some( t ) => ParameterURISegment( n, t )
+			case n ~ None => ParameterURISegment( n, "string" )} |
+		ident ^^ (NameURISegment)
 	
+	lazy val segmentType: PackratParser[String] =
+		"string" |
+		"integer" |
+		"long"
+		
 	lazy val nameSegment: PackratParser[NameURISegment] =
 		ident ^^ (NameURISegment)
 		

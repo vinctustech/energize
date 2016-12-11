@@ -48,7 +48,7 @@ trait URISegment
 
 case class NameURISegment( segment: String ) extends URISegment
 
-case class ParameterURISegment( name: String ) extends URISegment
+case class ParameterURISegment( name: String, typ: String ) extends URISegment
 	
 
 trait ExpressionAST extends AST

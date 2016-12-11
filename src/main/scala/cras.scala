@@ -146,16 +146,23 @@ package object cras {
 					l.tail
 			}
 		val len = segments.length
-		val urivars = new HashMap[String, String]
+		val urivars = new HashMap[String, Any]
 		
 		for (Route( rmethod, uri, action) <- routes) {
 			urivars.clear
 			
 			if (len == uri.length && method.toUpperCase == rmethod && uri.zip( segments ).forall {
 				case (NameURISegment( route ), request) => route == request
-				case (ParameterURISegment( name ), request) =>
+				case (ParameterURISegment( name, "string" ), request) =>
 					urivars(name) = request
 					true
+				case (ParameterURISegment( name, "integer" ), request) =>
+					urivars(name) = request.toInt
+					true
+				case (ParameterURISegment( name, "long" ), request) =>
+					urivars(name) = request.toLong
+					true
+				case _ => false
 			})
 				return Some( (urivars.toMap, action) )
 		}
