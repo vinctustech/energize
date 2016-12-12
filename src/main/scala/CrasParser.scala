@@ -132,9 +132,9 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			case p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns ) )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
-		pos ~ ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
-			case p ~ name ~ typ ~ modifiers =>
-				TableColumn( p.pos, modifiers, typ, name )}
+		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
+			case name ~ typ ~ modifiers =>
+				TableColumn( modifiers, typ, name )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
 		"string" ^^^ StringType |
@@ -144,7 +144,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		ident ^^ (TableType)
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
-		pos ~ ("unique" | "required" | "optional" | "secret") ^^ {case p ~ m => ColumnTypeModifier( m, p.pos )}
+		positioned( ("unique" | "required" | "optional" | "secret") ^^ {case m => ColumnTypeModifier( m )} )
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
 		"route" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {

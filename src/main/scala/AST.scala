@@ -16,7 +16,7 @@ trait StatementAST extends AST
 
 case class TableDefinition( pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn] ) extends StatementAST
 
-case class TableColumn( pos: Position, modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String )
+case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String ) extends Positional
 
 
 trait ColumnType
@@ -32,7 +32,7 @@ case object DateType extends ColumnType
 case class TableType( table: String ) extends ColumnType
 
 
-case class ColumnTypeModifier( modifier: String, pos: Position )
+case class ColumnTypeModifier( modifier: String ) extends Positional
 
 
 case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST

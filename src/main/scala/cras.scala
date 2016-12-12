@@ -228,9 +228,9 @@ package object cras {
 					create ++= "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
 					create ++=
 						columns map {
-							case TableColumn( pos, modifiers, typ, cname ) =>
+							case col@TableColumn( modifiers, typ, cname ) =>
 								if (cols contains cname.toUpperCase)
-									problem( pos, s"column '$cname' defined twice" )
+									problem( col.pos, s"column '$cname' defined twice" )
 									
 								val t =
 									typ match {
@@ -247,34 +247,34 @@ package object cras {
 								var m = ""
 								
 								modifiers foreach {
-									case ColumnTypeModifier( "unique", pos ) =>
+									case tm@ColumnTypeModifier( "unique" ) =>
 										if (unique)
-											problem( pos, "modifier 'unique' encountered more than once" )
+											problem( tm.pos, "modifier 'unique' encountered more than once" )
 											
 										unique = true
 										m += " UNIQUE"
-									case ColumnTypeModifier( "required", pos ) =>
+									case tm@ColumnTypeModifier( "required" ) =>
 										if (required)
-											problem( pos, "modifier 'required' encountered more than once" )
+											problem( tm.pos, "modifier 'required' encountered more than once" )
 											
 										if (optional)
-											problem( pos, "modifier 'required' encountered along with 'optional'" )
+											problem( tm.pos, "modifier 'required' encountered along with 'optional'" )
 											
 										m += " NOT NULL"
 										required = true
-									case ColumnTypeModifier( "optional", pos ) =>
+									case tm@ColumnTypeModifier( "optional" ) =>
 										if (optional)
-											problem( pos, "modifier 'optional' encountered more than once" )
+											problem( tm.pos, "modifier 'optional' encountered more than once" )
 											
 										if (required)
-											problem( pos, "modifier 'optional' encountered along with 'required'" )
+											problem( tm.pos, "modifier 'optional' encountered along with 'required'" )
 											
 										optional = true
-									case ColumnTypeModifier( "secret", pos ) =>
+									case tm@ColumnTypeModifier( "secret" ) =>
 										if (secret)
-											problem( pos, "modifier 'secret' encountered more than once" )
+											problem( tm.pos, "modifier 'secret' encountered more than once" )
 											
-										secret = true	
+										secret = true
 								}
 								
 								cols(cname.toUpperCase) = Column( cname, typ, secret, required )
