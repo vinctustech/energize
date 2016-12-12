@@ -148,20 +148,35 @@ package object cras {
 		val len = segments.length
 		val urivars = new HashMap[String, Any]
 		
+		def integer( s: String ) = {
+			if (s forall (c => c.isDigit))
+				Some( BigInt(s) )
+			else
+				None
+		}
+		
 		for (Route( rmethod, uri, action) <- routes) {
 			urivars.clear
 			
 			if (len == uri.length && method.toUpperCase == rmethod && uri.zip( segments ).forall {
-				case (NameURISegment( route ), request) => route == request
-				case (ParameterURISegment( name, "string" ), request) =>
-					urivars(name) = request
+				case (NameURISegment( route ), segment) => route == segment
+				case (ParameterURISegment( name, "string" ), segment) =>
+					urivars(name) = segment
 					true
-				case (ParameterURISegment( name, "integer" ), request) =>
-					urivars(name) = request.toInt
-					true
-				case (ParameterURISegment( name, "long" ), request) =>
-					urivars(name) = request.toLong
-					true
+				case (ParameterURISegment( name, "integer" ), segment) =>
+					integer( segment ) match {
+						case Some( a ) if a.isValidInt =>
+							urivars(name) = a.intValue
+							true
+						case _ => false
+					}
+				case (ParameterURISegment( name, "long" ), segment) =>
+					integer( segment ) match {
+						case Some( a ) if a.isValidLong =>
+							urivars(name) = a.longValue
+							true
+						case _ => false
+					}
 				case _ => false
 			})
 				return Some( (urivars.toMap, action) )

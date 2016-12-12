@@ -4,5 +4,3 @@ resource test
 insert( test, {a: 123} )
 insert( test, {a: 123} )
 insert( test, {a: 123} )
-
-print( print("wow") )
