@@ -1,6 +1,6 @@
 resource test
 	a integer
 
-insert( test, {a: 123} )
-insert( test, {a: 123} )
-insert( test, {a: 123} )
+insert( test, {a: 3} )
+insert( test, {a: 4} )
+insert( test, {a: 5} )

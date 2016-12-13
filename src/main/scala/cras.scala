@@ -223,64 +223,47 @@ package object cras {
 					
 					val cols = new LinkedHashMap[String, Column]
 					
-					create ++= "CREATE TABLE "
-					create ++= name
-					create ++= "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-					create ++=
-						columns map {
-							case col@TableColumn( modifiers, typ, cname ) =>
-								if (cols contains cname.toUpperCase)
-									problem( col.pos, s"column '$cname' defined twice" )
-									
-								val t =
-									typ match {
-										case StringType => "VARCHAR(255)"
-										case IntegerType => "INT"
-										case UUIDType => "UUID"
-										case DateType => "DATE"
-										case TableType( _ ) => "INT"
-									}
-								var secret = false
-								var required = false
-								var optional = false
-								var unique = false
-								var m = ""
+					columns foreach {
+						case col@TableColumn( modifiers, typ, cname ) =>
+							if (cols contains cname.toUpperCase)
+								problem( col.pos, s"column '$cname' defined twice" )
 								
-								modifiers foreach {
-									case tm@ColumnTypeModifier( "unique" ) =>
-										if (unique)
-											problem( tm.pos, "modifier 'unique' encountered more than once" )
-											
-										unique = true
-										m += " UNIQUE"
-									case tm@ColumnTypeModifier( "required" ) =>
-										if (required)
-											problem( tm.pos, "modifier 'required' encountered more than once" )
-											
-										if (optional)
-											problem( tm.pos, "modifier 'required' encountered along with 'optional'" )
-											
-										m += " NOT NULL"
-										required = true
-									case tm@ColumnTypeModifier( "optional" ) =>
-										if (optional)
-											problem( tm.pos, "modifier 'optional' encountered more than once" )
-											
-										if (required)
-											problem( tm.pos, "modifier 'optional' encountered along with 'required'" )
-											
-										optional = true
-									case tm@ColumnTypeModifier( "secret" ) =>
-										if (secret)
-											problem( tm.pos, "modifier 'secret' encountered more than once" )
-											
-										secret = true
-								}
-								
-								cols(cname.toUpperCase) = Column( cname, typ, secret, required )
-								cname + " " + t + m
-						} mkString ", "
-					create ++= ");\n"
+							var secret = false
+							var required = false
+							var optional = false
+							var unique = false
+							
+							modifiers foreach {
+								case tm@ColumnTypeModifier( "unique" ) =>
+									if (unique)
+										problem( tm.pos, "modifier 'unique' encountered more than once" )
+										
+									unique = true
+								case tm@ColumnTypeModifier( "required" ) =>
+									if (required)
+										problem( tm.pos, "modifier 'required' encountered more than once" )
+										
+									if (optional)
+										problem( tm.pos, "modifier 'required' encountered along with 'optional'" )
+										
+									required = true
+								case tm@ColumnTypeModifier( "optional" ) =>
+									if (optional)
+										problem( tm.pos, "modifier 'optional' encountered more than once" )
+										
+									if (required)
+										problem( tm.pos, "modifier 'optional' encountered along with 'required'" )
+										
+									optional = true
+								case tm@ColumnTypeModifier( "secret" ) =>
+									if (secret)
+										problem( tm.pos, "modifier 'secret' encountered more than once" )
+										
+									secret = true
+							}
+							
+							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique )
+					}
 		
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
@@ -314,7 +297,38 @@ package object cras {
 			}
 			
 		interpretDefinitions( ast )	
-			
+		
+		tables.values foreach {
+			case Table( name, names, columns ) =>
+				create ++= "CREATE TABLE "
+				create ++= name
+				create ++= "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+				
+				for (cname <- names) {
+					val Column( _, typ, secret, required, unique ) = columns(cname.toUpperCase)
+					
+					create ++= ", "
+					create ++= cname
+					create += ' '					
+					create ++=
+						(typ match {
+							case StringType => "VARCHAR(255)"
+							case IntegerType => "INT"
+							case UUIDType => "UUID"
+							case DateType => "DATE"
+							case TableType( _ ) => "INT"
+						})
+						
+					if (required)
+						create ++= " NOT NULL"
+						
+					if (unique)
+						create ++= " UNIQUE"
+				}
+
+				create ++= ");\n"
+		}
+		
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
 			statement.execute( create.toString )
 		}
