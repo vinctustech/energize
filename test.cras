@@ -1,6 +1,6 @@
-resource test
-	a integer
+resource users
+	name string unique required
+	role roles required
 
-insert( test, {a: 3} )
-insert( test, {a: 4} )
-insert( test, {a: 5} )
+resource roles
+	type string unique required

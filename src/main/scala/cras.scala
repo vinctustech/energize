@@ -302,7 +302,7 @@ package object cras {
 			case Table( name, names, columns ) =>
 				create ++= "CREATE TABLE "
 				create ++= name
-				create ++= "(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+				create ++= "(id IDENTITY PRIMARY KEY"
 				
 				for (cname <- names) {
 					val Column( _, typ, secret, required, unique ) = columns(cname.toUpperCase)
@@ -330,6 +330,7 @@ package object cras {
 		}
 		
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
+			print( create )
 			statement.execute( create.toString )
 		}
 		

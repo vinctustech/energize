@@ -81,8 +81,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	def parseFromString[T <: AST]( src: String, grammar: PackratParser[T] ) = {
 		parse( grammar, new CharSequenceReader(src) ) match {
 			case Success( tree, _ ) => tree
-			case NoSuccess( error, rest ) =>
-				problem( rest.pos, error )
+			case NoSuccess( error, rest ) => problem( rest.pos, error )
 		}
 	}
 
