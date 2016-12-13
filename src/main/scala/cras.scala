@@ -333,7 +333,7 @@ package object cras {
 			statement.execute( create.toString )
 		}
 		
-		interpretExpressions( ast )	
+		interpretExpressions( ast )
 		env
 	}
 	
