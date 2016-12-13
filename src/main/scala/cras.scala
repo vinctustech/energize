@@ -222,6 +222,7 @@ package object cras {
 						problem( pos, s"'$name' already defined" )
 					
 					val cols = new LinkedHashMap[String, Column]
+					var fk = false
 					
 					columns foreach {
 						case col@TableColumn( modifiers, typ, cname ) =>
@@ -262,10 +263,13 @@ package object cras {
 									secret = true
 							}
 							
+							if (typ.isInstanceOf[TableType])
+								fk = true
+								
 							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique )
 					}
 		
-					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
+					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, fk )
 					
 					if (bases isEmpty) {
 						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
@@ -298,11 +302,11 @@ package object cras {
 			
 		interpretDefinitions( ast )	
 		
-		tables.values foreach {
-			case Table( name, names, columns ) =>
+		tables.values.filterNot (_.fk) ++ tables.values.filter (_.fk) foreach {
+			case Table( name, names, columns, fk ) =>
 				create ++= "CREATE TABLE "
 				create ++= name
-				create ++= "(id IDENTITY PRIMARY KEY"
+				create ++= "(id IDENTITY NOT NULL PRIMARY KEY"
 				
 				for (cname <- names) {
 					val Column( _, typ, secret, required, unique ) = columns(cname.toUpperCase)
@@ -316,7 +320,7 @@ package object cras {
 							case IntegerType => "INT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
-							case TableType( _ ) => "INT"
+							case TableType( _ ) => "BIGINT"
 						})
 						
 					if (required)
@@ -326,6 +330,16 @@ package object cras {
 						create ++= " UNIQUE"
 				}
 
+				columns.values foreach {
+					case Column( fk, TableType(ref), _, _, _ ) =>
+						create ++= ", FOREIGN KEY ("
+						create ++= fk
+						create ++= ") REFERENCES "
+						create ++= ref
+						create ++= "(id)"
+					case _ =>
+				}
+				
 				create ++= ");\n"
 		}
 		
