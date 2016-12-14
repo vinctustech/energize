@@ -1,6 +1,5 @@
 resource users
 	name string unique required
-	role roles required
 
 resource roles
 	type string unique required
