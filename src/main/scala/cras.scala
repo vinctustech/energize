@@ -222,7 +222,6 @@ package object cras {
 						problem( pos, s"'$name' already defined" )
 					
 					val cols = new LinkedHashMap[String, Column]
-					var fk = false
 					
 					columns foreach {
 						case col@TableColumn( modifiers, typ, cname ) =>
@@ -262,14 +261,11 @@ package object cras {
 										
 									secret = true
 							}
-							
-							if (typ.isInstanceOf[TableType])
-								fk = true
 								
 							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique )
 					}
 		
-					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, fk )
+					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
 					if (bases isEmpty) {
 						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
@@ -302,8 +298,14 @@ package object cras {
 			
 		interpretDefinitions( ast )	
 		
-		tables.values.filterNot (_.fk) ++ tables.values.filter (_.fk) foreach {
-			case Table( name, names, columns, fk ) =>
+		val sorted =
+			TableSorter.sort( tables.values ) match {
+				case None => sys.error( "resources cannot be topologically ordered" )
+				case Some( s ) => s
+			}
+		
+		sorted foreach {
+			case Table( name, names, columns ) =>
 				create ++= "CREATE TABLE "
 				create ++= name
 				create ++= "(id IDENTITY NOT NULL PRIMARY KEY"
@@ -344,7 +346,7 @@ package object cras {
 		}
 		
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
-			print( create )
+//			print( create )
 			statement.execute( create.toString )
 		}
 		
