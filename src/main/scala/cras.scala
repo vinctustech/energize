@@ -193,7 +193,6 @@ package object cras {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
-		val create = new StringBuilder
 		
 		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 		
@@ -303,51 +302,10 @@ package object cras {
 				case None => sys.error( "resources cannot be topologically ordered" )
 				case Some( s ) => s
 			}
-		
-		sorted foreach {
-			case Table( name, names, columns ) =>
-				create ++= "CREATE TABLE "
-				create ++= name
-				create ++= "(id IDENTITY NOT NULL PRIMARY KEY"
 				
-				for (cname <- names) {
-					val Column( _, typ, secret, required, unique ) = columns(cname.toUpperCase)
-					
-					create ++= ", "
-					create ++= cname
-					create += ' '					
-					create ++=
-						(typ match {
-							case StringType => "VARCHAR(255)"
-							case IntegerType => "INT"
-							case UUIDType => "UUID"
-							case DateType => "DATE"
-							case TableType( _ ) => "BIGINT"
-						})
-						
-					if (required)
-						create ++= " NOT NULL"
-						
-					if (unique)
-						create ++= " UNIQUE"
-				}
-
-				columns.values foreach {
-					case Column( fk, TableType(ref), _, _, _ ) =>
-						create ++= ", FOREIGN KEY ("
-						create ++= fk
-						create ++= ") REFERENCES "
-						create ++= ref
-						create ++= "(id)"
-					case _ =>
-				}
-				
-				create ++= ");\n"
-		}
-		
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
 //			print( create )
-			statement.execute( create.toString )
+			statement.execute( H2.create(sorted) )
 		}
 		
 		interpretExpressions( ast )
