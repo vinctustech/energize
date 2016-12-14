@@ -302,10 +302,10 @@ package object cras {
 				case None => sys.error( "resources cannot be topologically ordered" )
 				case Some( s ) => s
 			}
-				
+			
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
 //			print( create )
-			statement.execute( H2.create(sorted) )
+			statement.execute( H2Database.create(sorted) )
 		}
 		
 		interpretExpressions( ast )

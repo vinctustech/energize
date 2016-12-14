@@ -1,7 +1,7 @@
 package xyz.hyperreal.cras
 
 
-object H2 extends Database {
+object H2Database extends Database {
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 		
@@ -48,6 +48,12 @@ object H2 extends Database {
 		
 		buf.toString
 	}
+}
+
+object Database {
+	private val supported = Map[String, Database]( "H2" -> H2Database )
+	
+	def apply( name: String ) = supported get name
 }
 
 abstract class Database {
