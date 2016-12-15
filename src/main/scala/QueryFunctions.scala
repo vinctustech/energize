@@ -36,21 +36,26 @@ object QueryFunctions {
 			Map( attr: _* )
 		}
 		
-		while (res.next) {
+		while (res.next)
 			list += mkmap( resource )
-		}
 		
 		list.toList
 	}
 	
-	def list( env: Env, resource: Table ) = {
+	def list( env: Env, resource: Table ) =
 		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
 			case None =>
 				query( env, resource, s"SELECT * FROM ${resource.name}" )
 			case Some( Column(col, TableType(reft), _, _, _) ) =>
 				query( env, resource, s"SELECT * FROM ${resource.name} INNER JOIN $reft ON ${resource.name}.$col = $reft.id" )
 		}
-	}
 	
-	def find( env: Env, resource: Table, id: Long ) = query( env, resource, s"SELECT * FROM ${resource.name} WHERE id = $id" )
+	def find( env: Env, resource: Table, id: Long ) =
+		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
+			case None =>
+				query( env, resource, s"SELECT * FROM ${resource.name} WHERE id = $id" )
+			case Some( Column(col, TableType(reft), _, _, _) ) =>
+				query( env, resource,
+					s"SELECT * FROM ${resource.name} INNER JOIN $reft ON ${resource.name}.$col = $reft.id WHERE ${resource.name}.id = $id" )
+		}
 }
