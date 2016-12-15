@@ -10,7 +10,7 @@ object Native {
 		val cla = f.getClass
 		val methods = cla.getDeclaredMethods
 
-		(for (m <- methods if !m.getName.startsWith("$")) yield {
+		(for (m <- methods if !m.getName.contains('$')) yield {
 			val classes = m.getParameterTypes map {
 				p =>
 					if (p.getName == "int")
