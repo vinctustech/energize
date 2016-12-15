@@ -42,7 +42,7 @@ object CommandFunctions {
 			com ++= " WHERE "
 			com ++=
 				(env.tables(reft.toUpperCase).columns.values.find( c => c.unique ) match {
-					case None => sys.error( "no unique column" )
+					case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
 					case Some( c ) => c.name
 				})
 			com ++= " = '"

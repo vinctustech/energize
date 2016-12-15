@@ -74,7 +74,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"post/get one item/delete" in {
+	"post/get/delete" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
@@ -226,7 +226,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"post/get one item/delete (many-to-one)" in {
+	"post/get/delete (many-to-one)" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
