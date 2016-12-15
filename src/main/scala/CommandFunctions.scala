@@ -4,32 +4,54 @@ package xyz.hyperreal.cras
 object CommandFunctions {
 	def command( env: Env, sql: String ) = env.statement.executeUpdate( sql )
 	
-	def delete( env: Env, resource: Table, id: Long ) = command( env, s"delete from ${resource.name} where id = $id;" )
+	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 	
-	def insert( env: Env, resource: Table, json: Map[String, Any] ) = {
-		val com = new StringBuilder( "insert into " )
-		val last = resource.names.last
+	def insert( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
+		val com = new StringBuilder( "INSERT INTO " )
 		
 		com ++= resource.name
-		com ++= resource.names.mkString( "(", ", ", ") values(" )
+		com ++= resource.names.mkString( " (", ", ", ") " )
 		
-		for (c <- resource.names) {
-			json get c match {
-				case None => com ++= "null"
-				case Some( v ) =>
-					if (resource.columns(c.toUpperCase).typ == StringType) {
-						com += '\''
-						com ++= String.valueOf( v )
-						com += '\''
-					} else
-						com ++= String.valueOf( v )
-			}
-			
-			if (c != last)
-				com ++= ", "
-		}
+		var sel = false
+		var reft: String = null
+		var refv: AnyRef = null
+		val values =
+			(for (c <- resource.names)
+				yield {
+					json get c match {
+						case None => "NULL"
+						case Some( v ) =>
+							resource.columns(c.toUpperCase).typ match {
+								case TableType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+									sel = true
+									reft = t
+									refv = v
+									"id"
+								case StringType => '\'' + String.valueOf( v ) + '\''
+								case _ => String.valueOf( v )
+							}
+					}
+				}) mkString ", "
 		
-		com += ')'
+		com ++= (if (sel) "SELECT " else "VALUES (")
+		com ++= values
+		
+		if (sel) {
+			com ++= " FROM "
+			com ++= reft
+			com ++= " WHERE "
+			com ++=
+				(env.tables(reft.toUpperCase).columns.values.find( c => c.unique ) match {
+					case None => sys.error( "no unique column" )
+					case Some( c ) => c.name
+				})
+			com ++= " = '"
+			com ++= String.valueOf( refv )
+			com += '\''
+		}	else
+			com += ')'
+		
+//		println( com )
 		env.statement.executeUpdate( com.toString )
 		
 		val g = env.statement.getGeneratedKeys
