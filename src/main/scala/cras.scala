@@ -211,9 +211,9 @@ package object cras {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = deref( expr, env )
-				case FunctionDefinition( pos, name, function ) =>
+				case d@FunctionDefinition( name, function ) =>
 					if (defines contains name)
-						problem( pos, s"'$name' already defined" )
+						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
 				case TableDefinition( pos, name, bases, columns ) =>
@@ -231,8 +231,14 @@ package object cras {
 							var required = false
 							var optional = false
 							var unique = false
+							var indexed = false
 							
 							modifiers foreach {
+								case tm@ColumnTypeModifier( "indexed" ) =>
+									if (indexed)
+										problem( tm.pos, "modifier 'indexed' encountered more than once" )
+										
+									indexed = true
 								case tm@ColumnTypeModifier( "unique" ) =>
 									if (unique)
 										problem( tm.pos, "modifier 'unique' encountered more than once" )
@@ -260,14 +266,15 @@ package object cras {
 										
 									secret = true
 							}
-								
-							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique )
+							
+							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique, indexed )
 					}
 		
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
 					if (bases isEmpty) {
-						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
+						val Env( _, r, _, _, _ ) =
+							configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
 							
 						routes ++= r
 					} else {
@@ -304,7 +311,6 @@ package object cras {
 			}
 			
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
-//			print( create )
 			statement.execute( H2Database.create(sorted) )
 		}
 		

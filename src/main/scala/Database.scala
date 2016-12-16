@@ -12,7 +12,7 @@ object H2Database extends Database {
 				buf ++= "(id IDENTITY NOT NULL PRIMARY KEY"
 				
 				for (cname <- names) {
-					val Column( _, typ, secret, required, unique ) = columns(cname.toUpperCase)
+					val Column( _, typ, secret, required, unique, indexed ) = columns(cname.toUpperCase)
 					
 					buf ++= ", "
 					buf ++= cname
@@ -31,10 +31,13 @@ object H2Database extends Database {
 						
 					if (unique)
 						buf ++= " UNIQUE"
+						
+					if (indexed)
+						buf ++= " INDEXED"
 				}
 
 				columns.values foreach {
-					case Column( fk, TableType(ref), _, _, _ ) =>
+					case Column( fk, TableType(ref), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "

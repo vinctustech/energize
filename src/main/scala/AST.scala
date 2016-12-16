@@ -84,7 +84,7 @@ case class CompoundExpression( left: ExpressionAST, right: ExpressionAST ) exten
 
 
 // case class FunctionDefinition( pos: Position, name: String, function: FunctionPart ) extends StatementAST
-case class FunctionDefinition( pos: Position, name: String, function: FunctionExpression ) extends StatementAST
+case class FunctionDefinition( name: String, function: FunctionExpression ) extends StatementAST with Positional
 
 case class VariableDefinition( name: String, value: ExpressionAST ) extends StatementAST with Positional
 
