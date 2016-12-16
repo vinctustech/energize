@@ -8,7 +8,8 @@ object Main extends App {
 	val (c, s) = dbconnect( "test", true )
 	val env = configure( io.Source.fromFile("test.cras"), c, s )
 	
- 		println( process("GET", "/users", null, env) )
+	println( process("PATCH", "/users/1", """ {"role": "super"} """, env) )
+	println( process("GET", "/users", null, env) )
 // 		println( process("GET", "/roles", null, env) )
 	
 	c.close

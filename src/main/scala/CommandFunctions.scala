@@ -60,23 +60,36 @@ object CommandFunctions {
 		g.getLong(1)
 	}
 	
-	def update( env: Env, resource: Table, json: Map[String, Any], id: Long, all: Boolean ) = {
+	def update( env: Env, resource: Table, json: Map[String, Any], id: Long, all: Boolean ) =
 		if (all && json.keySet != (resource.columns.keySet - "id"))
 			throw new CrasErrorException( "update: missing column(s) in PUT request" )
 		else {
-			val com = new StringBuilder( "update " )
-			val last = resource.names.last
+			val com = new StringBuilder( "UPDATE " )
+			var typ: ColumnType = null
 			
 			com ++= resource.name
-			com ++= " set "
+			com ++= " SET "
 			com ++=
 				json.toList map {
-					case (k, v) if resource.columns(k.toUpperCase).typ == StringType => k + "='" + String.valueOf( v ) + "'"
-					case (k, v) => k + "=" + String.valueOf( v )
+					case (k, v) if resource.columns(k.toUpperCase).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
+					case (k, v) if {typ = resource.columns(k.toUpperCase).typ; typ.isInstanceOf[TableType]} =>
+						if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
+							k + " = " + String.valueOf( v )
+						else {
+							val reft = typ.asInstanceOf[TableType].table
+							val refc =
+								(env.tables(reft.toUpperCase).columns.values.find( c => c.unique ) match {
+									case None => throw new CrasErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
+									case Some( c ) => c.name
+								})
+
+							k + s" = SELECT id FROM $reft WHERE $refc = '$v'"
+						}
+					case (k, v) => k + " = " + String.valueOf( v )
 				} mkString ", "
-			com ++= " where id="
+			com ++= " WHERE id = "
 			com ++= id.toString
+			println( com )
 			env.statement.executeUpdate( com.toString )
 		}
-	}
 }

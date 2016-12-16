@@ -9,4 +9,4 @@ insert( roles, {type: "normal"} )
 insert( roles, {type: "admin"} )
 insert( roles, {type: "super"} )
 
-insert( users, {name: "asdf", role: "admin"} )
+insert( users, {name: "joe", role: "admin"} )

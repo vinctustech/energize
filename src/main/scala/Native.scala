@@ -11,14 +11,16 @@ object Native {
 		val methods = cla.getDeclaredMethods
 
 		(for (m <- methods if !m.getName.contains('$')) yield {
-			val classes = m.getParameterTypes map {
-				p =>
-					if (p.getName == "int")
-						classOf[java.lang.Integer]
-					else if (p.getName == "long")
-						classOf[java.lang.Long]
-					else
-						p} toList
+			val classes =
+				m.getParameterTypes map {
+					p =>
+						p.getName match {
+							case "int" => classOf[java.lang.Integer]
+							case "long" => classOf[java.lang.Long]
+							case "boolean" => classOf[java.lang.Boolean]
+							case _ => p
+						}
+				} toList
 				
 			new Native( m.getName, classes ) {
 				def apply( args: List[Any], env: Env ) =
