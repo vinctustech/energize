@@ -5,6 +5,7 @@ resource users
 resource roles
 	type string unique required
 
+
 insert( roles, {type: "normal"} )
 insert( roles, {type: "admin"} )
 insert( roles, {type: "super"} )

@@ -77,7 +77,7 @@ package object cras {
 				if (op == '+) {
 					if (l.isInstanceOf[String] || r.isInstanceOf[String])
 						String.valueOf( l ) + String.valueOf( r )
-					else if (l.isInstanceOf[Map[String, Any]] && r.isInstanceOf[Map[String, Any]])
+					else if (l.isInstanceOf[Map[_, _]] && r.isInstanceOf[Map[_, _]])
 						l.asInstanceOf[Map[String, Any]] ++ r.asInstanceOf[Map[String, Any]]
 					else
 						Math( func, l, r )
@@ -268,6 +268,8 @@ package object cras {
 										problem( tm.pos, "modifier 'secret' encountered more than once" )
 										
 									secret = true
+								case tm@ColumnTypeModifier( m ) =>
+									problem( tm.pos, s"unknown modifier '$m'" )
 							}
 							
 							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique, indexed )

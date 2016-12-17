@@ -193,7 +193,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"empty database (many-to-one)" in {
+	"empty database (one-to-many)" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
@@ -226,7 +226,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"post/get/delete (many-to-one)" in {
+	"post/get/delete (one-to-many)" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""

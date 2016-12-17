@@ -43,12 +43,20 @@ object QueryFunctions {
 		list.toList
 	}
 	
+	def size( env: Env, resource: Table ) = {
+		val res = env.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name}" )
+		
+		res.next
+		res.getInt( 1 )
+	}
+	
 	def list( env: Env, resource: Table ) =
 		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
 			case None =>
 				query( env, resource, s"SELECT * FROM ${resource.name}" )
 			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
 				query( env, resource, s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id" )
+			case _ => throw new CrasErrorException( "shouldn't be impossible" )
 		}
 	
 	def find( env: Env, resource: Table, id: Long ) =
@@ -58,5 +66,6 @@ object QueryFunctions {
 			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
 				query( env, resource,
 					s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id WHERE ${resource.name}.id = $id" )
+			case _ => throw new CrasErrorException( "shouldn't be impossible" )
 		}
 }
