@@ -1,6 +1,7 @@
 package xyz.hyperreal
 
 import java.sql._
+import java.net.URI
 
 import collection.mutable.{ListBuffer, HashMap}
 import util.matching.Regex
@@ -29,7 +30,9 @@ package object cras {
 	val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
 	def process( reqmethod: String, requri: String, reqbody: String, env: Env ) = {
-		val reqpath = requri
+		val uri = new URI( requri )
+		val reqpath = uri.getPath
+		val reqquery = uri.getQuery
 		
 		find( reqmethod, reqpath, env.routes ) match {
 			case None =>
