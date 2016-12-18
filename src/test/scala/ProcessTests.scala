@@ -74,7 +74,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"post/get one item/delete" in {
+	"post/get/delete" in {
 		val (c, s) = dbconnect( "test", true )
 		val config =
 			"""
@@ -190,6 +190,126 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
+		c.close
+	}
+	
+	"empty database (one-to-many)" in {
+		val (c, s) = dbconnect( "test", true )
+		val config =
+			"""
+			|resource users
+			|  email       string  unique required
+			|  role        roles   required
+			|
+			|resource roles
+			|  type        string  unique required
+			""".trim.stripMargin
+		val env = configure( io.Source.fromString(config), c, s )
+
+		process( "GET", "/users", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": []
+			|}
+			""".trim.stripMargin )
+		process( "GET", "/roles", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": []
+			|}
+			""".trim.stripMargin )
+ 		process( "GET", "/users/1", null, env ) shouldBe None
+ 		process( "GET", "/roles/1", null, env ) shouldBe None
+ 		process( "GET", "/user", null, env ) shouldBe None //deliberatly misspelled
+		c.close
+	}
+	
+	"post/get/delete (one-to-many)" in {
+		val (c, s) = dbconnect( "test", true )
+		val config =
+			"""
+			|resource users
+			|  email       string  unique required
+			|  role        roles   required
+			|
+			|resource roles
+			|  type        string  unique required
+			""".trim.stripMargin
+		val env = configure( io.Source.fromString(config), c, s )
+
+		process( "POST", "/roles", """{"type": "normal"}""", env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": 1
+			|}
+			""".trim.stripMargin )
+
+		process( "POST", "/users", """{"email": "joe@blow.com", "role": "normal"}""", env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": 1
+			|}
+			""".trim.stripMargin )
+		process( "GET", "/users", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": [
+			|    {
+			|      "id": 1,
+			|      "email": "joe@blow.com",
+			|      "role": {
+			|        "id": 1,
+			|        "type": "normal"
+			|      }
+			|    }
+			|  ]
+			|}
+			""".trim.stripMargin )
+		process( "GET", "/users/1", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": {
+			|    "id": 1,
+			|    "email": "joe@blow.com",
+			|    "role": {
+			|      "id": 1,
+			|      "type": "normal"
+			|    }
+			|  }
+			|}
+			""".trim.stripMargin )
+		process( "DELETE", "/users/1", null, env ) shouldBe Some( null )
+ 		process( "GET", "/users/1", null, env ) shouldBe None
+		process( "GET", "/roles", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": [
+			|    {
+			|      "id": 1,
+			|      "type": "normal"
+			|    }
+			|  ]
+			|}
+			""".trim.stripMargin )
+		process( "GET", "/roles/1", null, env ) shouldBe
+			Some( """
+			|{
+			|  "status": "ok",
+			|  "data": {
+			|    "id": 1,
+			|    "type": "normal"
+			|  }
+			|}
+			""".trim.stripMargin )
+		process( "DELETE", "/roles/1", null, env ) shouldBe Some( null )
+ 		process( "GET", "/roles/1", null, env ) shouldBe None
 		c.close
 	}
 }

@@ -1,6 +1,7 @@
 package xyz.hyperreal
 
 import java.sql._
+import java.net.URI
 
 import collection.mutable.{ListBuffer, HashMap}
 import util.matching.Regex
@@ -29,7 +30,9 @@ package object cras {
 	val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
 	def process( reqmethod: String, requri: String, reqbody: String, env: Env ) = {
-		val reqpath = requri
+		val uri = new URI( requri )
+		val reqpath = uri.getPath
+		val reqquery = uri.getQuery
 		
 		find( reqmethod, reqpath, env.routes ) match {
 			case None =>
@@ -74,7 +77,7 @@ package object cras {
 				if (op == '+) {
 					if (l.isInstanceOf[String] || r.isInstanceOf[String])
 						String.valueOf( l ) + String.valueOf( r )
-					else if (l.isInstanceOf[Map[String, Any]] && r.isInstanceOf[Map[String, Any]])
+					else if (l.isInstanceOf[Map[_, _]] && r.isInstanceOf[Map[_, _]])
 						l.asInstanceOf[Map[String, Any]] ++ r.asInstanceOf[Map[String, Any]]
 					else
 						Math( func, l, r )
@@ -103,7 +106,46 @@ package object cras {
 			case VariableExpression( n ) => env lookup n
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v, env))}: _* )
-					case _ => sys.error( "error evaluating expression: " + expr )
+			case ConditionalExpression( cond, no ) =>
+				def condition( ifthen: List[(ExpressionAST, ExpressionAST)] ): Any =
+					ifthen match {
+						case Nil =>
+							no match {
+								case None => null
+								case Some( expr ) => eval( expr, env )
+							}
+						case (ifexpr, thenexpr) :: tail =>
+							if (evalb( ifexpr, env ))
+								eval( thenexpr, env )
+							else
+								condition( tail )
+					}
+					
+				condition( cond )
+			case ComparisonExpression( left, comps ) =>
+				var l = eval( left, env )
+				
+				comps forall {
+					case (_, func, right) =>
+						val r = eval( right, env )
+						
+						if (Math( func, l, r ).asInstanceOf[Boolean]) {
+							l = r
+							true
+						} else
+							false
+				}
+			case BlockExpression( exprs ) =>
+				def block( list: List[StatementAST] ): Any =
+					list match {
+						case ExpressionStatement( h ) :: Nil => eval( h, env )
+						case ExpressionStatement( h ) :: t =>
+							eval( h, env )
+							block( t )
+					}
+					
+				block( exprs )
+			case _ => sys.error( "error evaluating expression: " + expr )
 		}
 	
 	def deref( expr: ExpressionAST, env: Env ) =
@@ -193,7 +235,6 @@ package object cras {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
-		val create = new StringBuilder
 		
 		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
 		
@@ -212,9 +253,9 @@ package object cras {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = deref( expr, env )
-				case FunctionDefinition( pos, name, function ) =>
+				case d@FunctionDefinition( name, function ) =>
 					if (defines contains name)
-						problem( pos, s"'$name' already defined" )
+						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
 				case TableDefinition( pos, name, bases, columns ) =>
@@ -232,8 +273,14 @@ package object cras {
 							var required = false
 							var optional = false
 							var unique = false
+							var indexed = false
 							
 							modifiers foreach {
+								case tm@ColumnTypeModifier( "indexed" ) =>
+									if (indexed)
+										problem( tm.pos, "modifier 'indexed' encountered more than once" )
+										
+									indexed = true
 								case tm@ColumnTypeModifier( "unique" ) =>
 									if (unique)
 										problem( tm.pos, "modifier 'unique' encountered more than once" )
@@ -260,15 +307,18 @@ package object cras {
 										problem( tm.pos, "modifier 'secret' encountered more than once" )
 										
 									secret = true
+								case tm@ColumnTypeModifier( m ) =>
+									problem( tm.pos, s"unknown modifier '$m'" )
 							}
-								
-							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique )
+							
+							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique, indexed )
 					}
 		
 					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
 					
 					if (bases isEmpty) {
-						val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
+						val Env( _, r, _, _, _ ) =
+							configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
 							
 						routes ++= r
 					} else {
@@ -303,51 +353,9 @@ package object cras {
 				case None => sys.error( "resources cannot be topologically ordered" )
 				case Some( s ) => s
 			}
-		
-		sorted foreach {
-			case Table( name, names, columns ) =>
-				create ++= "CREATE TABLE "
-				create ++= name
-				create ++= "(id IDENTITY NOT NULL PRIMARY KEY"
-				
-				for (cname <- names) {
-					val Column( _, typ, secret, required, unique ) = columns(cname.toUpperCase)
-					
-					create ++= ", "
-					create ++= cname
-					create += ' '					
-					create ++=
-						(typ match {
-							case StringType => "VARCHAR(255)"
-							case IntegerType => "INT"
-							case UUIDType => "UUID"
-							case DateType => "DATE"
-							case TableType( _ ) => "BIGINT"
-						})
-						
-					if (required)
-						create ++= " NOT NULL"
-						
-					if (unique)
-						create ++= " UNIQUE"
-				}
-
-				columns.values foreach {
-					case Column( fk, TableType(ref), _, _, _ ) =>
-						create ++= ", FOREIGN KEY ("
-						create ++= fk
-						create ++= ") REFERENCES "
-						create ++= ref
-						create ++= "(id)"
-					case _ =>
-				}
-				
-				create ++= ");\n"
-		}
-		
+			
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
-//			print( create )
-			statement.execute( create.toString )
+			statement.execute( H2Database.create(sorted) )
 		}
 		
 		interpretExpressions( ast )

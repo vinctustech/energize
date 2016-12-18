@@ -10,13 +10,15 @@ import xyz.hyperreal.table.TextTable
 
 object REPLMain extends App {
 	
-	val reader = new ConsoleReader
+	val reader =
+		new ConsoleReader {
+			setExpandEvents( false )
+			setBellEnabled( false )
+			setPrompt( "> " )
+		}
 	val out = new PrintWriter( reader.getTerminal.wrapOutIfNeeded(System.out), true )
 	var line: String = null
 	var stacktrace = false
-	
-	reader.setBellEnabled( false )
-	reader.setPrompt( "> " )
 
 	"""
 	|Welcome to CRAS version 0.3.

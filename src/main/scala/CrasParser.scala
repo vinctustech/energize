@@ -65,7 +65,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
-				"resource", "unique", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
+				"resource", "unique", "indexed", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"def", "var", "val", "long"
 				)
@@ -89,10 +89,15 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 	lazy val nl = rep1(Newline)
 
+	lazy val onl = rep(Newline)
+
 	lazy val source: PackratParser[SourceAST] =
 		rep1(definitionStatement <~ nl | (expressionStatement ^^ (e => List( e )))) ^^ (s => SourceAST( s.flatten )) |
 		nl ^^^ SourceAST( Nil )
 
+	lazy val statements: PackratParser[List[StatementAST]] =
+		rep1(expressionStatement)
+	
 	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ (ExpressionStatement)
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
@@ -108,7 +113,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val functionDefinition: PackratParser[FunctionDefinition] =
 // 		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
-		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionExpression(pat, e) )}
+		positioned( ident ~ parenparameters ~ ("=" ~> expression) ^^ {
+			case n ~ pat ~ e => FunctionDefinition( n, FunctionExpression(pat, e) )} )
 	
 	lazy val variablesDefinition: PackratParser[List[VariableDefinition]] =
 		"var" ~> variableDefinition ^^ {v => List( v )} |
@@ -143,7 +149,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		ident ^^ (TableType)
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
-		positioned( ("unique" | "required" | "optional" | "secret") ^^ {case m => ColumnTypeModifier( m )} )
+		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ {case m => ColumnTypeModifier( m )} )
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
 		"route" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
@@ -192,8 +198,30 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		compoundExpression
 	
 	lazy val compoundExpression: PackratParser[ExpressionAST] =
-		(compoundExpression <~ ";") ~ additiveExpression ^^ {case left ~ right => CompoundExpression( left, right )} |
-		additiveExpression
+		(compoundExpression <~ ";") ~ controlExpression ^^ {case left ~ right => CompoundExpression( left, right )} |
+		controlExpression
+	
+	lazy val controlExpression: PackratParser[ExpressionAST] =
+		("if" ~> booleanExpression) ~ ("then" ~> expressionOrBlock | blockExpression) ~ rep(elif) ~ elsePart ^^
+			{case c ~ t ~ ei ~ e => ConditionalExpression( (c, t) +: ei, e )} |
+		booleanExpression
+
+	lazy val elif =
+		(onl ~ "elif") ~> booleanExpression ~ ("then" ~> expressionOrBlock | blockExpression) ^^ {case c ~ t => (c, t)}
+
+	lazy val elsePart: PackratParser[Option[ExpressionAST]] = opt(onl ~> "else" ~> expressionOrBlock)
+		
+	lazy val booleanExpression =
+		comparisonExpression
+
+	lazy val comparisonExpression: PackratParser[ExpressionAST] =
+		additiveExpression ~ rep1(("==" | "!=" | "<" | ">" | "<=" | ">=") ~ additiveExpression) ^^
+			{case l ~ comps => ComparisonExpression( l, comps map {
+				case o ~ e =>
+					val s = Symbol( o )
+					
+					(s, Math.lookup(s), e)} )} |
+	additiveExpression
 	
 	lazy val additiveExpression: PackratParser[ExpressionAST] =
 		additiveExpression ~ ("+" | "-") ~ multiplicativeExpression ^^
@@ -238,6 +266,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				else
 					LiteralExpression( n.toInt )
 			} |
+		functionLiteral |
 		ident ^^ (VariableExpression) |
 		stringLit ^^ (LiteralExpression) |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
@@ -267,6 +296,12 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 // 		ident ^^ (VariablePattern) |
 // 		stringLit ^^ (StringPattern) |
 // 		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
+		
+	lazy val blockExpression =
+		Indent ~> statements <~ Dedent ^^
+			(BlockExpression( _ ))
+
+	lazy val expressionOrBlock = expression | blockExpression
 	
 	lazy val actionExpression: PackratParser[ExpressionAST] =
 		actionCompoundExpression
