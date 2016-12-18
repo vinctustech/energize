@@ -106,7 +106,46 @@ package object cras {
 			case VariableExpression( n ) => env lookup n
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v, env))}: _* )
-					case _ => sys.error( "error evaluating expression: " + expr )
+			case ConditionalExpression( cond, no ) =>
+				def condition( ifthen: List[(ExpressionAST, ExpressionAST)] ): Any =
+					ifthen match {
+						case Nil =>
+							no match {
+								case None => null
+								case Some( expr ) => eval( expr, env )
+							}
+						case (ifexpr, thenexpr) :: tail =>
+							if (evalb( ifexpr, env ))
+								eval( thenexpr, env )
+							else
+								condition( tail )
+					}
+					
+				condition( cond )
+			case ComparisonExpression( left, comps ) =>
+				var l = eval( left, env )
+				
+				comps forall {
+					case (_, func, right) =>
+						val r = eval( right, env )
+						
+						if (Math( func, l, r ).asInstanceOf[Boolean]) {
+							l = r
+							true
+						} else
+							false
+				}
+			case BlockExpression( exprs ) =>
+				def block( list: List[StatementAST] ): Any =
+					list match {
+						case ExpressionStatement( h ) :: Nil => eval( h, env )
+						case ExpressionStatement( h ) :: t =>
+							eval( h, env )
+							block( t )
+					}
+					
+				block( exprs )
+			case _ => sys.error( "error evaluating expression: " + expr )
 		}
 	
 	def deref( expr: ExpressionAST, env: Env ) =

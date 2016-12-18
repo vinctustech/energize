@@ -89,7 +89,6 @@ object CommandFunctions {
 				} mkString ", "
 			com ++= " WHERE id = "
 			com ++= id.toString
-			println( com )
 			env.statement.executeUpdate( com.toString )
 		}
 }
