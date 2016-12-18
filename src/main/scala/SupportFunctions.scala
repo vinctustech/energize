@@ -24,5 +24,5 @@ object SupportFunctions {
 			case _ => count
 		}
 		
-	def eval( env: Env, expr: String ) = evaluate( expr, env )
+	def eval( env: Env, expr: String ) = env.evaluate( expr )
 }

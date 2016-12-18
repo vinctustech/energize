@@ -4,7 +4,7 @@ import org.scalatest._
 import prop.PropertyChecks
 
 
-class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
+class processTests extends FreeSpec with PropertyChecks with Matchers {
 	
 	"empty database" in {
 		val (c, s) = dbconnect( "test", true )
@@ -20,23 +20,23 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "GET", "/api/v1/todo", null, env ) shouldBe
+		env.process( "GET", "/api/v1/todo", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/test", null, env ) shouldBe
+		env.process( "GET", "/api/v1/test", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		process( "GET", "/api/v1/todo/1", null, env ) shouldBe None
- 		process( "GET", "/api/v1/test/1", null, env ) shouldBe None
- 		process( "GET", "/api/v1/tod", null, env ) shouldBe None
+ 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe None
+ 		env.process( "GET", "/api/v1/test/1", null ) shouldBe None
+ 		env.process( "GET", "/api/v1/tod", null ) shouldBe None
 		c.close
 	}
 	
@@ -54,23 +54,23 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "GET", "/todo", null, env ) shouldBe
+		env.process( "GET", "/todo", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/test", null, env ) shouldBe
+		env.process( "GET", "/test", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		process( "GET", "/todo/1", null, env ) shouldBe None
- 		process( "GET", "/test/1", null, env ) shouldBe None
- 		process( "GET", "/tod", null, env ) shouldBe None
+ 		env.process( "GET", "/todo/1", null ) shouldBe None
+ 		env.process( "GET", "/test/1", null ) shouldBe None
+ 		env.process( "GET", "/tod", null ) shouldBe None
 		c.close
 	}
 	
@@ -88,7 +88,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""", env ) shouldBe
+		env.process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""" ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -96,14 +96,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 
-		process( "POST", "/api/v1/test", """{"asdf": 123}""", env ) shouldBe
+		env.process( "POST", "/api/v1/test", """{"asdf": 123}""" ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/todo", null, env ) shouldBe
+		env.process( "GET", "/api/v1/todo", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -117,7 +117,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/todo/1", null, env ) shouldBe
+		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -129,9 +129,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		process( "DELETE", "/api/v1/todo/1", null, env ) shouldBe Some( null )
- 		process( "GET", "/api/v1/todo/1", null, env ) shouldBe None
-		process( "GET", "/api/v1/test", null, env ) shouldBe
+		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe Some( null )
+ 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe None
+		env.process( "GET", "/api/v1/test", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -143,7 +143,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/api/v1/test/1", null, env ) shouldBe
+		env.process( "GET", "/api/v1/test/1", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -153,8 +153,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		process( "DELETE", "/api/v1/test/1", null, env ) shouldBe Some( null )
- 		process( "GET", "/api/v1/test/1", null, env ) shouldBe None
+		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe Some( null )
+ 		env.process( "GET", "/api/v1/test/1", null ) shouldBe None
 		c.close
 	}
 	
@@ -172,14 +172,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "GET", "/eval", """ {"expr": "(i + 2)/2*i"} """, env ) shouldBe
+		env.process( "GET", "/eval", """ {"expr": "(i + 2)/2*i"} """ ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": "-1/2+i"
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/f/3/4", null, env ) shouldBe
+		env.process( "GET", "/f/3/4", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -206,23 +206,23 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "GET", "/users", null, env ) shouldBe
+		env.process( "GET", "/users", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/roles", null, env ) shouldBe
+		env.process( "GET", "/roles", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		process( "GET", "/users/1", null, env ) shouldBe None
- 		process( "GET", "/roles/1", null, env ) shouldBe None
- 		process( "GET", "/user", null, env ) shouldBe None //deliberatly misspelled
+ 		env.process( "GET", "/users/1", null ) shouldBe None
+ 		env.process( "GET", "/roles/1", null ) shouldBe None
+ 		env.process( "GET", "/user", null ) shouldBe None //deliberatly misspelled
 		c.close
 	}
 	
@@ -239,7 +239,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
-		process( "POST", "/roles", """{"type": "normal"}""", env ) shouldBe
+		env.process( "POST", "/roles", """{"type": "normal"}""" ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -247,14 +247,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 
-		process( "POST", "/users", """{"email": "joe@blow.com", "role": "normal"}""", env ) shouldBe
+		env.process( "POST", "/users", """{"email": "joe@blow.com", "role": "normal"}""" ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/users", null, env ) shouldBe
+		env.process( "GET", "/users", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -270,7 +270,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/users/1", null, env ) shouldBe
+		env.process( "GET", "/users/1", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -284,9 +284,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		process( "DELETE", "/users/1", null, env ) shouldBe Some( null )
- 		process( "GET", "/users/1", null, env ) shouldBe None
-		process( "GET", "/roles", null, env ) shouldBe
+		env.process( "DELETE", "/users/1", null ) shouldBe Some( null )
+ 		env.process( "GET", "/users/1", null ) shouldBe None
+		env.process( "GET", "/roles", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -298,7 +298,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		process( "GET", "/roles/1", null, env ) shouldBe
+		env.process( "GET", "/roles/1", null ) shouldBe
 			Some( """
 			|{
 			|  "status": "ok",
@@ -308,8 +308,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		process( "DELETE", "/roles/1", null, env ) shouldBe Some( null )
- 		process( "GET", "/roles/1", null, env ) shouldBe None
+		env.process( "DELETE", "/roles/1", null ) shouldBe Some( null )
+ 		env.process( "GET", "/roles/1", null ) shouldBe None
 		c.close
 	}
 }

@@ -1,23 +1,16 @@
 package xyz.hyperreal
 
 import java.sql._
-import java.net.URI
 
-import collection.mutable.{ListBuffer, HashMap}
-import util.matching.Regex
 import util.parsing.input.{Position}
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 import xyz.hyperreal.table.TextTable
-import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
-import xyz.hyperreal.lia.Math
 
 
 package object cras {
 	
 //	type JSON = Map[String, Any]
-	
-	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
 	
 	def dbconnect( dbfile: String, memory: Boolean = false ) = {
 		Class.forName( "org.h2.Driver" )
@@ -25,206 +18,6 @@ package object cras {
 		val connection = DriverManager.getConnection( s"jdbc:h2${if (memory) ":mem:" else ":"}" + dbfile, "sa", "" )
 		
 		(connection, connection.createStatement)
-	}
-
-	val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
-	
-	def process( reqmethod: String, requri: String, reqbody: String, env: Env ) = {
-		val uri = new URI( requri )
-		val reqpath = uri.getPath
-		val reqquery = uri.getQuery
-		
-		find( reqmethod, reqpath, env.routes ) match {
-			case None =>
-				None
-			case Some( (urivars, expr) ) =>
-				try {
-					val reqvars =
-						if (reqbody eq null)
-							urivars
-						else
-							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))
-					val res = evalm( expr, env add reqvars )
-					
-					Some( if (res eq null) null else DefaultJSONWriter.toString(res) )
-				} catch {
-					case e: CrasErrorException =>
-						Some( DefaultJSONWriter.toString(env.variables("errorResult").asInstanceOf[Native](List(e.getMessage), env).asInstanceOf[Map[String, Any]]) )
-					case e: CrasNotFoundException => None
-				}
-		}
-	}
-
-	def evaluate( expr: String, env: Env ): Any = {
-		val p = new CrasParser
-		val ast = p.parseFromString( expr, p.expressionStatement )
-		
-		deref( ast.expr, env )	
-	}
-	
-	def replacer( env: Env ) = (m: Regex.Match) => env lookup m.group(1) toString
-	
-	def eval( expr: ExpressionAST, env: Env ): Any =
-		expr match {
-			case DotExpression( obj, field ) => evalm( obj, env )( field )
-			case CompoundExpression( left, right ) =>
-				deref( left, env )
-				deref( right, env )
-			case BinaryExpression( left, op, func, right ) =>
-				val l = deref( left, env )
-				val r = deref( right, env )
-				
-				if (op == '+) {
-					if (l.isInstanceOf[String] || r.isInstanceOf[String])
-						String.valueOf( l ) + String.valueOf( r )
-					else if (l.isInstanceOf[Map[_, _]] && r.isInstanceOf[Map[_, _]])
-						l.asInstanceOf[Map[String, Any]] ++ r.asInstanceOf[Map[String, Any]]
-					else
-						Math( func, l, r )
-				}
-				else if (op == '* && l.isInstanceOf[String] && r.isInstanceOf[Int])
-					l.asInstanceOf[String]*r.asInstanceOf[Int]
-				else
-					Math( func, l, r )
-			case ApplyExpression( function, args ) =>
-				deref( function, env ) match {
-					case f: Native =>
-						val list = args map (a => deref( a, env ))
-						
-						if (f.applicable( list ))
-							f( list, env )
-						else
-							sys.error( "wrong number or type of arguments for native function: " + f )
-					case f: FunctionExpression =>
-						if (f.params.length != args.length)
-							sys.error( "wrong number of arguments for function: " + f )
-							
-						deref( f.expr, env add (f.params zip (args map (a => deref( a, env )))).toMap )
-				}
-			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer(env) )
-			case LiteralExpression( v ) => v
-			case VariableExpression( n ) => env lookup n
-			case ObjectExpression( pairs ) =>
-				Map( pairs map {case (k, v) => (k, deref(v, env))}: _* )
-			case ConditionalExpression( cond, no ) =>
-				def condition( ifthen: List[(ExpressionAST, ExpressionAST)] ): Any =
-					ifthen match {
-						case Nil =>
-							no match {
-								case None => null
-								case Some( expr ) => eval( expr, env )
-							}
-						case (ifexpr, thenexpr) :: tail =>
-							if (evalb( ifexpr, env ))
-								eval( thenexpr, env )
-							else
-								condition( tail )
-					}
-					
-				condition( cond )
-			case ComparisonExpression( left, comps ) =>
-				var l = eval( left, env )
-				
-				comps forall {
-					case (_, func, right) =>
-						val r = eval( right, env )
-						
-						if (Math( func, l, r ).asInstanceOf[Boolean]) {
-							l = r
-							true
-						} else
-							false
-				}
-			case BlockExpression( exprs ) =>
-				def block( list: List[StatementAST] ): Any =
-					list match {
-						case ExpressionStatement( h ) :: Nil => eval( h, env )
-						case ExpressionStatement( h ) :: t =>
-							eval( h, env )
-							block( t )
-					}
-					
-				block( exprs )
-			case _ => sys.error( "error evaluating expression: " + expr )
-		}
-	
-	def deref( expr: ExpressionAST, env: Env ) =
-		eval( expr, env ) match {
-			case h: Variable => h.value
-			case v => v
-		}
-
-	def evalv( expr: ExpressionAST, env: Env ) =
-		eval( expr, env ).asInstanceOf[Variable]
-
-	def evals( expr: ExpressionAST, env: Env ) =
-		deref( expr, env ).asInstanceOf[String]
-	
-	def evali( expr: ExpressionAST, env: Env ) =
-		deref( expr, env ).asInstanceOf[String].toInt
-	
-	def evalm( expr: ExpressionAST, env: Env )=
-		deref( expr, env ).asInstanceOf[Map[String, Any]]
-	
-	def evalb( expr: ExpressionAST, env: Env ) =
-		deref( expr, env ).asInstanceOf[Boolean]
-	
-	def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, Any], ExpressionAST)] = {
-		if (routes eq null)
-			sys.error( "no routes loaded" )
-			
-		val segments = {
-			val trimed = path.trim
-			val l = trimed split "/" toList
-			
-			if (l == List( "" ))
-				return None
-			else if (!l.isEmpty && l.head != "")
-				return None
-			else
-				if (l == List())
-					l
-				else
-					l.tail
-			}
-		val len = segments.length
-		val urivars = new HashMap[String, Any]
-		
-		def integer( s: String ) = {
-			if (s forall (c => c.isDigit))
-				Some( BigInt(s) )
-			else
-				None
-		}
-		
-		for (Route( rmethod, uri, action) <- routes) {
-			urivars.clear
-			
-			if (len == uri.length && method.toUpperCase == rmethod && uri.zip( segments ).forall {
-				case (NameURISegment( route ), segment) => route == segment
-				case (ParameterURISegment( name, "string" ), segment) =>
-					urivars(name) = segment
-					true
-				case (ParameterURISegment( name, "integer" ), segment) =>
-					integer( segment ) match {
-						case Some( a ) if a.isValidInt =>
-							urivars(name) = a.intValue
-							true
-						case _ => false
-					}
-				case (ParameterURISegment( name, "long" ), segment) =>
-					integer( segment ) match {
-						case Some( a ) if a.isValidLong =>
-							urivars(name) = a.longValue
-							true
-						case _ => false
-					}
-				case _ => false
-			})
-				return Some( (urivars.toMap, action) )
-		}
-		
-		None
 	}
 	
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
@@ -247,12 +40,12 @@ package object cras {
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
 						
-					defines(name) = new Variable( deref(expr, env) )
+					defines(name) = new Variable( env.deref(expr) )
 				case d@ValueDefinition( name, expr ) =>
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
 						
-					defines(name) = deref( expr, env )
+					defines(name) = env.deref( expr )
 				case d@FunctionDefinition( name, function ) =>
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
@@ -342,7 +135,7 @@ package object cras {
 		def interpretExpressions( ast: AST ): Unit =
 			ast match {
 				case SourceAST( list ) => traverseExpressions( list )
-				case ExpressionStatement( expr ) => deref( expr, env )
+				case ExpressionStatement( expr ) => env.deref( expr )
 				case _ =>
 			}
 			

@@ -82,9 +82,9 @@ class Server( port: Int, env: Env ) {
 							val entity = withEntity.getEntity
 								
 							entity.writeTo( buf )
-							process( method1, target, buf.toString, env )
+							env.process( method1, target, buf.toString )
 						case noEntity =>
-							process( method1, target, null, env )
+							env.process( method1, target, null )
 					}
 					
 				data match {
