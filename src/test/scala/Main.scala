@@ -5,14 +5,12 @@ import java.io.File
 
 object Main extends App {
 
-	def test {
-		val (c, s) = dbconnect( "test", true )
-		val env = configure( io.Source.fromFile("sum.cras"), c, s )
-		
-		println( process("GET", "/eval", """ {"expr": "(i + 2)/2*i"} """, env) )
-		
-		c.close
-	}
+	val (c, s) = dbconnect( "test", true )
+	val env = configure( io.Source.fromFile("test.cras"), c, s )
 	
-	test
+	println( process("PATCH", "/users/1", """ {"role": "super"} """, env) )
+	println( process("GET", "/users", null, env) )
+// 		println( process("GET", "/roles", null, env) )
+	
+	c.close
 }

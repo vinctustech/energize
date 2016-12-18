@@ -77,7 +77,7 @@ Example
 
 This example shows how to get a simple API to support a "to do list" app working. Start by creating a folder for the example. Now download the [executable](https://dl.bintray.com/edadma/generic/cras-0.3.jar) and place it in the example folder you just created. Now, create a text file called `todo.cras` will the following text in it.
 
-	table todo api/v1
+	resource todo /api/v1
 	  name        string  required
 	  description string  optional
 	  status      integer required
@@ -116,13 +116,13 @@ getting the response
 		"status": "ok",
 		"data": [
 			{
-				"ID": 1,
+				"id": 1,
 				"name": "finish 0.1",
 				"description": null,
 				"status": 1
 			},
 			{
-				"ID": 2,
+				"id": 2,
 				"name": "write readme",
 				"description": "add example involving finishing 0.1 and writing the readme",
 				"status": 1
@@ -139,7 +139,7 @@ to get
 	{
 		"status": "ok",
 		"data": {
-			"ID": 2,
+			"id": 2,
 			"name": "write readme",
 			"description": "add example involving finishing 0.1 and writing the readme",
 			"status": 1

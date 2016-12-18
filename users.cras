@@ -1,0 +1,14 @@
+resource users
+	name string unique required
+	#role roles required
+	
+resource roles
+	type string unique required
+
+insert( users, {name: "john"} )
+insert( users, {name: "dick"} )
+insert( users, {name: "harry"} )
+
+insert( roles, {type: "admin"} )
+insert( roles, {type: "normal"} )
+insert( roles, {type: "super"} )
