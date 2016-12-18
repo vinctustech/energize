@@ -15,10 +15,8 @@ abstract class DependencySorter[T] {
 	def dependencies( a: T ): Iterable[String]
 	
 	def sort( items: Iterable[T] ): Option[List[T]] = {
-		val unsorted = new ArrayBuffer[T]
+		val unsorted = ArrayBuffer( items: _* )
 		val sorted = new ArrayBuffer[T]
-		
-		unsorted ++= items
 
 		while (!unsorted.isEmpty) {
 			val len = sorted.length
