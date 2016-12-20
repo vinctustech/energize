@@ -154,10 +154,4 @@ package object cras {
 		interpretExpressions( ast )
 		env
 	}
-	
-	class CrasErrorException( message: String ) extends Exception( message )
-	
-	class CrasNotFoundException extends Exception
-	
-	class Variable( var value: Any )
 }
