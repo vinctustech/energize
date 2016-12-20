@@ -2,6 +2,29 @@ package xyz.hyperreal.cras
 
 import collection.mutable.ListBuffer
 
+	
+// 	def list( env: Env, resource: Table ) =
+// 		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
+// 			case None =>
+// 				query( env, resource, s"SELECT * FROM ${resource.name}" )
+// 			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
+// 				query( env, resource, s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id" )
+// 			case _ => throw new CrasErrorException( "shouldn't be impossible" )
+// 		}
+
+object QueryFunctionHelpers {
+	def listQuery( resource: Table ) = {
+		val buf = new StringBuilder( s"SELECT * FROM ${resource.name}" )
+		
+		resource.columns.values filter (c => c.typ.isInstanceOf[TableType]) foreach {
+			case Column(col, TableType(reft), _, _, _, _) =>
+				 buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
+		}
+		
+//		println( buf )
+		buf.toString
+	}
+}
 
 object QueryFunctions {
 	def query( env: Env, resource: Table, sql: String ) = {
@@ -49,23 +72,10 @@ object QueryFunctions {
 		res.next
 		res.getInt( 1 )
 	}
-	
+
 	def list( env: Env, resource: Table ) =
-		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
-			case None =>
-				query( env, resource, s"SELECT * FROM ${resource.name}" )
-			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
-				query( env, resource, s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id" )
-			case _ => throw new CrasErrorException( "shouldn't be impossible" )
-		}
+		query( env, resource, QueryFunctionHelpers.listQuery(resource) )
 	
 	def find( env: Env, resource: Table, id: Long ) =
-		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
-			case None =>
-				query( env, resource, s"SELECT * FROM ${resource.name} WHERE id = $id" )
-			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
-				query( env, resource,
-					s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id WHERE ${resource.name}.id = $id" )
-			case _ => throw new CrasErrorException( "shouldn't be impossible" )
-		}
+		query( env, resource, QueryFunctionHelpers.listQuery(resource) + s" WHERE ${resource.name}.id = $id" )
 }

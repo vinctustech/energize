@@ -63,7 +63,7 @@ object CommandFunctions {
 									case Some( c ) => c.name
 								})
 
-							k + s" = SELECT id FROM $reft WHERE $refc = '$v'"
+							k + s" = (SELECT id FROM $reft WHERE $refc = '$v')"
 						}
 					case (k, v) => k + " = " + String.valueOf( v )
 				} mkString ", "

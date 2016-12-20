@@ -1,0 +1,15 @@
+resource books
+	title string
+	author authors
+	publisher publishers
+	
+resource authors
+	name string unique
+	
+resource publishers
+	name string unique
+	
+if size( books ) == 0
+	insert( publishers, {name: "North Point Press"} )
+	insert( authors, {name: "Fyodor Dostoyevsky"} )
+	insert( books, {title: "The Brothers Karamazov", author: "Fyodor Dostoyevsky", publisher: "North Point Press"} )
