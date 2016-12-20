@@ -214,20 +214,15 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case v => v
 		}
 
-	def evalv( expr: ExpressionAST ) =
-		eval( expr ).asInstanceOf[Variable]
+	def evalv( expr: ExpressionAST ) = eval( expr ).asInstanceOf[Variable]
 
-	def evals( expr: ExpressionAST ) =
-		deref( expr ).asInstanceOf[String]
+	def evals( expr: ExpressionAST ) = deref( expr ).asInstanceOf[String]
 	
-	def evali( expr: ExpressionAST ) =
-		deref( expr ).asInstanceOf[String].toInt
+	def evali( expr: ExpressionAST ) = deref( expr ).asInstanceOf[String].toInt
 	
-	def evalm( expr: ExpressionAST )=
-		deref( expr ).asInstanceOf[Map[String, Any]]
+	def evalm( expr: ExpressionAST ) = deref( expr ).asInstanceOf[Map[String, Any]]
 	
-	def evalb( expr: ExpressionAST ) =
-		deref( expr ).asInstanceOf[Boolean]
+	def evalb( expr: ExpressionAST ) = deref( expr ).asInstanceOf[Boolean]
 
 }
 
