@@ -11,11 +11,8 @@ object CommandFunctions {
 		
 		com ++= resource.name
 		com ++= resource.names.mkString( " (", ", ", ") " )
-		
-		var sel = false
-		var reft: String = null
-		var refv: AnyRef = null
-		val values =
+		com ++= "VALUES ("
+		com ++=
 			(for (c <- resource.names)
 				yield {
 					json get c match {
@@ -23,35 +20,18 @@ object CommandFunctions {
 						case Some( v ) =>
 							resource.columns(c.toUpperCase).typ match {
 								case TableType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-									sel = true
-									reft = t
-									refv = v
-									"id"
+									s"(SELECT id FROM $t WHERE " +
+										(env.tables(t.toUpperCase).columns.values.find( c => c.unique ) match {
+											case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
+											case Some( c ) => c.name
+										}) + " = '" + String.valueOf( v ) + "')"
 								case StringType => '\'' + String.valueOf( v ) + '\''
 								case _ => String.valueOf( v )
 							}
 					}
 				}) mkString ", "
-		
-		com ++= (if (sel) "SELECT " else "VALUES (")
-		com ++= values
-		
-		if (sel) {
-			com ++= " FROM "
-			com ++= reft
-			com ++= " WHERE "
-			com ++=
-				(env.tables(reft.toUpperCase).columns.values.find( c => c.unique ) match {
-					case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
-					case Some( c ) => c.name
-				})
-			com ++= " = '"
-			com ++= String.valueOf( refv )
-			com += '\''
-		}	else
 			com += ')'
 		
-//		println( com )
 		env.statement.executeUpdate( com.toString )
 		
 		val g = env.statement.getGeneratedKeys
