@@ -5,7 +5,7 @@ import java.net.URI
 
 import collection.JavaConverters._
 import util.matching.Regex
-import collection.mutable.HashMap
+import collection.mutable.{HashMap, MultiMap, Set}
 
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.http.NameValuePair
@@ -37,7 +37,24 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	def process( reqmethod: String, requri: String, reqbody: String ) = {
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
-		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)) toMap
+		val reqquery = {
+//			val map1 = new HashMap[String, Set[String]] with MultiMap[String, String]
+		
+//			URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => map1.addBinding( p.getName, p.getValue ))
+			var map = Map[String, Any]()
+			
+			URLEncodedUtils.parse( uri, "UTF-8" ).asScala foreach (
+				p =>
+					map get p.getName match {
+						case None => map += (p.getName -> p.getValue)
+						case Some( l: List[_] ) => map += (p.getName -> (l :+ p.getValue))
+						case Some( v ) => map += (p.getName -> List( v, p.getValue ))
+					})
+			map
+		}
+				
+		println( reqquery )
+		
 		val reqfrag = uri.getFragment
 		
 		def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, Any], ExpressionAST)] = {
@@ -99,8 +116,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		}
 		
 		find( reqmethod, reqpath, routes ) match {
-			case None =>
-				None
+			case None => None
 			case Some( (urivars, expr) ) =>
 				try {
 					val reqvars =
