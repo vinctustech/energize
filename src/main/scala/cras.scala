@@ -154,4 +154,11 @@ package object cras {
 		interpretExpressions( ast )
 		env
 	}
+	
+	def escapeQuotes( s: String ): String = s replace ("'", "''")
+		
+	def escapeQuotes( json: Map[String, Any] ): Map[String, Any] =
+		json map {case (k, v) =>
+			(k, if (v.isInstanceOf[String]) escapeQuotes( v.asInstanceOf[String] ) else v)
+		}
 }

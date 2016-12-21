@@ -2,15 +2,6 @@ package xyz.hyperreal.cras
 
 
 object CommandFunctionHelpers {
-	def escapeQuotes( s: String ): String = s replace ("'", "''")
-		
-	def escapeQuotes( json: Map[String, Any] ): Map[String, Any] =
-		json map {case (k, v) =>
-			if (v.isInstanceOf[String])
-				(k, escapeQuotes( v.asInstanceOf[String] ))
-			else
-				(k, v)
-		}
 }
 
 object CommandFunctions {
@@ -20,7 +11,7 @@ object CommandFunctions {
 	
 	def insert( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
 		val com = new StringBuilder( "INSERT INTO " )
-		val json1 = CommandFunctionHelpers.escapeQuotes( json )
+		val json1 = escapeQuotes( json )
 		
 		com ++= resource.name
 		com ++= resource.names.mkString( " (", ", ", ") " )
@@ -63,7 +54,7 @@ object CommandFunctions {
 			com ++= resource.name
 			com ++= " SET "
 			com ++=
-				CommandFunctionHelpers.escapeQuotes( json ).toList map {
+				escapeQuotes( json ).toList map {
 					case (k, v) if resource.columns(k.toUpperCase).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
 					case (k, v) if {typ = resource.columns(k.toUpperCase).typ; typ.isInstanceOf[TableType]} =>
 						if (v.isInstanceOf[Int] || v.isInstanceOf[Long])

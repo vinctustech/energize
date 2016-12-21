@@ -3,8 +3,12 @@ package xyz.hyperreal.cras
 import java.sql._
 import java.net.URI
 
+import collection.JavaConverters._
 import util.matching.Regex
 import collection.mutable.HashMap
+
+import org.apache.http.client.utils.URLEncodedUtils
+import org.apache.http.NameValuePair
 
 import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
@@ -14,7 +18,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	
 	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
 
-	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
+//	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
 	def add( kv: (String, Any) ) = Env( tables, routes, variables + kv, connection, statement )
 	
@@ -33,8 +37,9 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	def process( reqmethod: String, requri: String, reqbody: String ) = {
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
-		val reqquery = uri.getQuery
-	
+		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)) toMap
+		val reqfrag = uri.getFragment
+		
 		def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, Any], ExpressionAST)] = {
 			if (routes eq null)
 				sys.error( "no routes loaded" )
