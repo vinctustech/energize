@@ -70,7 +70,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				"def", "var", "val", "long"
 				)
 			delimiters += (
-				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=", ":", "->", ".", ";"
+				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
+				":", "->", ".", ";", "?"
 				)
 		}
 
@@ -267,7 +268,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 					LiteralExpression( n.toInt )
 			} |
 		functionLiteral |
-		ident ^^ (VariableExpression) |
+		variableExpression |
+		optVariableExpression |
 		stringLit ^^ (LiteralExpression) |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
 		"null" ^^^ (LiteralExpression( null )) |
@@ -276,6 +278,10 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	
 	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
 		
+	lazy val variableExpression = ident ^^ (VariableExpression)
+	
+	lazy val optVariableExpression = "?" ~> ident ^^ (OptVariableExpression)
+	
 	lazy val functionLiteral =
 		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionExpression( p, e )}
 		
@@ -315,7 +321,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		actionPrimaryExpression
 		
 	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
-		ident ^^ (VariableExpression) |
+		variableExpression |
+		optVariableExpression |
 		"null" ^^^ (LiteralExpression( null )) |
 		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
 

@@ -37,22 +37,24 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	def process( reqmethod: String, requri: String, reqbody: String ) = {
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
-		val reqquery = {
+		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)) toMap
+		
 //			val map1 = new HashMap[String, Set[String]] with MultiMap[String, String]
 		
 //			URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => map1.addBinding( p.getName, p.getValue ))
-			var map = Map[String, Any]()
+
+		// 	var map = Map[String, Any]()
 			
-			URLEncodedUtils.parse( uri, "UTF-8" ).asScala foreach (
-				p =>
-					map get p.getName match {
-						case None => map += (p.getName -> p.getValue)
-						case Some( l: List[_] ) => map += (p.getName -> (l :+ p.getValue))
-						case Some( v ) => map += (p.getName -> List( v, p.getValue ))
-					})
-			map
-		}
-				
+		// 	URLEncodedUtils.parse( uri, "UTF-8" ).asScala foreach (
+		// 		p =>
+		// 			map get p.getName match {
+		// 				case None => map += (p.getName -> p.getValue)
+		// 				case Some( l: List[_] ) => map += (p.getName -> (l :+ p.getValue))
+		// 				case Some( v ) => map += (p.getName -> List( v, p.getValue ))
+		// 			})
+		// 	map
+		// }
+		
 		println( reqquery )
 		
 		val reqfrag = uri.getFragment
@@ -120,10 +122,10 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case Some( (urivars, expr) ) =>
 				try {
 					val reqvars =
-						if (reqbody eq null)
+						(if (reqbody eq null)
 							urivars
 						else
-							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))
+							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
 					val res = (this add reqvars).evalm( expr )
 					
 					Some( if (res eq null) null else DefaultJSONWriter.toString(res) )
@@ -184,6 +186,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer )
 			case LiteralExpression( v ) => v
 			case VariableExpression( n ) => lookup( n )
+			case OptVariableExpression( n ) => variables get n
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v))}: _* )
 			case ConditionalExpression( cond, no ) =>

@@ -9,7 +9,7 @@ object Main extends App {
 	val env = configure( io.Source.fromFile("books.cras"), c, s )
 	
 //	println( env.process("PATCH", "/books/1", """ {"role": "super"} """) )
-	println( env.process("GET", "/books?a=b;x=y;a=c", null) )
+	println( env.process("GET", "/books?a=b;x=y", null) )
 	println( env.process("GET", "/books/1", null) )
 	
 	c.close
