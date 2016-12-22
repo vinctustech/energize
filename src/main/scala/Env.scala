@@ -24,13 +24,15 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	
 	def add( m: Map[String, Any] ) = Env( tables, routes, variables ++ m, connection, statement )
 	
-	def lookup( name: String ) =
+	def get( name: String ) =
 		variables get name match {
-			case None =>
-				tables get name.toUpperCase match {
-					case None => throw new CrasErrorException( "variable not found: " + name )
-					case Some( v ) => v
-				}
+			case None => tables get name.toUpperCase
+			case res => res
+		}
+	
+	def lookup( name: String ) =
+		get( name ) match {
+			case None => throw new CrasErrorException( "variable not found: " + name )
 			case Some( v ) => v
 		}
 	
@@ -54,8 +56,6 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		// 			})
 		// 	map
 		// }
-		
-		println( reqquery )
 		
 		val reqfrag = uri.getFragment
 		
@@ -186,7 +186,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer )
 			case LiteralExpression( v ) => v
 			case VariableExpression( n ) => lookup( n )
-			case OptVariableExpression( n ) => variables get n
+			case OptVariableExpression( n ) => get( n )
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v))}: _* )
 			case ConditionalExpression( cond, no ) =>

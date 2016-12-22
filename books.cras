@@ -9,8 +9,6 @@ resource authors
 resource publishers
 	name string unique
 	
-print( ?books )
-
 if size( books ) == 0
 	insert( publishers, {name: "North Point Press"} )
 	insert( publishers, {name: "Enhanced Media"} )

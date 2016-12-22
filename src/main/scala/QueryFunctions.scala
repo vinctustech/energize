@@ -24,6 +24,8 @@ object QueryFunctionHelpers {
 //		println( buf )
 		buf.toString
 	}
+	
+	val FILTER = "([a-zA-Z]+):(.+)"r
 }
 
 object QueryFunctions {
@@ -73,8 +75,19 @@ object QueryFunctions {
 		res.getInt( 1 )
 	}
 
-	def list( env: Env, resource: Table ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(resource) )
+	def list( env: Env, resource: Table, filter: Option[String] ) = {
+		val where =
+			if (filter == None)
+				""
+			else {
+				val QueryFunctionHelpers.FILTER(col, search) = filter.get
+				val search1 = escapeQuotes( search )
+				
+				s" WHERE $col = '$search1'" 
+			}
+			
+		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where )
+	}
 	
 	def find( env: Env, resource: Table, id: Long ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(resource) + s" WHERE ${resource.name}.id = $id" )
