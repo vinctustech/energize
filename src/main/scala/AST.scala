@@ -18,6 +18,7 @@ case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, na
 trait ColumnType
 case object StringType extends ColumnType
 case object IntegerType extends ColumnType
+case object LongType extends ColumnType
 case object UUIDType extends ColumnType
 case object DateType extends ColumnType
 case class TableType( table: String ) extends ColumnType

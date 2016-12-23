@@ -21,6 +21,7 @@ object H2Database extends Database {
 						(typ match {
 							case StringType => "VARCHAR(255)"
 							case IntegerType => "INT"
+							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
 							case TableType( _ ) => "BIGINT"

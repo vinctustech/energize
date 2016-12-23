@@ -145,6 +145,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val columnType: PackratParser[ColumnType] =
 		"string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
+		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType |
 		ident ^^ (TableType)

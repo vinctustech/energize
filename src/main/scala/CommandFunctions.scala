@@ -10,7 +10,23 @@ object CommandFunctions {
 	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 	
 	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
+		val types = for ((n, i) <- resource.names zipWithIndex) yield (i + 1, resource.columns(n.toUpperCase).typ)
+			
+		for (r <- rows) {
+			for (((i, t), c) <- types zip r) {
+				(t, c) match {
+					case (StringType, a: String) => resource.preparedInsert.setString( i, a )
+					case (IntegerType, a: java.lang.Integer) => resource.preparedInsert.setInt( i, a )
+					case (LongType, a: java.lang.Long) => resource.preparedInsert.setLong( i, a )
+					case _ => sys.error( s"missing support for '$t'" )
+				}
+			}
+				
+			resource.preparedInsert.addBatch
+		}
 		
+		resource.preparedInsert.executeBatch
+		resource.preparedInsert.clearParameters
 	}
 	
 	def insert( env: Env, resource: Table, json: Map[String, AnyRef] ) = {

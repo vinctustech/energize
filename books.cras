@@ -10,9 +10,11 @@ resource publishers
 	name string unique
 
 if size( books ) == 0
-	insert( publishers, {name: "North Point Press"} )
-	insert( publishers, {name: "Enhanced Media"} )
-	insert( publishers, {name: "Amazon Classics"} )
+	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]] )
+	
+	#insert( publishers, {name: "North Point Press"} )
+	#insert( publishers, {name: "Enhanced Media"} )
+	#insert( publishers, {name: "Amazon Classics"} )
 	
 	insert( authors, {name: "Fyodor Dostoyevsky"} )
 	insert( authors, {name: "Lewis Carroll"} )
