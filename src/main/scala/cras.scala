@@ -107,7 +107,7 @@ package object cras {
 							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique, indexed )
 					}
 		
-					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap )
+					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, null )
 					
 					if (bases isEmpty) {
 						val Env( _, r, _, _, _ ) =
@@ -149,6 +149,14 @@ package object cras {
 			
 		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
 			statement.execute( H2Database.create(sorted) )
+		}
+		
+		tables.values foreach {
+			case t@Table( name, cnames, _, _ ) =>
+				val columns = cnames mkString ","
+				val values = Seq.fill( cnames.length )(  "?") mkString ","
+				
+				t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
 		}
 		
 		interpretExpressions( ast )

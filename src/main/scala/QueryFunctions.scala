@@ -27,8 +27,9 @@ object QueryFunctionHelpers {
 	}
 	
 	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=)(.+)"r
+	val ORDER = """([a-zA-Z.]+)\:(ASC|asc|DESC|desc)"""r
 	val DELIMITER = ","r
-	val NUMERIC = "[0-9.]+"r
+	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
 	
 	def numeric( s: String ) = NUMERIC.pattern.matcher( s ).matches
 }
@@ -80,7 +81,7 @@ object QueryFunctions {
 		res.getInt( 1 )
 	}
 
-	def list( env: Env, resource: Table, filter: Option[String] ) = {
+	def list( env: Env, resource: Table, filter: Option[String], order: Option[String] ) = {
 		val where =
 			if (filter == None)
 				""
@@ -98,9 +99,22 @@ object QueryFunctions {
 						}
 					} mkString " AND ")
 			}
-			println( where )
+		val orderby =
+			if (order == None)
+				""
+			else {
+				" ORDER BY " +
+					(QueryFunctionHelpers.DELIMITER.split( order.get ) map {
+						o => {
+							val QueryFunctionHelpers.ORDER(col, ordering) = o
+							val ordering1 = ordering.toUpperCase
+							
+							s"$col $ordering1"
+						}
+					} mkString ", ")
+			}
 			
-		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where )
+		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where + orderby )
 	}
 	
 	def find( env: Env, resource: Table, id: Long ) =

@@ -17,7 +17,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	override val lexical: IndentationLexical =
 		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "//", "/*", "*/" )
 		{
-//			override def token: Parser[Token] = decimalParser | super.token
+			override def token: Parser[Token] = decimalParser | super.token
 
 			override def identChar = letter | elem('_') | elem('$')
 			
@@ -274,8 +274,9 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
 		"null" ^^^ (LiteralExpression( null )) |
 		"(" ~> expression <~ ")" |
-		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
-	
+		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression) |
+		"[" ~> repsep(expression, ",") <~ "]" ^^ (ListExpression)
+		
 	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
 		
 	lazy val variableExpression = ident ^^ (VariableExpression)

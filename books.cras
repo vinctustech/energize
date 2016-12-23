@@ -8,7 +8,7 @@ resource authors
 	
 resource publishers
 	name string unique
-	
+
 if size( books ) == 0
 	insert( publishers, {name: "North Point Press"} )
 	insert( publishers, {name: "Enhanced Media"} )

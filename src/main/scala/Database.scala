@@ -6,7 +6,7 @@ object H2Database extends Database {
 		val buf = new StringBuilder
 		
 		tables foreach {
-			case Table( name, names, columns ) =>
+			case Table( name, names, columns, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
 				buf ++= "(id IDENTITY NOT NULL PRIMARY KEY"

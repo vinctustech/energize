@@ -9,43 +9,64 @@ object CommandFunctions {
 	
 	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 	
+	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
+		
+	}
+	
 	def insert( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
+// 		if (json.keySet == resource.names.toSet) {
+// 			
+// 			for ((n, i) <- resource.names zipWithIndex)
+// 				json(n) match {
+// 					case a: Integer => resource.preparedInsert.setInt( i + 1, a )
+// 					case a: String => resource.preparedInsert.setString( i + 1, a )
+// 				}
+// 				
+// 			resource.preparedInsert.executeUpdate
+// 			resource.preparedInsert.clearParameters
+// 			
+// 			val g = resource.preparedInsert.getGeneratedKeys
+// 			
+// 			g.next
+// 			g.getLong(1)
+// 		} else {
 		val com = new StringBuilder( "INSERT INTO " )
-		val json1 = escapeQuotes( json )
-		
-		com ++= resource.name
-		com ++= resource.names.mkString( " (", ", ", ") " )
-		com ++= "VALUES ("
-		com ++=
-			(for (c <- resource.names)
-				yield {
-					json1 get c match {
-						case None => "NULL"
-						case Some( v ) =>
-							resource.columns(c.toUpperCase).typ match {
-								case TableType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-									s"(SELECT id FROM $t WHERE " +
-										(env.tables(t.toUpperCase).columns.values.find( c => c.unique ) match {
-											case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
-											case Some( c ) => c.name
-										}) + " = '" + String.valueOf( v ) + "')"
-								case StringType => '\'' + String.valueOf( v ) + '\''
-								case _ => String.valueOf( v )
-							}
-					}
-				}) mkString ", "
-			com += ')'
-		
-		env.statement.executeUpdate( com.toString )
-		
-		val g = env.statement.getGeneratedKeys
-		
-		g.next
-		g.getLong(1)
+			val json1 = escapeQuotes( json )
+			
+			com ++= resource.name
+			com ++= resource.names.mkString( " (", ", ", ") " )
+			com ++= "VALUES ("
+			com ++=
+				(for (c <- resource.names)
+					yield {
+						json1 get c match {
+							case None => "NULL"
+							case Some( v ) =>
+								resource.columns(c.toUpperCase).typ match {
+									case TableType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+										s"(SELECT id FROM $t WHERE " +
+											(env.tables(t.toUpperCase).columns.values.find( c => c.unique ) match {
+												case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
+												case Some( c ) => c.name
+											}) + " = '" + String.valueOf( v ) + "')"
+									case StringType => '\'' + String.valueOf( v ) + '\''
+									case _ => String.valueOf( v )
+								}
+						}
+					}) mkString ", "
+				com += ')'
+			
+			env.statement.executeUpdate( com.toString )
+			
+			val g = env.statement.getGeneratedKeys
+			
+			g.next
+			g.getLong(1)
+// 		}
 	}
 	
 	def update( env: Env, resource: Table, json: Map[String, Any], id: Long, all: Boolean ) =
-		if (all && json.keySet != (resource.columns.keySet - "id"))
+		if (all && json.keySet != resource.names.toSet)
 			throw new CrasErrorException( "update: missing column(s) in PUT request" )
 		else {
 			val com = new StringBuilder( "UPDATE " )
