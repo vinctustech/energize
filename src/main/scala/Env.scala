@@ -56,6 +56,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		// 			})
 		// 	map
 		// }
+		println( reqquery )
 		
 		val reqfrag = uri.getFragment
 		

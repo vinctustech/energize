@@ -19,13 +19,18 @@ object QueryFunctionHelpers {
 		resource.columns.values filter (c => c.typ.isInstanceOf[TableType]) foreach {
 			case Column(col, TableType(reft), _, _, _, _) =>
 				 buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
+			case _ => sys.error( "somthing bad happened" )
 		}
 		
 //		println( buf )
 		buf.toString
 	}
 	
-	val FILTER = "([a-zA-Z]+):(.+)"r
+	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=)(.+)"r
+	val DELIMITER = ","r
+	val NUMERIC = "[0-9.]+"r
+	
+	def numeric( s: String ) = NUMERIC.pattern.matcher( s ).matches
 }
 
 object QueryFunctions {
@@ -80,11 +85,20 @@ object QueryFunctions {
 			if (filter == None)
 				""
 			else {
-				val QueryFunctionHelpers.FILTER(col, search) = filter.get
-				val search1 = escapeQuotes( search )
-				
-				s" WHERE $col = '$search1'" 
+				" WHERE " +
+					(QueryFunctionHelpers.DELIMITER.split( filter.get ) map {
+						f => {
+							val QueryFunctionHelpers.FILTER(col, op, search) = f
+							val search1 = escapeQuotes( search )
+							
+							if (QueryFunctionHelpers.numeric( search1 ))
+								s"$col $op $search1"
+							else
+								s"$col $op '$search1'"
+						}
+					} mkString " AND ")
 			}
+			println( where )
 			
 		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where )
 	}

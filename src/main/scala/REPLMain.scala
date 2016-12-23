@@ -21,7 +21,7 @@ object REPLMain extends App {
 	var stacktrace = false
 
 	"""
-	|Welcome to CRAS version 0.3.
+	|Welcome to CRAS version 0.4.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
 	""".trim.stripMargin.lines foreach println

@@ -1,8 +1,8 @@
 name := "cras"
 
-version := "0.3"
+version := "0.4"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.1"
 
 scalacOptions ++= Seq( "-deprecation", "-feature", "-language:postfixOps", "-language:implicitConversions", "-language:existentials" )
 
