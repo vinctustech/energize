@@ -32,9 +32,6 @@ object H2Database extends Database {
 						
 					if (unique)
 						buf ++= " UNIQUE"
-						
-					if (indexed)
-						buf ++= " INDEXED"
 				}
 
 				columns.values foreach {
@@ -48,6 +45,16 @@ object H2Database extends Database {
 				}
 				
 				buf ++= ");\n"
+				
+				columns.values foreach {
+					case Column( c, _, _, _, _, true ) =>
+						buf ++= "CREATE INDEX ON "
+						buf ++= name
+						buf += '('
+						buf ++= c
+						buf ++= ");\n"
+					case _ =>
+				}
 		}
 		
 		buf.toString
