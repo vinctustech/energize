@@ -81,7 +81,7 @@ object QueryFunctions {
 		res.getInt( 1 )
 	}
 
-	def list( env: Env, resource: Table, filter: Option[String], order: Option[String], page: Option[Int] ) = {
+	def list( env: Env, resource: Table, filter: Option[String], order: Option[String], page: Option[String] ) = {
 		val where =
 			if (filter == None)
 				""
@@ -115,8 +115,16 @@ object QueryFunctions {
 						}
 					} mkString ", ")
 			}
+		val limoff =
+			if (page == None)
+				""
+			else {
+				val page1 = (page.get.toInt - 1)*10
+				
+				s" LIMIT 10 OFFSET $page1"
+			}
 			
-		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where + orderby )
+		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where + orderby + limoff )
 	}
 	
 	def find( env: Env, resource: Table, id: Long ) =

@@ -64,7 +64,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				}
 
 			reserved += (
-				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for",
+				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "break", "continue",
 				"resource", "unique", "indexed", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"def", "var", "val", "long"
@@ -208,6 +208,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			{case c ~ t ~ ei ~ e => ConditionalExpression( (c, t) +: ei, e )} |
 		"for" ~> generators ~ ("do" ~> expressionOrBlock | blockExpression) ~ elsePart ^^
 			{case g ~ b ~ e => ForExpression( g, b, e )} |
+		"break" ^^^ BreakExpression |
+		"continue" ^^^ ContinueExpression |
 		booleanExpression
 
 	lazy val elif =

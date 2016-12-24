@@ -12,11 +12,17 @@ object Main extends App {
 //  	println( env.process("GET", "/books?order=title:asc", null) )
 // 	println( env.process("GET", "/books/1", null) )
 
-	val (c, s) = dbconnect( "customers", true )
-	val env = configure( io.Source.fromFile("customers.cras"), c, s )
+// 	val (c, s) = dbconnect( "customers", true )
+// 	val env = configure( io.Source.fromFile("customers.cras"), c, s )
+// 	
+// //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
+//  	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
+
+	val (c, s) = dbconnect( "data", true )
+	val env = configure( io.Source.fromFile("data.cras"), c, s )
 	
 //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
- 	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
-	
+ 	println( env.process("GET", "/data?page=2", null) )
+
 	c.close
 }
