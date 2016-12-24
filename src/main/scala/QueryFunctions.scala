@@ -1,6 +1,7 @@
 package xyz.hyperreal.cras
 
 import collection.mutable.ListBuffer
+import collection.immutable.ListMap
 
 	
 // 	def list( env: Env, resource: Table ) =
@@ -65,7 +66,7 @@ object QueryFunctions {
 				}
 			}
 			
-			Map( attr: _* )
+			ListMap( attr: _* )
 		}
 		
 		while (res.next)
@@ -81,7 +82,7 @@ object QueryFunctions {
 		res.getInt( 1 )
 	}
 
-	def list( env: Env, resource: Table, filter: Option[String], order: Option[String], page: Option[String] ) = {
+	def list( env: Env, resource: Table, filter: Option[String], order: Option[String], page: Option[String], limit: Option[String] ) = {
 		val where =
 			if (filter == None)
 				""
@@ -115,13 +116,17 @@ object QueryFunctions {
 						}
 					} mkString ", ")
 			}
-		val limoff =
+		val limit1 = limit.getOrElse( "10" ).toInt
+		val limoff =			
 			if (page == None)
-				""
+				if (limit == None)
+					""
+				else
+					s" LIMIT $limit1"
 			else {
-				val page1 = (page.get.toInt - 1)*10
+				val page1 = (page.get.toInt - 1)*limit1
 				
-				s" LIMIT 10 OFFSET $page1"
+				s" LIMIT $limit1 OFFSET $page1"
 			}
 			
 		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where + orderby + limoff )
