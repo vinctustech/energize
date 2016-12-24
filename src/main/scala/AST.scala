@@ -53,7 +53,10 @@ case class DotExpression( obj: ExpressionAST, prop: String ) extends ExpressionA
 case class CompoundExpression( left: ExpressionAST, right: ExpressionAST ) extends ExpressionAST
 case class BlockExpression( l: List[StatementAST] ) extends ExpressionAST
 case class ConditionalExpression( cond: List[(ExpressionAST, ExpressionAST)], no: Option[ExpressionAST] ) extends ExpressionAST
+case class ForExpression( gen: List[GeneratorAST], body: ExpressionAST, e: Option[ExpressionAST] ) extends ExpressionAST
 case class ComparisonExpression( left: ExpressionAST, comps: List[(Symbol, FunctionMap, ExpressionAST)] ) extends ExpressionAST
+
+case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 
 // trait PatternAST extends AST
 // 

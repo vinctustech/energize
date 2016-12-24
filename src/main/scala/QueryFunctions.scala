@@ -81,7 +81,7 @@ object QueryFunctions {
 		res.getInt( 1 )
 	}
 
-	def list( env: Env, resource: Table, filter: Option[String], order: Option[String] ) = {
+	def list( env: Env, resource: Table, filter: Option[String], order: Option[String], page: Option[Int] ) = {
 		val where =
 			if (filter == None)
 				""

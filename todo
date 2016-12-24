@@ -6,6 +6,6 @@ comment lines with deeper level of indentation
 
 default values for columns
 
-auto route for querying on unique or indexed columns
-
 allow json syntax for inserting values into reference columns
+
+deep properties in filters

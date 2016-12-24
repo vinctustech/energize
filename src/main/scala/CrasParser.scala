@@ -64,14 +64,14 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				}
 
 			reserved += (
-				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null",
+				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for",
 				"resource", "unique", "indexed", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"def", "var", "val", "long"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
-				":", "->", ".", ";", "?"
+				":", "->", ".", ";", "?", "<-"
 				)
 		}
 
@@ -206,12 +206,19 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val controlExpression: PackratParser[ExpressionAST] =
 		("if" ~> booleanExpression) ~ ("then" ~> expressionOrBlock | blockExpression) ~ rep(elif) ~ elsePart ^^
 			{case c ~ t ~ ei ~ e => ConditionalExpression( (c, t) +: ei, e )} |
+		"for" ~> generators ~ ("do" ~> expressionOrBlock | blockExpression) ~ elsePart ^^
+			{case g ~ b ~ e => ForExpression( g, b, e )} |
 		booleanExpression
 
 	lazy val elif =
 		(onl ~ "elif") ~> booleanExpression ~ ("then" ~> expressionOrBlock | blockExpression) ^^ {case c ~ t => (c, t)}
 
 	lazy val elsePart: PackratParser[Option[ExpressionAST]] = opt(onl ~> "else" ~> expressionOrBlock)
+
+	lazy val generator: PackratParser[GeneratorAST] =
+		(ident <~ "<-") ~ expression ~ opt("if" ~> expression) ^^ {case p ~ t ~ f => GeneratorAST( p, t, f )}
+
+	lazy val generators = rep1sep(generator, ",")
 		
 	lazy val booleanExpression =
 		comparisonExpression
