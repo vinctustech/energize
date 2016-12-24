@@ -26,7 +26,7 @@ object QueryFunctionHelpers {
 		buf.toString
 	}
 	
-	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=)(.+)"r
+	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=|~)(.+)"r
 	val ORDER = """([a-zA-Z.]+)\:(ASC|asc|DESC|desc)"""r
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
@@ -92,7 +92,9 @@ object QueryFunctions {
 							val QueryFunctionHelpers.FILTER(col, op, search) = f
 							val search1 = escapeQuotes( search )
 							
-							if (QueryFunctionHelpers.numeric( search1 ))
+							if (op == "~")
+								s"$col LIKE '$search1'"
+							else if (QueryFunctionHelpers.numeric( search1 ))
 								s"$col $op $search1"
 							else
 								s"$col $op '$search1'"

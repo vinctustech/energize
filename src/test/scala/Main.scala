@@ -15,7 +15,8 @@ object Main extends App {
 	val (c, s) = dbconnect( "customers", true )
 	val env = configure( io.Source.fromFile("customers.cras"), c, s )
 	
- 	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
+//  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
+ 	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
 	
 	c.close
 }
