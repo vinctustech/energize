@@ -14,8 +14,8 @@ import collection.immutable.ListMap
 // 		}
 
 object QueryFunctionHelpers {
-	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=|~)(.+)"r
-	val ORDER = """([a-zA-Z.]+)\:(ASC|asc|DESC|desc)"""r
+	val FILTER = "(.+)(=|<|>|<=|>=|!=|~)(.+)"r
+	val ORDER = """(.+)\:(ASC|asc|DESC|desc)"""r
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
 	
