@@ -21,8 +21,8 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(find(<resource>, id)) )
-		|  GET     /         dataResult( "<resource>", list(<resource>, ?filter, ?order, ?page, ?limit) )
+		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(find(<resource>, id, ?fields)) )
+		|  GET     /         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?limit) )
 		|  POST    /         dataResult( "<resource>", insert(<resource>, json) )
 		|  PATCH   /id:long  atLeastOneOrNotFound( update(<resource>, json, id, false) ); null
 		|  PUT     /id:long  atLeastOneOrNotFound( update(<resource>, json, id, true) ); null

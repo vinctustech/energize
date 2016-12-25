@@ -14,10 +14,27 @@ import collection.immutable.ListMap
 // 		}
 
 object QueryFunctionHelpers {
-	def listQuery( resource: Table ) = {
-		val buf = new StringBuilder( s"SELECT * FROM ${resource.name}" )
+	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=|~)(.+)"r
+	val ORDER = """([a-zA-Z.]+)\:(ASC|asc|DESC|desc)"""r
+	val DELIMITER = ","r
+	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
+	
+	def listQuery( resource: Table, fields: Option[String] ) = {
+		val fs =
+			fields match {
+				case None => Nil
+				case Some( f ) => DELIMITER.split( f ).toList
+			}
+		val fss = fs.toSet
 		
-		resource.columns.values filter (c => c.typ.isInstanceOf[TableType]) foreach {
+		if (fss.intersect( resource.names.toSet ) != fss)
+			sys.error( "all fields must be apart of the resource definition" )
+			
+		val fs1 = if (fs == Nil) "*" else fs mkString ","
+		val buf = new StringBuilder( s"SELECT $fs1 FROM ${resource.name}" )
+		val fssu = fss map (f => f.toUpperCase)
+		
+		resource.columns.values filter (c => c.typ.isInstanceOf[TableType] && (fssu.isEmpty || fssu(c.name))) foreach {
 			case Column(col, TableType(reft), _, _, _, _) =>
 				 buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
 			case _ => sys.error( "somthing bad happened" )
@@ -26,11 +43,6 @@ object QueryFunctionHelpers {
 //		println( buf )
 		buf.toString
 	}
-	
-	val FILTER = "([a-zA-Z.]+)(=|<|>|<=|>=|!=|~)(.+)"r
-	val ORDER = """([a-zA-Z.]+)\:(ASC|asc|DESC|desc)"""r
-	val DELIMITER = ","r
-	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
 	
 	def numeric( s: String ) = NUMERIC.pattern.matcher( s ).matches
 }
@@ -82,7 +94,8 @@ object QueryFunctions {
 		res.getInt( 1 )
 	}
 
-	def list( env: Env, resource: Table, filter: Option[String], order: Option[String], page: Option[String], limit: Option[String] ) = {
+	def list( env: Env, resource: Table,
+		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], limit: Option[String] ) = {
 		val where =
 			if (filter == None)
 				""
@@ -129,9 +142,9 @@ object QueryFunctions {
 				s" LIMIT $limit1 OFFSET $page1"
 			}
 			
-		query( env, resource, QueryFunctionHelpers.listQuery(resource) + where + orderby + limoff )
+		query( env, resource, QueryFunctionHelpers.listQuery(resource, fields) + where + orderby + limoff )
 	}
 	
-	def find( env: Env, resource: Table, id: Long ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(resource) + s" WHERE ${resource.name}.id = $id" )
+	def find( env: Env, resource: Table, id: Long, fields: Option[String] ) =
+		query( env, resource, QueryFunctionHelpers.listQuery(resource, fields) + s" WHERE ${resource.name}.id = $id" )
 }

@@ -22,7 +22,7 @@ object Main extends App {
 	val env = configure( io.Source.fromFile("data.cras"), c, s )
 	
 //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
- 	println( env.process("GET", "/data?limit=5", null) )
+ 	println( env.process("GET", "/data?fields=first_name,city;limit=5", null) )
 
 	c.close
 }
