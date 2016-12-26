@@ -5,11 +5,11 @@ object SupportFunctions {
 	
 	def print( env: Env, o: Any ) = println( o )
 	
-	def int( env: Env, v: String ) = v.toInt
+	def toInt( env: Env, v: String ) = v.toInt
 	
-	def long( env: Env, v: String ) = v.toLong
+	def toLong( env: Env, v: String ) = v.toLong
 	
-	def str( env: Env, o: Any ) = o.toString
+	def toString( env: Env, o: Any ) = o.toString
 	
 	def singleOrNotFound( env: Env, list: List[Any] ) =
 		list.length match {
@@ -25,4 +25,11 @@ object SupportFunctions {
 		}
 		
 	def eval( env: Env, expr: String ) = env.evaluate( expr )
+	
+	def rndPrintable( env: Env, len: Int ) = List.fill( len )( util.Random.nextPrintableChar ).mkString
+	
+	def rndAlpha( env: Env, len: Int ) = List.fill( len )( (util.Random.nextInt('z' - 'a') + 'a').toChar ).mkString
+	
+	def rndInt( env: Env, low: Int, high: Int ) = util.Random.nextInt( high - low ) + low
+	
 }

@@ -1,2 +1,2 @@
-for i <- 1..2, j <- 3..4, k <- 5..6
-	print( [i, j, k] )
+for i <- 1..5
+	print( [rndInt(5, 10), rndAlpha(5)] )
