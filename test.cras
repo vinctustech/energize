@@ -1,13 +1,2 @@
-resource users
-	name string unique required
-	role roles
-
-resource roles
-	type string unique required
-
-if size( roles ) == 0
-	insert( roles, {type: "normal"} )
-	insert( roles, {type: "admin"} )
-	insert( roles, {type: "super"} )
-
-	insert( users, {name: "joe", role: "admin"} )
+for i <- 1..2, j <- 3..4, k <- 5..6
+	print( [i, j, k] )

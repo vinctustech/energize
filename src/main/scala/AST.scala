@@ -57,6 +57,8 @@ case class ForExpression( gen: List[GeneratorAST], body: ExpressionAST, e: Optio
 case class ComparisonExpression( left: ExpressionAST, comps: List[(Symbol, FunctionMap, ExpressionAST)] ) extends ExpressionAST
 case object BreakExpression extends ExpressionAST
 case object ContinueExpression extends ExpressionAST
+case class RangeExpression( start: ExpressionAST, end: ExpressionAST ) extends ExpressionAST
+
 case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 
 // trait PatternAST extends AST

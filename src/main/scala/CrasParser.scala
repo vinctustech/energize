@@ -71,7 +71,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
-				":", "->", ".", ";", "?", "<-"
+				":", "->", ".", ";", "?", "<-", ".."
 				)
 		}
 
@@ -226,14 +226,18 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		comparisonExpression
 
 	lazy val comparisonExpression: PackratParser[ExpressionAST] =
-		additiveExpression ~ rep1(("==" | "!=" | "<" | ">" | "<=" | ">=") ~ additiveExpression) ^^
+		rangeExpression ~ rep1(("==" | "!=" | "<" | ">" | "<=" | ">=") ~ rangeExpression) ^^
 			{case l ~ comps => ComparisonExpression( l, comps map {
 				case o ~ e =>
 					val s = Symbol( o )
 					
 					(s, Math.lookup(s), e)} )} |
-	additiveExpression
+		rangeExpression
 	
+	lazy val rangeExpression: PackratParser[ExpressionAST] =
+		additiveExpression ~ (".." ~> additiveExpression) ^^ {case s ~ e => RangeExpression( s, e )} |
+		additiveExpression
+		
 	lazy val additiveExpression: PackratParser[ExpressionAST] =
 		additiveExpression ~ ("+" | "-") ~ multiplicativeExpression ^^
 			{case l ~ o ~ r =>

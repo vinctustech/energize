@@ -148,6 +148,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
+			case RangeExpression( start, end ) => evalbi( start ) to evalbi( end )
 			case ListExpression( Nil ) => Nil
 			case ListExpression( exprs ) => exprs map deref
 			case DotExpression( obj, field ) => evalm( obj )( field )
@@ -207,6 +208,23 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					}
 					
 				condition( cond )
+			case ForExpression( gen, body, e ) =>
+				def forloop( env: Env, gs: List[GeneratorAST] ) {
+					gs match {
+						case List( g ) =>
+							val GeneratorAST( pattern, traversable, filter ) = g
+							val tr = evalt( traversable )
+							
+							tr foreach (item => env.add( pattern -> item ).eval( body ))
+						case hd :: tl =>
+							val GeneratorAST( pattern, traversable, filter ) = hd
+							val tr = evalt( traversable )
+							
+							tr foreach (item => forloop( env.add(pattern -> item), tl ))
+					}
+				}
+
+				forloop( this, gen )
 			case ComparisonExpression( left, comps ) =>
 				var l = eval( left )
 				
@@ -244,11 +262,17 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 
 	def evals( expr: ExpressionAST ) = deref( expr ).asInstanceOf[String]
 	
-	def evali( expr: ExpressionAST ) = deref( expr ).asInstanceOf[String].toInt
+	def evalbi( expr: ExpressionAST ) =
+		deref( expr ) match {
+			case a: Int => BigInt( a )
+			case a: BigInt => a
+		}
 	
 	def evalm( expr: ExpressionAST ) = deref( expr ).asInstanceOf[Map[String, Any]]
 	
 	def evalb( expr: ExpressionAST ) = deref( expr ).asInstanceOf[Boolean]
+	
+	def evalt( expr: ExpressionAST ) = deref( expr ).asInstanceOf[TraversableOnce[Any]]
 
 }
 
