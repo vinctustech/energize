@@ -26,8 +26,9 @@ object QueryFunctionHelpers {
 				case Some( f ) => DELIMITER.split( f ).toList
 			}
 		val fss = fs.toSet
+		val fssmid = fss - "id"
 		
-		if (fss.intersect( resource.names.toSet ) != fss)
+		if (fssmid.intersect( resource.names.toSet ) != fssmid)
 			sys.error( "all fields must be apart of the resource definition" )
 			
 		val fs1 = if (fs == Nil) "*" else fs mkString ","
@@ -95,7 +96,7 @@ object QueryFunctions {
 	}
 
 	def list( env: Env, resource: Table,
-		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], limit: Option[String] ) = {
+		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
 		val where =
 			if (filter == None)
 				""
@@ -129,17 +130,16 @@ object QueryFunctions {
 						}
 					} mkString ", ")
 			}
-		val limit1 = limit.getOrElse( "10" ).toInt
-		val limoff =			
-			if (page == None)
-				if (limit == None)
-					""
-				else
-					s" LIMIT $limit1"
-			else {
-				val page1 = (page.get.toInt - 1)*limit1
-				
-				s" LIMIT $limit1 OFFSET $page1"
+			
+		val limoff =
+			(page map (p => p.toInt - 1), start, limit) match {
+				case (None, None, None) => ""
+				case (Some( p ), None, None) => s" LIMIT 10 OFFSET " + (p*10)
+				case (None, Some( s ), None) => s" LIMIT 10 OFFSET $s"
+				case (Some( p ), Some( s ), _) => sys.error( "'page' and 'start' can't be used in the same query" )
+				case (None, None, Some( l )) => s" LIMIT $l"
+				case (Some( p ), None, Some( l )) => s" LIMIT $l OFFSET " + (p*l.toInt)
+				case (None, Some( s ), Some( l )) => s" LIMIT $l OFFSET $s"
 			}
 			
 		query( env, resource, QueryFunctionHelpers.listQuery(resource, fields) + where + orderby + limoff )
