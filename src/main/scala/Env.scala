@@ -144,7 +144,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		deref( ast.expr )	
 	}
 	
-	def replacer = (m: Regex.Match) => lookup( m.group(1) ).toString
+	def replacer = (m: Regex.Match) => lookup( m group 1 ).toString
 	
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
@@ -153,7 +153,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case ListExpression( exprs ) => exprs map deref
 			case DotExpression( obj, field ) => evalm( obj )( field )
 			case CompoundExpression( left, right ) =>
-				deref( left )
+				eval( left )
 				deref( right )
 			case BinaryExpression( left, op, func, right ) =>
 				val l = deref( left )

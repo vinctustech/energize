@@ -6,7 +6,9 @@ import xyz.hyperreal.numbers.ComplexBigInt
 object Builtins {
 	val constants =
 		List(
-			"i" -> ComplexBigInt.i
+			"i" -> ComplexBigInt.i,
+			"e" -> math.E,
+			"pi" -> math.Pi
 		)
 	
 	def pairs( natives: List[Native] ) = natives map (n => (n.name -> n))

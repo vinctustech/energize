@@ -118,6 +118,8 @@ object REPLMain extends App {
 					result( method, path, line1.split("\\s+", 3)(2) )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )
+				case _ if line1 startsWith "?" =>
+					println( env evaluate line1.substring(1) )
 				case _ => //sql non-query command
 					statement.execute( line1 )
 			}

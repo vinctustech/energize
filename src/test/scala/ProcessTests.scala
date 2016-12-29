@@ -168,7 +168,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|	GET   /f/a:integer/b:integer dataResult( null, f(a, b) )
 			|	GET   /plus/a:/b:            dataResult( null, a + b )
 			|	GET   /combine               dataResult( null, {"a": 1} + json )
-			|	GET   /eval                  dataResult( null, str(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
+			|	GET   /eval                  dataResult( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
 		val env = configure( io.Source.fromString(config), c, s )
 
