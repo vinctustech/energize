@@ -4,10 +4,10 @@ import org.scalatest._
 import prop.PropertyChecks
 
 
-class processTests extends FreeSpec with PropertyChecks with Matchers {
+class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	
 	"empty database" in {
-		val (c, s) = dbconnect( "test", true )
+		val (c, s) = Cras.dbconnect( "test", true )
 		val config =
 			"""
 			|resource todo /api/v1
@@ -18,7 +18,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test /api/v1
 			|  asdf        integer required
 			""".trim.stripMargin
-		val env = configure( io.Source.fromString(config), c, s )
+		val env = Cras.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
 			Some( """
@@ -41,7 +41,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"empty database (no base)" in {
-		val (c, s) = dbconnect( "test", true )
+		val (c, s) = Cras.dbconnect( "test", true )
 		val config =
 			"""
 			|resource todo
@@ -52,7 +52,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test
 			|  asdf        integer required
 			""".trim.stripMargin
-		val env = configure( io.Source.fromString(config), c, s )
+		val env = Cras.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/todo", null ) shouldBe
 			Some( """
@@ -75,7 +75,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"post/get/delete" in {
-		val (c, s) = dbconnect( "test", true )
+		val (c, s) = Cras.dbconnect( "test", true )
 		val config =
 			"""
 			|resource todo /api/v1
@@ -86,7 +86,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test /api/v1
 			|  asdf       integer required
 			""".trim.stripMargin
-		val env = configure( io.Source.fromString(config), c, s )
+		val env = Cras.configure( io.Source.fromString(config), c, s )
 
 		env.process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""" ) shouldBe
 			Some( """
@@ -159,7 +159,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"functions/evaluation" in {
-		val (c, s) = dbconnect( "test", true )
+		val (c, s) = Cras.dbconnect( "test", true )
 		val config =
 			"""
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
@@ -170,7 +170,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|	GET   /combine               dataResult( null, {"a": 1} + json )
 			|	GET   /eval                  dataResult( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
-		val env = configure( io.Source.fromString(config), c, s )
+		val env = Cras.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/eval", """ {"expr": "(i + 2)/2*i"} """ ) shouldBe
 			Some( """
@@ -194,7 +194,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"empty database (one-to-many)" in {
-		val (c, s) = dbconnect( "test", true )
+		val (c, s) = Cras.dbconnect( "test", true )
 		val config =
 			"""
 			|resource users
@@ -204,7 +204,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource roles
 			|  type        string  unique required
 			""".trim.stripMargin
-		val env = configure( io.Source.fromString(config), c, s )
+		val env = Cras.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/users", null ) shouldBe
 			Some( """
@@ -227,7 +227,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"post/get/delete (one-to-many)" in {
-		val (c, s) = dbconnect( "test", true )
+		val (c, s) = Cras.dbconnect( "test", true )
 		val config =
 			"""
 			|resource users
@@ -237,7 +237,7 @@ class processTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource roles
 			|  type        string  unique required
 			""".trim.stripMargin
-		val env = configure( io.Source.fromString(config), c, s )
+		val env = Cras.configure( io.Source.fromString(config), c, s )
 
 		env.process( "POST", "/roles", """{"type": "normal"}""" ) shouldBe
 			Some( """

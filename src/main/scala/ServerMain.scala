@@ -12,7 +12,7 @@ object ServerMain extends App {
 	
 	val db = args(0)
 	val config = args(1) + ".cras"
-	val (connection, statement) = dbconnect( db )
+	val (connection, statement) = Cras.dbconnect( db )
 	
 	sys.addShutdownHook {
 		connection.close
@@ -22,7 +22,7 @@ object ServerMain extends App {
 	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	println( "loading " + config )
 
-	val env = configure( io.Source.fromFile(config), connection, statement )
+	val env = Cras.configure( io.Source.fromFile(config), connection, statement )
 	
 	println( "starting server" )
 	new Server( 8080, env ).start
