@@ -226,12 +226,16 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		comparisonExpression
 
 	lazy val comparisonExpression: PackratParser[ExpressionAST] =
-		rangeExpression ~ rep1(("==" | "!=" | "<" | ">" | "<=" | ">=") ~ rangeExpression) ^^
+		assignmentExpression ~ rep1(("==" | "!=" | "<" | ">" | "<=" | ">=") ~ assignmentExpression) ^^
 			{case l ~ comps => ComparisonExpression( l, comps map {
 				case o ~ e =>
 					val s = Symbol( o )
 					
 					(s, Math.lookup(s), e)} )} |
+		assignmentExpression
+	
+	lazy val assignmentExpression: PackratParser[ExpressionAST] =
+		positioned( ident ~ ("=" ~> rangeExpression) ^^ {case v ~ e => AssignmentExpression( v, e )} ) |
 		rangeExpression
 	
 	lazy val rangeExpression: PackratParser[ExpressionAST] =

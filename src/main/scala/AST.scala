@@ -58,6 +58,7 @@ case class ComparisonExpression( left: ExpressionAST, comps: List[(Symbol, Funct
 case object BreakExpression extends ExpressionAST
 case object ContinueExpression extends ExpressionAST
 case class RangeExpression( start: ExpressionAST, end: ExpressionAST ) extends ExpressionAST
+case class AssignmentExpression( v: String, expr: ExpressionAST ) extends ExpressionAST with Positional
 
 case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 
