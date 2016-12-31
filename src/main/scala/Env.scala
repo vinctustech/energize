@@ -148,6 +148,12 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
+			case AssignmentExpression( v, expr ) =>
+				variables get v match {
+					case None => sys.error( s"variable '$v' not found" )
+					case Some( h: Variable ) => h.value = deref( expr )
+					case _ => sys.error( s"'$v' is not a variable" )
+				}
 			case RangeExpression( start, end ) => evalbi( start ) to evalbi( end )
 			case ListExpression( Nil ) => Nil
 			case ListExpression( exprs ) => exprs map deref
@@ -229,11 +235,11 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 				while (evalb( cond ))
 					eval( body )
 			case ComparisonExpression( left, comps ) =>
-				var l = eval( left )
+				var l = deref( left )
 				
 				comps forall {
 					case (_, func, right) =>
-						val r = eval( right )
+						val r = deref( right )
 						
 						if (Math( func, l, r ).asInstanceOf[Boolean]) {
 							l = r
