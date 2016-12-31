@@ -37,7 +37,7 @@ object REPLMain extends App {
 	}
 	
 	def connect( file: String ) {
-		val (c, s) = dbconnect( file )
+		val (c, s) = Cras.dbconnect( file )
 		
 		connection = c
 		statement = s
@@ -82,7 +82,7 @@ object REPLMain extends App {
 					|<SQL>                                execute <SQL> non-query command
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					env = configure( io.Source.fromFile(config + ".cras"), connection, statement )
+					env = Cras.configure( io.Source.fromFile(config + ".cras"), connection, statement )
 				case List( "quit"|"q" ) =>
 					connection.close
 					sys.exit

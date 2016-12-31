@@ -225,6 +225,9 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 				}
 
 				forloop( this, gen )
+			case WhileExpression( cond, body, e ) =>
+				while (evalb( cond ))
+					eval( body )
 			case ComparisonExpression( left, comps ) =>
 				var l = eval( left )
 				
