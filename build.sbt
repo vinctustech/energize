@@ -56,7 +56,7 @@ licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
 
 homepage := Some(url("https://github.com/edadma/" + name.value))
 
-pomExtra := (
+pomExtra :=
   <scm>
     <url>git@github.com:edadma/{name.value}.git</url>
     <connection>scm:git:git@github.com:edadma/{name.value}.git</connection>
@@ -70,7 +70,7 @@ pomExtra := (
       <name>Edward W. Maxedon, Jr.</name>
       <url>https://github.com/emaxedon</url>
     </developer>
-  </developers>)
+  </developers>
 
 //enablePlugins(HugoPlugin)
 
