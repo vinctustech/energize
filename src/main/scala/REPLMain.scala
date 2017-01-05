@@ -17,7 +17,7 @@ object REPLMain extends App {
 			setPrompt( "> " )
 		}
 	val out = new PrintWriter( reader.getTerminal.wrapOutIfNeeded(System.out), true )
-	var line: String = null
+	var line: String = _
 	var stacktrace = false
 
 	"""
@@ -27,9 +27,9 @@ object REPLMain extends App {
 	""".trim.stripMargin.lines foreach println
 	println
 
-	var env: Env = null
-	var connection: Connection = null
-	var statement: Statement = null
+	var env: Env = _
+	var connection: Connection = _
+	var statement: Statement = _
 	var db = "./repl"
 		
 	sys.addShutdownHook {

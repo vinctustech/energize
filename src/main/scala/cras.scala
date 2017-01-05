@@ -1,6 +1,6 @@
 package xyz.hyperreal
 
-import util.parsing.input.{Position}
+import util.parsing.input.Position
 
 
 package object cras {

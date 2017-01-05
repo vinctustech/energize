@@ -4,14 +4,13 @@ package xyz.hyperreal.cras
 import java.util.concurrent.TimeUnit
 import java.io.ByteArrayOutputStream
 
-import org.apache.http.{MethodNotSupportedException, HttpStatus, HttpResponse, ExceptionLogger, HttpConnection, HttpException, HttpRequest, HttpEntityEnclosingRequest}
+import org.apache.http.{MethodNotSupportedException, HttpStatus, HttpResponse, ExceptionLogger, HttpRequest, HttpEntityEnclosingRequest}
 import org.apache.http.entity.ContentType
-import org.apache.http.impl.nio.bootstrap.{HttpServer, ServerBootstrap}
+import org.apache.http.impl.nio.bootstrap.ServerBootstrap
 import org.apache.http.impl.nio.reactor.IOReactorConfig
 import org.apache.http.nio.entity.{NByteArrayEntity, NStringEntity}
 import org.apache.http.nio.protocol.{BasicAsyncRequestConsumer, BasicAsyncResponseProducer, HttpAsyncExchange, HttpAsyncRequestConsumer, HttpAsyncRequestHandler}
-import org.apache.http.protocol.{HttpContext, HttpCoreContext}
-import org.apache.http.ssl.SSLContexts
+import org.apache.http.protocol.HttpContext
 
 
 class Server( port: Int, env: Env ) {

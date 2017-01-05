@@ -1,12 +1,9 @@
 package xyz.hyperreal.cras
 
-import java.{lang => boxed}
-
 import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
 import util.parsing.input.CharArrayReader.EofCh
-import util.parsing.combinator.lexical.StdLexical
-import util.parsing.input.{Positional, Reader, Position, CharSequenceReader}
+import util.parsing.input.{Positional, Reader, CharSequenceReader}
 
 import xyz.hyperreal.indentation_lexical._
 import xyz.hyperreal.lia.Math
