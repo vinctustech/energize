@@ -2,7 +2,6 @@ package xyz.hyperreal.cras
 
 import java.sql._
 
-import util.parsing.input.{Position}
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
 import com.typesafe.config.ConfigFactory
@@ -10,21 +9,21 @@ import com.typesafe.config.ConfigFactory
 
 object Cras {
 
-  lazy val config = ConfigFactory.load
+	lazy val config = ConfigFactory.load
 
 	def dbconnect: (Connection, Statement) = {
-    val db = config.getConfig( "db" )
-    val driver = db.getString( "driver" )
-    val url = db.getString( "url" )
-    val username = db.getString( "username" )
-    val password = db.getString( "password" )
+		val db = config.getConfig( "db" )
+		val driver = db.getString( "driver" )
+		val url = db.getString( "url" )
+		val username = db.getString( "username" )
+		val password = db.getString( "password" )
 
-    dbconnect(driver, url, username, password)
-  }
+		dbconnect(driver, url, username, password)
+	}
 
-  def h2connect( file: String ) = dbconnect( "org.h2.Driver", s"jdbc:h2:$file", "sa", "" )
+	def h2connect( file: String ) = dbconnect( "org.h2.Driver", s"jdbc:h2:$file", "sa", "" )
 
-  def dbconnect( driver: String, url: String, username: String, password: String ) = {
+	def dbconnect( driver: String, url: String, username: String, password: String ) = {
 
     Class.forName( driver )
 		
