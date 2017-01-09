@@ -157,14 +157,14 @@ object Cras {
 				case Some( s ) => s
 			}
 			
-		if (!tables.isEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
+		if (tables.nonEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
 			statement.execute( H2Database.create(sorted) )
 		}
 		
 		tables.values foreach {
 			case t@Table( name, cnames, _, _ ) =>
 				val columns = cnames mkString ","
-				val values = Seq.fill( cnames.length )(  "?") mkString ","
+				val values = Seq.fill( cnames.length )( "?" ) mkString ","
 				
 				t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
 		}

@@ -69,7 +69,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 				
 				if (l == List( "" ))
 					return None
-				else if (!l.isEmpty && l.head != "")
+				else if (l.nonEmpty && l.head != "")
 					return None
 				else
 					if (l == List())
@@ -164,7 +164,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case BinaryExpression( left, op, func, right ) =>
 				val l = deref( left )
 				val r = deref( right )
-				
+
 				if (op == '+) {
 					if (l.isInstanceOf[String] || r.isInstanceOf[String])
 						String.valueOf( l ) + String.valueOf( r )

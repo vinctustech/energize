@@ -21,7 +21,7 @@ abstract class DependencySorter[T] {
 
 		unsorted ++= items
 		
-		while (!unsorted.isEmpty) {
+		while (unsorted.nonEmpty) {
 			val len = sorted.length
 		
 			for (e <- unsorted.toList)

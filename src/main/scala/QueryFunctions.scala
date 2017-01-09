@@ -98,7 +98,7 @@ object QueryFunctions {
 	def list( env: Env, resource: Table,
 		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
 		val where =
-			if (filter == None)
+			if (filter.isEmpty)
 				""
 			else {
 				" WHERE " +
@@ -117,7 +117,7 @@ object QueryFunctions {
 					} mkString " AND ")
 			}
 		val orderby =
-			if (order == None)
+			if (order.isEmpty)
 				""
 			else {
 				" ORDER BY " +
@@ -136,7 +136,7 @@ object QueryFunctions {
 				case (None, None, None) => ""
 				case (Some( p ), None, None) => s" LIMIT 10 OFFSET " + (p*10)
 				case (None, Some( s ), None) => s" LIMIT 10 OFFSET $s"
-				case (Some( p ), Some( s ), _) => sys.error( "'page' and 'start' can't be used in the same query" )
+				case (Some( _ ), Some( _ ), _) => sys.error( "'page' and 'start' can't be used in the same query" )
 				case (None, None, Some( l )) => s" LIMIT $l"
 				case (Some( p ), None, Some( l )) => s" LIMIT $l OFFSET " + (p*l.toInt)
 				case (None, Some( s ), Some( l )) => s" LIMIT $l OFFSET $s"
