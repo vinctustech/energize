@@ -12,7 +12,7 @@ import xyz.hyperreal.lia.Math
 class CrasParser extends StandardTokenParsers with PackratParsers
 {
 	override val lexical: IndentationLexical =
-		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "//", "/*", "*/" )
+		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" )
 		{
 			override def token: Parser[Token] = decimalParser | super.token
 

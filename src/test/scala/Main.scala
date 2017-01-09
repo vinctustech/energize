@@ -25,7 +25,7 @@ object Main extends App {
 // //   	println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
 //   	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
 
-	val (c, s) = Cras.dbconnect( "test", true )
+	val (c, s) = Test.dbconnect
 	val env = Cras.configure( io.Source.fromFile("test.cras"), c, s )
 	
 	c.close

@@ -7,7 +7,7 @@ import prop.PropertyChecks
 class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	
 	"empty database" in {
-		val (c, s) = Cras.dbconnect( "test", true )
+		val (c, s) = Test.dbconnect
 		val config =
 			"""
 			|resource todo /api/v1
@@ -41,7 +41,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"empty database (no base)" in {
-		val (c, s) = Cras.dbconnect( "test", true )
+		val (c, s) = Test.dbconnect
 		val config =
 			"""
 			|resource todo
@@ -75,7 +75,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"post/get/delete" in {
-		val (c, s) = Cras.dbconnect( "test", true )
+		val (c, s) = Test.dbconnect
 		val config =
 			"""
 			|resource todo /api/v1
@@ -159,7 +159,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"functions/evaluation" in {
-		val (c, s) = Cras.dbconnect( "test", true )
+		val (c, s) = Test.dbconnect
 		val config =
 			"""
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
@@ -194,7 +194,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"empty database (one-to-many)" in {
-		val (c, s) = Cras.dbconnect( "test", true )
+		val (c, s) = Test.dbconnect
 		val config =
 			"""
 			|resource users
@@ -227,7 +227,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"post/get/delete (one-to-many)" in {
-		val (c, s) = Cras.dbconnect( "test", true )
+		val (c, s) = Test.dbconnect
 		val config =
 			"""
 			|resource users

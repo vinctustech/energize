@@ -1,2 +1,8 @@
-for i <- 1..5
-	print( [rndInt(5, 10), rndAlpha(5)] )
+resource test
+    name string
+
+insert( test, "asdf" )
+insert( test, "zxvc" )
+
+#for i <- 1..5
+#	print( [rndInt(5, 10), rndAlpha(5)] )

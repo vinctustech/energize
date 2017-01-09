@@ -5,17 +5,34 @@ import java.sql._
 import util.parsing.input.{Position}
 import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
 
+import com.typesafe.config.ConfigFactory
+
 
 object Cras {
-	
-	def dbconnect( dbfile: String, memory: Boolean = false ) = {
-		Class.forName( "org.h2.Driver" )
+
+  lazy val config = ConfigFactory.load
+
+	def dbconnect: (Connection, Statement) = {
+    val db = config.getConfig( "db" )
+    val driver = db.getString( "driver" )
+    val url = db.getString( "url" )
+    val username = db.getString( "username" )
+    val password = db.getString( "password" )
+
+    dbconnect(driver, url, username, password)
+  }
+
+  def h2connect( file: String ) = dbconnect( "org.h2.Driver", s"jdbc:h2:$file", "sa", "" )
+
+  def dbconnect( driver: String, url: String, username: String, password: String ) = {
+
+    Class.forName( driver )
 		
-		val connection = DriverManager.getConnection( s"jdbc:h2${if (memory) ":mem:" else ":"}" + dbfile, "sa", "" )
+		val connection = DriverManager.getConnection( url, username, password )
 		
 		(connection, connection.createStatement)
 	}
-	
+
 	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
 		val p = new CrasParser
 		val ast = p.parseFromSource( src, p.source )

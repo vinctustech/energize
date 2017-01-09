@@ -5,14 +5,13 @@ import java.io.File
 
 object ServerMain extends App {
 	
-	if (args.length < 2) {
-		println( "usage: java -cp cras-0.3.jar xyz.hyperreal.cras.ServerMain <db> <config>" )
+	if (args.length < 1) {
+		println( "usage: java -cp cras-0.3.jar xyz.hyperreal.cras.ServerMain <config>" )
 		sys.exit( 1 )
 	}
 	
-	val db = args(0)
-	val config = args(1) + ".cras"
-	val (connection, statement) = Cras.dbconnect( db )
+	val config = args(0) + ".cras"
+	val (connection, statement) = Cras.dbconnect
 	
 	sys.addShutdownHook {
 		connection.close

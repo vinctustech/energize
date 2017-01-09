@@ -37,7 +37,7 @@ object REPLMain extends App {
 	}
 	
 	def connect( file: String ) {
-		val (c, s) = Cras.dbconnect( file )
+		val (c, s) = Cras.h2connect( file )
 		
 		connection = c
 		statement = s

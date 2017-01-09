@@ -27,7 +27,12 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
+    "com.typesafe" % "config" % "1.3.1"
+)
+
+libraryDependencies ++= Seq(
 	"com.h2database" % "h2" % "1.4.193",
+  "org.postgresql" % "postgresql" % "9.4.1212.jre7",
 	"jline" % "jline" % "2.14.2",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2"
@@ -40,9 +45,9 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "lia" % "0.19"
 )
 
-mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".REPLMain" )
+mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMain" )
 
-mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".REPLMain" )
+mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".ServerMain" )
 
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 

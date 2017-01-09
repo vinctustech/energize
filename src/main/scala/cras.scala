@@ -6,7 +6,7 @@ import util.parsing.input.Position
 package object cras {
 	
 //	type JSON = Map[String, Any]
-	
+
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
 	def escapeQuotes( s: String ): String = s replace ("'", "''")

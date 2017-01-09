@@ -2,8 +2,6 @@ use prepared statements in built-in routes; can use var declarations
 
 comments at end of config
 
-comment lines with deeper level of indentation
-
 default values for columns
 
 allow json syntax for inserting values into reference columns
