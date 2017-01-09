@@ -1,6 +1,5 @@
 package xyz.hyperreal.cras
 
-//import java.sql._
 import java.util.concurrent.TimeUnit
 import java.io.ByteArrayOutputStream
 
@@ -20,7 +19,7 @@ class Server( port: Int, env: Env ) {
 		.build
 	val server = ServerBootstrap.bootstrap
 		.setListenerPort(port)
-		.setServerInfo("CRAS/0.4")
+		.setServerInfo( s"CRAS/$VERSION" )
 		.setIOReactorConfig(config)
 		.setSslContext(null)
 		.setExceptionLogger(ExceptionLogger.STD_ERR)

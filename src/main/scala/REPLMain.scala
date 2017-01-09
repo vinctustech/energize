@@ -20,34 +20,37 @@ object REPLMain extends App {
 	var line: String = _
 	var stacktrace = false
 
-	"""
-	|Welcome to CRAS version 0.4.
+	s"""
+	|Welcome to CRAS version $VERSION.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
+	|
 	""".trim.stripMargin.lines foreach println
-	println
 
 	var env: Env = _
 	var connection: Connection = _
 	var statement: Statement = _
-	var db = "./repl"
+	var driver = "org.h2.Driver"
+	var url = "jdbc:h2:mem:"
+	var username = "sa"
+	var password = ""
+
 		
 	sys.addShutdownHook {
 		connection.close
 	}
 	
-	def connect( file: String ) {
-		val (c, s) = Cras.h2connect( file )
+	def connect {
+		val (c, s) = Cras.dbconnect( driver, url, username, password )
 		
 		connection = c
 		statement = s
-		db = file
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 		println
 	}
 	
-	connect( db )
+	connect
 	
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
@@ -61,13 +64,26 @@ object REPLMain extends App {
 		
 		try {
 			com match {
-				case List( "connect|c", dbfile ) =>
+				case List( "config"|"co" ) =>
+					val db = Cras.config.getConfig( "db" )
+					driver = db.getString( "driver" )
+					url = db.getString( "url" )
+					username = db.getString( "username" )
+					password = db.getString( "password" )
+				case List( "connect"|"c" ) =>
+					connect
+					env = null
+				case List( "connect"|"c", u ) =>
 					if (connection ne null)
 						connection.close
-						
-					connect( dbfile )
-					db = dbfile
+
+					url = u
+					connect
 					env = null
+				case List( "db" ) =>
+					println( driver, url, username, password )
+				case List( "driver"|"d", d ) =>
+					driver = d
 				case List( "help"|"h" ) =>
 					"""
 					|connect (c) <database>               connect to <database> (relative to user folder) clearing in-memory table and routing information
@@ -88,12 +104,14 @@ object REPLMain extends App {
 					sys.exit
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
-				case List( "wipe"|"w" ) =>
-					connection.close
-					new File( sys.props("user.home"), db + ".mv.db" ).delete
-					new File( sys.props("user.home"), db + ".trace.db" ).delete
-					connect( db )
-					env = null
+//				case List( "wipe"|"w" ) =>
+//					connection.close
+//					new File( sys.props("user.home"), db + ".mv.db" ).delete
+//					new File( sys.props("user.home"), db + ".trace.db" ).delete
+//					connect
+//					env = null
+				case List( "password"|"p", p ) =>
+					password = p
 				case List( "routes"|"r" ) =>
 					for (Route(method, path, action) <- env.routes ) {
 						val pathbuf = new StringBuilder
@@ -111,6 +129,8 @@ object REPLMain extends App {
 						
 						println( method + " " + pathbuf + " " + action )
 					}
+				case List( "username"|"u", u ) =>
+					username = u
 				case Nil|List( "" ) =>
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )

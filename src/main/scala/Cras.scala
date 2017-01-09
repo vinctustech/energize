@@ -2,8 +2,7 @@ package xyz.hyperreal.cras
 
 import java.sql._
 
-import collection.mutable.{LinkedHashMap, HashMap, ListBuffer}
-
+import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
 import com.typesafe.config.ConfigFactory
 
 
@@ -18,7 +17,7 @@ object Cras {
 		val username = db.getString( "username" )
 		val password = db.getString( "password" )
 
-		dbconnect(driver, url, username, password)
+		dbconnect( driver, url, username, password )
 	}
 
 	def h2connect( file: String ) = dbconnect( "org.h2.Driver", s"jdbc:h2:$file", "sa", "" )

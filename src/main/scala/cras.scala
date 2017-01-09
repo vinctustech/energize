@@ -7,6 +7,8 @@ package object cras {
 	
 //	type JSON = Map[String, Any]
 
+	lazy val VERSION = "0.5"
+
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
 	def escapeQuotes( s: String ): String = s replace ("'", "''")
