@@ -1,5 +1,8 @@
 resource test
 	name string
 
-for i <- 1..5
-	print( insert( test, {name: rndAlpha(5)} ) )
+if size(test) == 0
+	for i <- 1..5
+		print( "inserting id " + insert( test, {name: rndAlpha(5)} ) )
+else
+	print( "table already populated" )
