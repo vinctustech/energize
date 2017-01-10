@@ -92,14 +92,14 @@ This example shows how to get a simple API to support a "to do list" app working
 	  description string  optional
 	  status      integer required
 
-The executable contains both an HTTP server and a REPL to make it easier to develop your API configurations. We'll start by looking at the server.
+The executable contains both an HTTP server and a REPL to make it easier to develop your API definitions. We'll start by looking at the server.
 
 
 ### HTTP Server
 
 Now, on the command line in the example folder, start the server with the command
 
-	java -cp cras-0.5.jar xyz.hyperreal.cras.ServerMain ./todo todo
+	java -jar cras-0.5.jar todo
 	
 You should now have a working HTTP server bound to port 8080 that will serve API requests for a todo list. Let's try it out. Using `curl`, let's add an item to our todo list database. To do that, type
 
@@ -167,14 +167,19 @@ Press `Ctrl-C` to stop the server.
 
 To start the REPL, type the following command (while in the same folder where the executable was placed)
 
-	java -jar cras-0.5.jar
+	java -cp cras-0.5.jar xyz.hyperreal.cras.REPLMain
 	
-The REPL creates a database called `test` for you in the same folder. Type `help` to see all the REPL commands. Tell the REPL to load the `todo` configuration by typing
+By default, the REPL creates an in-memory H2 database for you and connects to it. Type `help` to see all the REPL commands. Tell the REPL to load the `todo` configuration by typing
 
 	l todo
 	
 To verify that a table called `todo` has been created, type the SQL command
 
 	select * from todo;
+	
+To use your Postgres database specified in your database configuration instead type the following commands
+
+	config
+	connect
 	
 In the REPL, you can always restart from scratch using the `wipe` command, reload a modified configuration using `load`, etc.

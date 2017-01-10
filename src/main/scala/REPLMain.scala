@@ -88,24 +88,24 @@ object REPLMain extends App {
 					driver = d
 				case List( "help"|"h" ) =>
 					"""
-					|connect (c) <database>               connect to <database> (relative to user folder) clearing in-memory table and routing information
+					|config                               set database parameters from config file
+					|connect (c)                          (re)connect to database using current database parameters
+					|connect (c) <url>                    connect to database using <url> clearing in-memory table and routing information
+					|db                                   show current database parameters
+					|driver (d) <driver>                  set database <driver>
 					|load (l) <config>                    load a <config> (".cras" file) creating all tables and routes as specified
 					|help (h)                             print this summary
+					|password (p) <password>              set database <password>
 					|quit (q)                             exit the REPL
 					|routes (r)                           print all routes showing absolute paths
 					|stack (s) on/off                     turn exception stack trace on or off
-					|wipe (w)                             wipe current database clean and reconnect
+					|username (u) <username>              set database <username>
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
 					env = Cras.configure( io.Source.fromFile(config + ".cras"), connection, statement )
-				case List( "quit"|"q" ) =>
-					connection.close
-					sys.exit
-				case List( "stack"|"s", "on" ) => stacktrace = true
-				case List( "stack"|"s", "off" ) => stacktrace = false
 //				case List( "wipe"|"w" ) =>
 //					connection.close
 //					new File( sys.props("user.home"), db + ".mv.db" ).delete
@@ -114,6 +114,9 @@ object REPLMain extends App {
 //					env = null
 				case List( "password"|"p", p ) =>
 					password = p
+				case List( "quit"|"q" ) =>
+					connection.close
+					sys.exit
 				case List( "routes"|"r" ) =>
 					for (Route(method, path, action) <- env.routes ) {
 						val pathbuf = new StringBuilder
@@ -131,6 +134,8 @@ object REPLMain extends App {
 						
 						println( method + " " + pathbuf + " " + action )
 					}
+				case List( "stack"|"s", "on" ) => stacktrace = true
+				case List( "stack"|"s", "off" ) => stacktrace = false
 				case List( "username"|"u", u ) =>
 					username = u
 				case Nil|List( "" ) =>
