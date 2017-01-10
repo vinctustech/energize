@@ -1,5 +1,7 @@
 package xyz.hyperreal.cras
 
+import java.sql.Statement
+
 
 object CommandFunctionHelpers {
 	def insertCommand( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
@@ -82,7 +84,7 @@ object CommandFunctions {
 			res.next
 			res.getLong( 1 )
 		} else {
-			env.statement.executeUpdate( com )
+			env.statement.executeUpdate( com, Statement.RETURN_GENERATED_KEYS )
 
 			val g = env.statement.getGeneratedKeys
 

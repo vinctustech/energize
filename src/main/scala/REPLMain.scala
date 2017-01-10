@@ -24,8 +24,8 @@ object REPLMain extends App {
 	|Welcome to CRAS version $VERSION.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
-	|
 	""".trim.stripMargin.lines foreach println
+	println
 
 	var env: Env = _
 	var connection: Connection = _

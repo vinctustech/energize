@@ -129,10 +129,75 @@ object PostgresDatabase extends Database {
 	}
 }
 
+object MySQLDatabase extends Database {
+	val caseSensitive = true
+
+	val publicSchema = "public"
+
+	def create( tables: List[Table] ) = {
+		val buf = new StringBuilder
+
+		tables foreach {
+			case Table( name, names, columns, _ ) =>
+				buf ++= "CREATE TABLE "
+				buf ++= name
+				buf ++= "(id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+
+				for (cname <- names) {
+					val Column( _, typ, secret, required, unique, indexed ) = columns(cname)
+
+					buf ++= ", "
+					buf ++= cname
+					buf += ' '
+					buf ++=
+						(typ match {
+							case StringType => "VARCHAR(255)"
+							case IntegerType => "INT"
+							case LongType => "BIGINT"
+							case UUIDType => "UUID"
+							case DateType => "DATE"
+							case TableType( _ ) => "BIGINT"
+						})
+
+					if (required)
+						buf ++= " NOT NULL"
+
+					if (unique)
+						buf ++= " UNIQUE"
+				}
+
+				columns.values foreach {
+					case Column( fk, TableType(ref), _, _, _, _ ) =>
+						buf ++= ", FOREIGN KEY ("
+						buf ++= fk
+						buf ++= ") REFERENCES "
+						buf ++= ref
+						buf ++= "(id)"
+					case _ =>
+				}
+
+				buf ++= ");\n"
+
+				columns.values foreach {
+					case Column( c, _, _, _, _, true ) =>
+						buf ++= "CREATE INDEX ON "
+						buf ++= name
+						buf += '('
+						buf ++= c
+						buf ++= ");\n"
+					case _ =>
+				}
+		}
+
+		buf.toString
+	}
+}
+
 object Database {
 	private val supported = Map[String, Database](
 		"H2 JDBC Driver" -> H2Database,
-		"PostgreSQL Native Driver" -> PostgresDatabase
+		"PostgreSQL Native Driver" -> PostgresDatabase,
+		"MySQL Connector Java" -> MySQLDatabase
 	)
 
 	def isSupported( name: String ) = supported contains name
