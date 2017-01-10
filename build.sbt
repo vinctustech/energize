@@ -29,6 +29,8 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
 	"com.h2database" % "h2" % "1.4.193",
   "org.postgresql" % "postgresql" % "9.4.1212.jre7",
+	"mysql" % "mysql-connector-java" % "6.0.5",
+	"org.apache.derby" % "derby" % "10.13.1.1",
 	"jline" % "jline" % "2.14.2",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",

@@ -1,5 +1,7 @@
 package xyz.hyperreal
 
+import com.typesafe.config.ConfigFactory
+
 import util.parsing.input.Position
 
 
@@ -8,6 +10,9 @@ package object cras {
 //	type JSON = Map[String, Any]
 
 	lazy val VERSION = "0.5"
+	lazy val CONFIG = ConfigFactory.load
+	lazy val DATABASE = CONFIG.getConfig( "database" )
+	lazy val SERVER = CONFIG.getConfig( "server" )
 
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	

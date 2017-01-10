@@ -8,18 +8,19 @@ import org.apache.http.entity.ContentType
 import org.apache.http.impl.nio.bootstrap.ServerBootstrap
 import org.apache.http.impl.nio.reactor.IOReactorConfig
 import org.apache.http.nio.entity.{NByteArrayEntity, NStringEntity}
-import org.apache.http.nio.protocol.{BasicAsyncRequestConsumer, BasicAsyncResponseProducer, HttpAsyncExchange, HttpAsyncRequestConsumer, HttpAsyncRequestHandler}
+import org.apache.http.nio.protocol.{BasicAsyncRequestConsumer, BasicAsyncResponseProducer, HttpAsyncExchange,
+	HttpAsyncRequestConsumer, HttpAsyncRequestHandler}
 import org.apache.http.protocol.HttpContext
 
 
-class Server( port: Int, env: Env ) {
+class Server( env: Env ) {
 	val config = IOReactorConfig.custom
-		.setSoTimeout(15000)
+		.setSoTimeout( SERVER.getInt("timeout") )
 		.setTcpNoDelay(true)
 		.build
 	val server = ServerBootstrap.bootstrap
-		.setListenerPort(port)
-		.setServerInfo( s"CRAS/$VERSION" )
+		.setListenerPort( SERVER.getInt("port") )
+		.setServerInfo( SERVER.getString("name") + "/" + SERVER.getString("version") )
 		.setIOReactorConfig(config)
 		.setSslContext(null)
 		.setExceptionLogger(ExceptionLogger.STD_ERR)

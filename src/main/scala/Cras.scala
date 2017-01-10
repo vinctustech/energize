@@ -3,19 +3,15 @@ package xyz.hyperreal.cras
 import java.sql._
 
 import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
-import com.typesafe.config.ConfigFactory
 
 
 object Cras {
 
-	lazy val config = ConfigFactory.load
-
 	def dbconnect: (Connection, Statement) = {
-		val db = config.getConfig( "db" )
-		val driver = db.getString( "driver" )
-		val url = db.getString( "url" )
-		val username = db.getString( "username" )
-		val password = db.getString( "password" )
+		val driver = DATABASE.getString( "driver" )
+		val url = DATABASE.getString( "url" )
+		val username = DATABASE.getString( "username" )
+		val password = DATABASE.getString( "password" )
 
 		dbconnect( driver, url, username, password )
 	}

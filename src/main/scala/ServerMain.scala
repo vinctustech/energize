@@ -1,12 +1,10 @@
 package xyz.hyperreal.cras
 
-import java.io.File
-
 
 object ServerMain extends App {
 	
 	if (args.length < 1) {
-		println( "usage: java -cp cras-0.3.jar xyz.hyperreal.cras.ServerMain <config>" )
+		println( "usage: java -jar cras-0.5.jar <config>" )
 		sys.exit( 1 )
 	}
 	
@@ -23,6 +21,6 @@ object ServerMain extends App {
 
 	val env = Cras.configure( io.Source.fromFile(config), connection, statement )
 	
-	println( "starting server" )
-	new Server( 8080, env ).start
+	println( "starting server on port " + SERVER.getInt("port") )
+	new Server( env ).start
 }

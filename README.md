@@ -32,7 +32,7 @@ Usage
 
 If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/cras-0.5.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
 
-Run it as a normal Java executable JAR with the command `java -jar cras-0.5.jar` in the folder where you downloaded the file.
+Run it as a normal Java executable JAR with the command `java -jar cras-0.5.jar <config>` in the folder where you downloaded the file, where *config* is the name of the `.cras` file (without the file extension) that defines your API.
 
 ### Library
 
@@ -63,13 +63,23 @@ Building
 
 - Java 8+
 - SBT 0.13.13+
-- Scala 2.12.0+
+- Scala 2.12.1+
 
-### Build and Run the REPL
+### Clone and Run the SBT (Simple Build Tool)
 
 	git clone git://github.com/edadma/cras.git
 	cd cras
-	sbt run
+	sbt
+	
+### SBT Commands
+
+Once the SBT prompt appears, use the following commands.
+
+- `test` builds and executes tests
+- `re-start <config>` starts the server where *config* is the name of the `.cras` file (without the file extension) that defines your API. You can press ENTER once the server has started to get the SBT prompt in order to enter SBT commands while the server is running.
+- `re-stop` stops the server. The port will be unbound some time after the server process has been killed (on Linux).
+- `runMain xyz.hyperreal.cras.REPLMain` starts the REPL
+- `run <config>` this will also start the server, however, it is recommended to use `re-start` instead. Starting the server using `run` means that the JVM process that SBT is running in is the one that is bound to the port that the server is using, whereas using `re-start` causes the server to run in a separate process that can later be killed using `re-stop`.
 
 
 Example

@@ -1,7 +1,7 @@
 package xyz.hyperreal.cras
 
 import java.sql._
-import java.io.{PrintWriter, File}
+import java.io.PrintWriter
 
 import jline.console.ConsoleReader
 
@@ -65,11 +65,10 @@ object REPLMain extends App {
 		try {
 			com match {
 				case List( "config"|"co" ) =>
-					val db = Cras.config.getConfig( "db" )
-					driver = db.getString( "driver" )
-					url = db.getString( "url" )
-					username = db.getString( "username" )
-					password = db.getString( "password" )
+					driver = DATABASE.getString( "driver" )
+					url = DATABASE.getString( "url" )
+					username = DATABASE.getString( "username" )
+					password = DATABASE.getString( "password" )
 				case List( "connect"|"c" ) =>
 					if (connection ne null)
 						connection.close
