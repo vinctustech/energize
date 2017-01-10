@@ -1,7 +1,5 @@
 package xyz.hyperreal.cras
 
-import java.io.File
-
 
 object Main extends App {
 

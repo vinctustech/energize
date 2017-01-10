@@ -37,8 +37,9 @@ object Cras {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
-		
-		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement )
+		val db = if (connection eq null) null else Database( connection.getMetaData.getDriverName )
+
+		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
@@ -61,14 +62,14 @@ object Cras {
 						
 					defines(name) = function
 				case TableDefinition( pos, name, bases, columns ) =>
-					if (tables contains name.toUpperCase)
+					if (tables contains db.desensitize( name ))
 						problem( pos, s"'$name' already defined" )
 					
 					val cols = new LinkedHashMap[String, Column]
 					
 					columns foreach {
 						case col@TableColumn( modifiers, typ, cname ) =>
-							if (cols contains cname.toUpperCase)
+							if (cols contains db.desensitize( cname ))
 								problem( col.pos, s"column '$cname' defined twice" )
 								
 							var secret = false
@@ -113,19 +114,19 @@ object Cras {
 									problem( tm.pos, s"unknown modifier '$m'" )
 							}
 							
-							cols(cname.toUpperCase) = Column( cname, typ, secret, required, unique, indexed )
+							cols(db.desensitize( cname )) = Column( cname, typ, secret, required, unique, indexed )
 					}
 		
-					tables(name.toUpperCase) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, null )
+					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, null )
 					
 					if (bases isEmpty) {
-						val Env( _, r, _, _, _ ) =
+						val Env( _, r, _, _, _, _ ) =
 							configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
 							
 						routes ++= r
 					} else {
 						for (URIPath( base ) <- bases) {
-							val Env( _, r, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<resource>", name).
+							val Env( _, r, _, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<resource>", name).
 								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString ("/", "/", ""))), null, null )
 							
 							routes ++= r
@@ -155,9 +156,10 @@ object Cras {
 				case None => sys.error( "resources cannot be topologically ordered" )
 				case Some( s ) => s
 			}
-			
-		if (tables.nonEmpty && !connection.getMetaData.getTables( null, "PUBLIC", tables.head._1, null ).next) {
-			statement.execute( H2Database.create(sorted) )
+
+		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
+//			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
+			statement.execute( db.create(sorted) )
 		}
 		
 		tables.values foreach {

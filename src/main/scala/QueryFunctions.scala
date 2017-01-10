@@ -64,7 +64,7 @@ object QueryFunctions {
 				val obj = res.getObject( i )
 				
 				env.tables get dbtable match {
-					case None => sys.error( "data not from a known table" )
+					case None => sys.error( s"data from an unknown table: $dbtable" )
 					case Some( t ) if t == table =>
 						t.columns get dbcol match {
 							case None if dbcol.toLowerCase == "id" =>

@@ -71,6 +71,9 @@ object REPLMain extends App {
 					username = db.getString( "username" )
 					password = db.getString( "password" )
 				case List( "connect"|"c" ) =>
+					if (connection ne null)
+						connection.close
+
 					connect
 					env = null
 				case List( "connect"|"c", u ) =>

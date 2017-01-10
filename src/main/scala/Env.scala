@@ -14,19 +14,19 @@ import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
-case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement ) {
+case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement, db: Database ) {
 	
 	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
-	def add( kv: (String, Any) ) = Env( tables, routes, variables + kv, connection, statement )
+	def add( kv: (String, Any) ) = Env( tables, routes, variables + kv, connection, statement, db )
 	
-	def add( m: Map[String, Any] ) = Env( tables, routes, variables ++ m, connection, statement )
+	def add( m: Map[String, Any] ) = Env( tables, routes, variables ++ m, connection, statement, db )
 	
 	def get( name: String ) =
 		variables get name match {
-			case None => tables get name.toUpperCase
+			case None => tables get db.desensitize( name )
 			case res => res
 		}
 	
