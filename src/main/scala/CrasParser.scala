@@ -96,7 +96,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val statements: PackratParser[List[StatementAST]] =
 		rep1(expressionStatement)
 	
-	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ (ExpressionStatement)
+	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ ExpressionStatement
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
 		tablesDefinition |
@@ -145,10 +145,10 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType |
-		ident ^^ (TableType)
+		ident ^^ TableType
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
-		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ {case m => ColumnTypeModifier( m )} )
+		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
 		"route" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
@@ -163,19 +163,19 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		httpMethod ~ uriPath ~ actionExpression <~ nl ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
 		
 	lazy val httpMethod: PackratParser[HTTPMethod] =
-		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ (HTTPMethod)
+		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ HTTPMethod
 		
 	lazy val basePath: PackratParser[URIPath] =
-		"/" ~> rep1sep(nameSegment, "/") ^^ (URIPath)
+		"/" ~> rep1sep(nameSegment, "/") ^^ URIPath
 		
 	lazy val uriPath: PackratParser[URIPath] =
-		"/" ~> rep1sep(uriSegment, "/") ^^ (URIPath)
+		"/" ~> rep1sep(uriSegment, "/") ^^ URIPath
 	
 	lazy val uriSegment: PackratParser[URISegment] =
 		ident ~ (":" ~> opt(segmentType)) ^^ {
 			case n ~ Some( t ) => ParameterURISegment( n, t )
 			case n ~ None => ParameterURISegment( n, "string" )} |
-		ident ^^ (NameURISegment)
+		ident ^^ NameURISegment
 	
 	lazy val segmentType: PackratParser[String] =
 		"string" |
@@ -183,7 +183,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"long"
 		
 	lazy val nameSegment: PackratParser[NameURISegment] =
-		ident ^^ (NameURISegment)
+		ident ^^ NameURISegment
 		
 	lazy val mathSymbols = Set( '+, '-, '*, '/, '//, Symbol("\\"), Symbol("\\%"), '^, '%, 'mod, '|, '/|, '==, '!=, '<, '>, '<=, '>= )
 	
@@ -287,18 +287,18 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		functionLiteral |
 		variableExpression |
 		optVariableExpression |
-		stringLit ^^ (LiteralExpression) |
+		stringLit ^^ LiteralExpression |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
-		"null" ^^^ (LiteralExpression( null )) |
+		"null" ^^^ LiteralExpression( null ) |
 		"(" ~> expression <~ ")" |
-		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression) |
-		"[" ~> repsep(expression, ",") <~ "]" ^^ (ListExpression)
+		"{" ~> repsep(pair, ",") <~ "}" ^^ ObjectExpression |
+		"[" ~> repsep(expression, ",") <~ "]" ^^ ListExpression
 		
 	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
 		
-	lazy val variableExpression = ident ^^ (VariableExpression)
+	lazy val variableExpression = ident ^^ VariableExpression
 	
-	lazy val optVariableExpression = "?" ~> ident ^^ (OptVariableExpression)
+	lazy val optVariableExpression = "?" ~> ident ^^ OptVariableExpression
 	
 	lazy val functionLiteral =
 		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionExpression( p, e )}
@@ -322,8 +322,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 // 		"(" ~> rep1sep( pattern, ",") <~ ")" ^^ (TuplePattern)
 		
 	lazy val blockExpression =
-		Indent ~> statements <~ Dedent ^^
-			(BlockExpression( _ ))
+		Indent ~> statements <~ Dedent ^^ BlockExpression
 
 	lazy val expressionOrBlock = expression | blockExpression
 	
@@ -341,7 +340,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
 		variableExpression |
 		optVariableExpression |
-		"null" ^^^ (LiteralExpression( null )) |
-		"{" ~> repsep(pair, ",") <~ "}" ^^ (ObjectExpression)
+		"null" ^^^ LiteralExpression( null ) |
+		"{" ~> repsep(pair, ",") <~ "}" ^^ ObjectExpression
 
 }
