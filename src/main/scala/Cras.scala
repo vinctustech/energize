@@ -55,7 +55,7 @@ object Cras {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
-				case TableDefinition( pos, name, bases, columns ) =>
+				case TableDefinition( pos, name, bases, columns, resource ) =>
 					if (tables contains db.desensitize( name ))
 						problem( pos, s"'$name' already defined" )
 					
@@ -111,7 +111,7 @@ object Cras {
 							cols(db.desensitize( cname )) = Column( cname, typ, secret, required, unique, indexed )
 					}
 		
-					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, null )
+					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, resource, null )
 					
 					if (bases isEmpty) {
 						routes ++= configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null ).routes
@@ -148,7 +148,7 @@ object Cras {
 		}
 		
 		tables.values foreach {
-			case t@Table( name, cnames, _, _ ) =>
+			case t@Table( name, cnames, _, _, _ ) =>
 				val columns = cnames mkString ","
 				val values = Seq.fill( cnames.length )( "?" ) mkString ","
 				

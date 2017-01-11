@@ -11,7 +11,7 @@ trait AST
 case class SourceAST( statements: List[StatementAST] ) extends AST
 
 trait StatementAST extends AST
-case class TableDefinition( pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn] ) extends StatementAST
+case class TableDefinition( pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn], resource: Boolean ) extends StatementAST
 	
 case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String ) extends Positional
 

@@ -283,7 +283,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 
 case class Route( method: String, path: List[URISegment], action: ExpressionAST )
 
-case class Table( name: String, names: List[String], columns: Map[String, Column], var preparedInsert: PreparedStatement )
+case class Table( name: String, names: List[String], columns: Map[String, Column], resource: Boolean, var preparedInsert: PreparedStatement )
 
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )
 	

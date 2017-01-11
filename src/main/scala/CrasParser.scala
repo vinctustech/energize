@@ -62,7 +62,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
-				"resource", "unique", "indexed", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
+				"table", "resource", "unique", "indexed", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"def", "var", "val", "long"
 				)
@@ -131,8 +131,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		"resource" ~> pos ~ ident ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns ) )}
+		("table" | "resource") ~ pos ~ ident ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case k ~ p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns, k == "resource" ) )}
 		
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
