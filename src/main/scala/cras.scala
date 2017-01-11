@@ -25,4 +25,10 @@ package object cras {
 				case _ => v
 			})
 		}
+
+	def parseCode( code: String ) = {
+		val p = new CrasParser
+
+		p.parseFromString( code, p.statements )
+	}
 }

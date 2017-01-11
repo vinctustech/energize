@@ -139,7 +139,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		
 		deref( ast.expr )	
 	}
-	
+
 	def replacer = (m: Regex.Match) => lookup( m group 1 ).toString
 	
 	def eval( expr: ExpressionAST ): Any =

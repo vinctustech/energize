@@ -72,11 +72,11 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				)
 		}
 
-	def parse[T <: AST]( grammar: PackratParser[T], r: Reader[Char] ) = phrase( grammar )( lexical.read(r) )
+	def parse[T]( grammar: PackratParser[T], r: Reader[Char] ) = phrase( grammar )( lexical.read(r) )
 	
-	def parseFromSource[T <: AST]( src: io.Source, grammar: PackratParser[T] ) = parseFromString( src.getLines.map(l => l + '\n').mkString, grammar )
+	def parseFromSource[T]( src: io.Source, grammar: PackratParser[T] ) = parseFromString( src.getLines.map(l => l + '\n').mkString, grammar )
 	
-	def parseFromString[T <: AST]( src: String, grammar: PackratParser[T] ) = {
+	def parseFromString[T]( src: String, grammar: PackratParser[T] ) = {
 		parse( grammar, new CharSequenceReader(src) ) match {
 			case Success( tree, _ ) => tree
 			case NoSuccess( error, rest ) => problem( rest.pos, error )
@@ -90,7 +90,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val onl = rep(Newline)
 
 	lazy val source: PackratParser[SourceAST] =
-		rep1(definitionStatement <~ nl | (expressionStatement ^^ (e => List( e )))) ^^ (s => SourceAST( s.flatten )) |
+		rep1(definitionStatement <~ nl | statements) ^^ (s => SourceAST( s.flatten )) |
 		nl ^^^ SourceAST( Nil )
 
 	lazy val statements: PackratParser[List[StatementAST]] =

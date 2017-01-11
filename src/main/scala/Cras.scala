@@ -17,7 +17,6 @@ object Cras {
 	}
 
 	def dbconnect( driver: String, url: String, username: String, password: String ) = {
-
     Class.forName( driver )
 		
 		val connection = DriverManager.getConnection( url, username, password )
