@@ -112,15 +112,15 @@ object Cras {
 					}
 		
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, resource, null )
-					
-					if (bases isEmpty) {
-						routes ++= configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null ).routes
-					} else {
-						for (URIPath( base ) <- bases) {
-							routes ++=  configure( io.Source.fromString(Builtins.routes.replaceAll("<resource>", name).
-								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString ("/", "/", ""))), null, null ).routes
-						}
-					}
+
+					if (resource)
+						if (bases isEmpty)
+							routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<base>", "" ).replaceAll( "<resource>", name ) ), null, null ).routes
+						else
+							for (URIPath( base ) <- bases)
+								routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<resource>", name ).
+									replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null ).routes
+
 				case RoutesDefinition( URIPath(base), mappings ) =>
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>

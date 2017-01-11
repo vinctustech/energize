@@ -1,6 +1,9 @@
 resource test
 	name string
 
+table t1
+	name string
+
 if size(test) == 0
 	for i <- 1..5
 		print( "inserting id " + insert( test, {name: rndAlpha(5)} ) )
