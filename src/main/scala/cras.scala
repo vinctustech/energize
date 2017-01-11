@@ -20,6 +20,9 @@ package object cras {
 		
 	def escapeQuotes( json: Map[String, Any] ): Map[String, Any] =
 		json map {case (k, v) =>
-			(k, if (v.isInstanceOf[String]) escapeQuotes( v.asInstanceOf[String] ) else v)
+			(k, v match {
+				case s: String => escapeQuotes( s )
+				case _ => v
+			})
 		}
 }

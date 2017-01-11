@@ -16,8 +16,6 @@ object Cras {
 		dbconnect( driver, url, username, password )
 	}
 
-	def h2connect( file: String ) = dbconnect( "org.h2.Driver", s"jdbc:h2:$file", "sa", "" )
-
 	def dbconnect( driver: String, url: String, username: String, password: String ) = {
 
     Class.forName( driver )
@@ -116,16 +114,11 @@ object Cras {
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, null )
 					
 					if (bases isEmpty) {
-						val Env( _, r, _, _, _, _ ) =
-							configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null )
-							
-						routes ++= r
+						routes ++= configure( io.Source.fromString(Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name)), null, null ).routes
 					} else {
 						for (URIPath( base ) <- bases) {
-							val Env( _, r, _, _, _, _ ) = configure( io.Source.fromString(Builtins.routes.replaceAll("<resource>", name).
-								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString ("/", "/", ""))), null, null )
-							
-							routes ++= r
+							routes ++=  configure( io.Source.fromString(Builtins.routes.replaceAll("<resource>", name).
+								replaceAll("<base>", base map {case NameURISegment(segment) => segment} mkString ("/", "/", ""))), null, null ).routes
 						}
 					}
 				case RoutesDefinition( URIPath(base), mappings ) =>
@@ -147,11 +140,7 @@ object Cras {
 			
 		interpretDefinitions( ast )	
 		
-		val sorted =
-			TableSorter.sort( tables.values ) match {
-				case None => sys.error( "resources cannot be topologically ordered" )
-				case Some( s ) => s
-			}
+		val sorted = TableSorter.sort( tables.values ) getOrElse sys.error( "resources cannot be topologically ordered" )
 
 		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
 //			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
@@ -167,6 +156,10 @@ object Cras {
 		}
 		
 		interpretExpressions( ast )
+
+		if (src ne Builtins.control)
+			routes ++= configure( Builtins.control, null, null ).routes
+
 		env
 	}
 }

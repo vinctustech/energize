@@ -30,12 +30,8 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case res => res
 		}
 	
-	def lookup( name: String ) =
-		get( name ) match {
-			case None => throw new CrasErrorException( "variable not found: " + name )
-			case Some( v ) => v
-		}
-	
+	def lookup( name: String ) = get( name ) getOrElse (throw new CrasErrorException( "variable not found: " + name ))
+
 	def process( reqmethod: String, requri: String, reqbody: String ) = {
 		val uri = new URI( requri )
 		val reqpath = uri.getPath

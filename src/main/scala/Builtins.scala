@@ -30,4 +30,11 @@ object Builtins {
 		|  PUT     /id:long  atLeastOneOrNotFound( update(<resource>, json, id, true) ); null
 		|  DELETE  /id:long  atLeastOneOrNotFound( delete(<resource>, id) ); null
 		""".stripMargin
+
+	val control = io.Source.fromString(
+		"""
+		|route /control
+		|  DELETE  /res:     dataResult( res, deleteResource(res) )
+		""".stripMargin )
 }
+//  GET     /rename/old:/new:  dataResult( "", rename(old, new) )
