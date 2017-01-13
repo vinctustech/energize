@@ -137,8 +137,18 @@ object Cras {
 				case _ =>
 			}
 			
-		interpretDefinitions( ast )	
-		
+		interpretDefinitions( ast )
+
+		tables.values foreach {
+			case Table( _, _, columns, _, _ ) =>
+				columns.values foreach {
+					case Column( _, t@TableType(table), _, _, _, _ ) =>
+						if (!tables.contains( db.desensitize(table) ))
+							problem( t.pos, s"'$table' not found" )
+					case _ =>
+				}
+		}
+
 		val sorted = TableSorter.sort( tables.values ) getOrElse sys.error( "resources cannot be topologically ordered" )
 
 		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {

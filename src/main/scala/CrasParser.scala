@@ -140,12 +140,12 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				TableColumn( modifiers, typ, name )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
-		"string" ^^^ StringType |
+		positioned( "string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType |
-		ident ^^ TableType
+		ident ^^ TableType )
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
