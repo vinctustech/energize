@@ -35,8 +35,8 @@ object QueryFunctionHelpers {
 		val buf = new StringBuilder( s"SELECT $fs1 FROM ${resource.name}" )
 		val fssu = fss map (f => f.toUpperCase)
 		
-		resource.columns.values filter (c => c.typ.isInstanceOf[TableType] && (fssu.isEmpty || fssu(c.name))) foreach {
-			case Column(col, TableType(reft), _, _, _, _) =>
+		resource.columns.values filter (c => c.typ.isInstanceOf[ReferenceType] && (fssu.isEmpty || fssu(c.name))) foreach {
+			case Column(col, ReferenceType(reft), _, _, _, _) =>
 				 buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
 			case _ => sys.error( "somthing bad happened" )
 		}
@@ -70,7 +70,7 @@ object QueryFunctions {
 							case None if dbcol.toLowerCase == "id" =>
 								attr += ("id" -> obj)
 							case None => sys.error( "data not from a known column" )
-							case Some( Column(cname, TableType(reft), _, _, _, _) ) if obj ne null =>
+							case Some( Column(cname, ReferenceType(reft), _, _, _, _) ) if obj ne null =>
 								attr += (cname -> mkmap( env.tables(reft.toUpperCase) ))
 							case Some( c ) =>
 								attr += (c.name -> obj)

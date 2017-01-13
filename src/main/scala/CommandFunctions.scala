@@ -18,7 +18,7 @@ object CommandFunctionHelpers {
 						case None => "NULL"
 						case Some( v ) =>
 							resource.columns(env.db.desensitize( c )).typ match {
-								case TableType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+								case ReferenceType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
 									s"(SELECT id FROM $t WHERE " +
 										(env.tables(env.db.desensitize( t )).columns.values.find( c => c.unique ) match {
 											case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
@@ -105,11 +105,11 @@ object CommandFunctions {
 			com ++=
 				escapeQuotes( json ).toList map {
 					case (k, v) if resource.columns(k.toUpperCase).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
-					case (k, v) if {typ = resource.columns(k.toUpperCase).typ; typ.isInstanceOf[TableType]} =>
+					case (k, v) if {typ = resource.columns(k.toUpperCase).typ; typ.isInstanceOf[ReferenceType]} =>
 						if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 							k + " = " + String.valueOf( v )
 						else {
-							val reft = typ.asInstanceOf[TableType].table
+							val reft = typ.asInstanceOf[ReferenceType].table
 							val refc =
 								(env.tables(reft.toUpperCase).columns.values.find( c => c.unique ) match {
 									case None => throw new CrasErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )

@@ -62,9 +62,10 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
-				"table", "resource", "unique", "indexed", "required", "string", "optional", "integer", "secret", "route", "uuid", "date",
+				"table", "resource", "unique", "indexed", "required", "optional", "secret", "route",
+				"string", "integer", "uuid", "date", "long", "array",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"def", "var", "val", "long"
+				"def", "var", "val"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -140,12 +141,15 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 				TableColumn( modifiers, typ, name )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
-		positioned( "string" ^^^ StringType |
-		"integer" ^^^ IntegerType |
-		"long" ^^^ LongType |
-		"uuid" ^^^ UUIDType |
-		"date" ^^^ DateType |
-		ident ^^ TableType )
+		positioned(
+			"string" ^^^ StringType |
+			"integer" ^^^ IntegerType |
+			"long" ^^^ LongType |
+			"uuid" ^^^ UUIDType |
+			"date" ^^^ DateType |
+			"array" ~> ident ^^ ArrayReferenceType |
+			ident ^^ ReferenceType
+		)
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
