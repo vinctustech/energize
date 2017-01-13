@@ -15,7 +15,7 @@ case class TableDefinition( pos: Position, name: String, bases: List[URIPath], f
 	
 case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String ) extends Positional
 
-trait ColumnType
+trait ColumnType extends Positional
 case object StringType extends ColumnType
 case object IntegerType extends ColumnType
 case object LongType extends ColumnType
