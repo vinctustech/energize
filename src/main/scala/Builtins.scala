@@ -11,7 +11,7 @@ object Builtins {
 			"pi" -> math.Pi
 		)
 	
-	def pairs( natives: List[Native] ) = natives map (n => (n.name -> n))
+	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
 	
 	val map =
 		pairs( Native(QueryFunctions) ) ++
@@ -37,4 +37,3 @@ object Builtins {
 		|  DELETE  /res:     dataResult( res, deleteResource(res) )
 		""".stripMargin )
 }
-//  GET     /rename/old:/new:  dataResult( "", rename(old, new) )
