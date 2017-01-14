@@ -37,7 +37,7 @@ object QueryFunctionHelpers {
 
 		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
 			tref.columns.values foreach {
-				case Column(col1, TableType(tname1, tref1), _, _, _, _) =>
+				case Column(col1, ReferenceType(tname1, tref1), _, _, _, _) =>
 					buf ++= s" LEFT OUTER JOIN $tname1 ON $tname.$col1 = $tname1.id"
 					innerReferenceFieldJoin( tname1, tref1 )
 				case _ =>
@@ -45,7 +45,7 @@ object QueryFunctionHelpers {
 		}
 
 		resource.columns.values foreach {
-			case Column(col, TableType(reft, reftref), _, _, _, _) if fssd.isEmpty || fssd(col) =>
+			case Column(col, ReferenceType(reft, reftref), _, _, _, _) if fssd.isEmpty || fssd(col) =>
 				buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
 				innerReferenceFieldJoin( reft, reftref )
 			case _ =>
@@ -81,7 +81,7 @@ object QueryFunctions {
 							case None if dbcol.toLowerCase == "id" =>
 								attr += ("id" -> obj)
 							case None => sys.error( "data not from a known column" )
-							case Some( Column(cname, TableType(_, reft), _, _, _, _) ) if obj ne null =>
+							case Some( Column(cname, ReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
 								attr += (cname -> mkmap( reft ))
 							case Some( c ) =>
 								attr += (c.name -> obj)

@@ -21,7 +21,8 @@ case object IntegerType extends ColumnType
 case object LongType extends ColumnType
 case object UUIDType extends ColumnType
 case object DateType extends ColumnType
-case class TableType( table: String, var ref: Table ) extends ColumnType
+case class ReferenceType(table: String, var ref: Table ) extends ColumnType
+case class ArrayReferenceType(table: String ) extends ColumnType
 
 case class ColumnTypeModifier( modifier: String ) extends Positional
 

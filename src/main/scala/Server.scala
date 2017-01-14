@@ -8,8 +8,7 @@ import org.apache.http.entity.ContentType
 import org.apache.http.impl.nio.bootstrap.ServerBootstrap
 import org.apache.http.impl.nio.reactor.IOReactorConfig
 import org.apache.http.nio.entity.{NByteArrayEntity, NStringEntity}
-import org.apache.http.nio.protocol.{BasicAsyncRequestConsumer, BasicAsyncResponseProducer, HttpAsyncExchange,
-	HttpAsyncRequestConsumer, HttpAsyncRequestHandler}
+import org.apache.http.nio.protocol.{BasicAsyncRequestConsumer, BasicAsyncResponseProducer, HttpAsyncExchange, HttpAsyncRequestConsumer, HttpAsyncRequestHandler}
 import org.apache.http.protocol.HttpContext
 
 
@@ -82,7 +81,7 @@ class Server( env: Env ) {
 								
 							entity.writeTo( buf )
 							env.process( method1, target, buf.toString )
-						case noEntity =>
+						case _ =>
 							env.process( method1, target, null )
 					}
 					
