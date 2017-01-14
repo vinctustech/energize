@@ -2,6 +2,8 @@ package xyz.hyperreal.cras
 
 import java.sql._
 
+import xyz.hyperreal.json.{DefaultJSONReader, JSON}
+
 import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
 
 
@@ -26,7 +28,26 @@ object Cras {
 
 	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
 		val p = new CrasParser
-		val ast = p.parseFromSource( src, p.source )
+
+		configure( p.parseFromSource(src, p.source), connection: Connection, statement: Statement )
+	}
+
+	def configure( src: String, connection: Connection, statement: Statement ): Env = {
+		val json = DefaultJSONReader.fromString( src )
+		val ast =
+			SourceAST(
+				json.getList( "declarations" ).asInstanceOf[List[JSON]] map {
+					o =>
+						o getString "type" match {
+							case "resource" =>
+								TableDefinition( null, o getString "name", null, null, resource = true )
+						}
+				} )
+
+		configure( ast, connection: Connection, statement: Statement )
+	}
+
+	def configure( ast: SourceAST, connection: Connection, statement: Statement ): Env = {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
@@ -166,8 +187,8 @@ object Cras {
 		
 		interpretExpressions( ast )
 
-		if (src ne Builtins.control)
-			routes ++= configure( Builtins.control, null, null ).routes
+//		if (src ne Builtins.control)
+//			routes ++= configure( Builtins.control, null, null ).routes
 
 		env
 	}
