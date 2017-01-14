@@ -145,7 +145,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType |
-		ident ^^ TableType )
+		ident ^^ (TableType( _, null )) )
 		
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )

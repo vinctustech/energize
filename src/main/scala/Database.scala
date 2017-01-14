@@ -16,7 +16,7 @@ object H2Database extends Database {
 				buf ++= "(id IDENTITY NOT NULL PRIMARY KEY"
 				
 				for (cname <- names) {
-					val Column( _, typ, secret, required, unique, indexed ) = columns(cname.toUpperCase)
+					val Column( _, typ, secret, required, unique, indexed ) = columns(desensitize(cname))
 					
 					buf ++= ", "
 					buf ++= cname
@@ -28,7 +28,7 @@ object H2Database extends Database {
 							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
-							case TableType( _ ) => "BIGINT"
+							case TableType( _, _ ) => "BIGINT"
 						})
 						
 					if (required)
@@ -39,7 +39,7 @@ object H2Database extends Database {
 				}
 
 				columns.values foreach {
-					case Column( fk, TableType(ref), _, _, _, _ ) =>
+					case Column( fk, TableType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "
@@ -92,7 +92,7 @@ object PostgresDatabase extends Database {
 							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
-							case TableType( _ ) => "BIGINT"
+							case TableType( _, _ ) => "BIGINT"
 						})
 
 					if (required)
@@ -103,7 +103,7 @@ object PostgresDatabase extends Database {
 				}
 
 				columns.values foreach {
-					case Column( fk, TableType(ref), _, _, _, _ ) =>
+					case Column( fk, TableType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "
@@ -156,7 +156,7 @@ object MySQLDatabase extends Database {
 							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
-							case TableType( _ ) => "BIGINT"
+							case TableType( _, _ ) => "BIGINT"
 						})
 
 					if (required)
@@ -167,7 +167,7 @@ object MySQLDatabase extends Database {
 				}
 
 				columns.values foreach {
-					case Column( fk, TableType(ref), _, _, _, _ ) =>
+					case Column( fk, TableType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "

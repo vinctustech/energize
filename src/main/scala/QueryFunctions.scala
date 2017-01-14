@@ -19,7 +19,7 @@ object QueryFunctionHelpers {
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
 	
-	def listQuery( resource: Table, fields: Option[String] ) = {
+	def listQuery( db: Database, resource: Table, fields: Option[String] ) = {
 		val fs =
 			fields match {
 				case None => Nil
@@ -33,12 +33,22 @@ object QueryFunctionHelpers {
 			
 		val fs1 = if (fs == Nil) "*" else fs mkString ","
 		val buf = new StringBuilder( s"SELECT $fs1 FROM ${resource.name}" )
-		val fssu = fss map (f => f.toUpperCase)
-		
-		resource.columns.values filter (c => c.typ.isInstanceOf[TableType] && (fssu.isEmpty || fssu(c.name))) foreach {
-			case Column(col, TableType(reft), _, _, _, _) =>
-				 buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
-			case _ => sys.error( "somthing bad happened" )
+		val fssd = fss map (f => db.desensitize( f ))
+
+		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
+			tref.columns.values foreach {
+				case Column(col1, TableType(tname1, tref1), _, _, _, _) =>
+					buf ++= s" LEFT OUTER JOIN $tname1 ON $tname.$col1 = $tname1.id"
+					innerReferenceFieldJoin( tname1, tref1 )
+				case _ =>
+			}
+		}
+
+		resource.columns.values foreach {
+			case Column(col, TableType(reft, reftref), _, _, _, _) if fssd.isEmpty || fssd(col) =>
+				buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
+				innerReferenceFieldJoin( reft, reftref )
+			case _ =>
 		}
 		
 //		println( buf )
@@ -50,6 +60,7 @@ object QueryFunctionHelpers {
 
 object QueryFunctions {
 	def query( env: Env, resource: Table, sql: String ) = {
+		println( sql )
 		val res = env.statement.executeQuery( sql )
 		val list = new ListBuffer[Map[String, Any]]
 		val md = res.getMetaData
@@ -70,8 +81,8 @@ object QueryFunctions {
 							case None if dbcol.toLowerCase == "id" =>
 								attr += ("id" -> obj)
 							case None => sys.error( "data not from a known column" )
-							case Some( Column(cname, TableType(reft), _, _, _, _) ) if obj ne null =>
-								attr += (cname -> mkmap( env.tables(reft.toUpperCase) ))
+							case Some( Column(cname, TableType(_, reft), _, _, _, _) ) if obj ne null =>
+								attr += (cname -> mkmap( reft ))
 							case Some( c ) =>
 								attr += (c.name -> obj)
 						}
@@ -142,9 +153,9 @@ object QueryFunctions {
 				case (None, Some( s ), Some( l )) => s" LIMIT $l OFFSET $s"
 			}
 			
-		query( env, resource, QueryFunctionHelpers.listQuery(resource, fields) + where + orderby + limoff )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + where + orderby + limoff )
 	}
 	
 	def find( env: Env, resource: Table, id: Long, fields: Option[String] ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(resource, fields) + s" WHERE ${resource.name}.id = $id" )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + s" WHERE ${resource.name}.id = $id" )
 }

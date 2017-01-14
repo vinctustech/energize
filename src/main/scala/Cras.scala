@@ -142,9 +142,8 @@ object Cras {
 		tables.values foreach {
 			case Table( _, _, columns, _, _ ) =>
 				columns.values foreach {
-					case Column( _, t@TableType(table), _, _, _, _ ) =>
-						if (!tables.contains( db.desensitize(table) ))
-							problem( t.pos, s"'$table' not found" )
+					case Column( _, t@TableType(table, _), _, _, _, _ ) =>
+						t.ref = tables get db.desensitize(table) getOrElse problem( t.pos, s"'$table' not found" )
 					case _ =>
 				}
 		}
@@ -153,6 +152,7 @@ object Cras {
 
 		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
 //			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
+			println( db.create(sorted) )
 			statement.execute( db.create(sorted) )
 		}
 		

@@ -5,9 +5,13 @@ resource r2s
 	r3 r3s
 
 resource r3s
+	r4 r4s
+
+resource r4s
 	a string unique
 
 if size( r1s ) == 0
-	insert( r3s, {a: "a"} )
-	insert( r2s, {r3: "a"} )
+	insert( r4s, {a: "a"} )
+	insert( r3s, {r4: "a"} )
+	insert( r2s, {r3: 1} )
 	insert( r1s, {r2: 1} )

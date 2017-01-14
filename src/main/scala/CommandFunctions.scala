@@ -18,11 +18,11 @@ object CommandFunctionHelpers {
 						case None => "NULL"
 						case Some( v ) =>
 							resource.columns(env.db.desensitize( c )).typ match {
-								case TableType( t ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-									s"(SELECT id FROM $t WHERE " +
-										(env.tables(env.db.desensitize( t )).columns.values.find( c => c.unique ) match {
+								case TableType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+									s"(SELECT id FROM $tname WHERE " +
+										(tref.columns.values.find( c => c.unique ) match {
 											case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
-											case Some( c ) => c.name
+											case Some( uc ) => uc.name
 										}) + " = '" + String.valueOf( v ) + "')"
 								case StringType => '\'' + String.valueOf( v ) + '\''
 								case _ => String.valueOf( v )
@@ -40,7 +40,7 @@ object CommandFunctions {
 	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 	
 	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
-		val types = for ((n, i) <- resource.names zipWithIndex) yield (i + 1, resource.columns(n.toUpperCase).typ)
+		val types = for ((n, i) <- resource.names zipWithIndex) yield (i + 1, resource.columns(env.db.desensitize(n)).typ)
 			
 		for (r <- rows) {
 			for (((i, t), c) <- types zip r) {
@@ -104,14 +104,14 @@ object CommandFunctions {
 			com ++= " SET "
 			com ++=
 				escapeQuotes( json ).toList map {
-					case (k, v) if resource.columns(k.toUpperCase).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
-					case (k, v) if {typ = resource.columns(k.toUpperCase).typ; typ.isInstanceOf[TableType]} =>
+					case (k, v) if resource.columns(env.db.desensitize(k)).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
+					case (k, v) if {typ = resource.columns(env.db.desensitize(k)).typ; typ.isInstanceOf[TableType]} =>
 						if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 							k + " = " + String.valueOf( v )
 						else {
-							val reft = typ.asInstanceOf[TableType].table
+							val reft = typ.asInstanceOf[TableType].ref
 							val refc =
-								(env.tables(reft.toUpperCase).columns.values.find( c => c.unique ) match {
+								(reft.columns.values.find( c => c.unique ) match {
 									case None => throw new CrasErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
 									case Some( c ) => c.name
 								})

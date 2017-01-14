@@ -1,9 +1,9 @@
 use prepared statements in built-in routes; can use var declarations
 
-comments at end of config
-
 default values for columns
 
 allow json syntax for inserting values into reference columns
 
 deep properties in filters
+
+add 'ids' to reference.conf - "int" means INTEGER will be used for id, ""big" means BIGINT will used for ids, "uuid" means UUID will be generated (and checked for collisions)
