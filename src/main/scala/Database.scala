@@ -28,7 +28,7 @@ object H2Database extends Database {
 							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
-							case ReferenceType( _, _ ) => "BIGINT"
+							case ArrayReferenceType( _, _ ) | ReferenceType( _, _ ) => "BIGINT"
 						})
 						
 					if (required)

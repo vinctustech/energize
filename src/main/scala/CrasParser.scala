@@ -62,10 +62,11 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
+				"def", "var", "val",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "route",
 				"string", "integer", "uuid", "date", "long", "array",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"def", "var", "val"
+				"realm", "protected"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -100,12 +101,16 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ ExpressionStatement
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
+		realmDefinition |
 		tablesDefinition |
 		routesDefinition |
 		functionsDefinition |
 		variablesDefinition |
 		valuesDefinition
-	
+
+	lazy val realmDefinition: PackratParser[List[RealmDefinition]] =
+		"realm" ~> pos ~ stringLit ^^ {case p ~ r => List( RealmDefinition(p.pos, r) )}
+
 	lazy val functionsDefinition: PackratParser[List[FunctionDefinition]] =
 		"def" ~> functionDefinition ^^ {f => List( f )} |
 		"def" ~> (Indent ~> rep1(functionDefinition <~ nl) <~ Dedent)
@@ -132,22 +137,24 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		("table" | "resource") ~ pos ~ ident ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case k ~ p ~ name ~ bases ~ columns => List( TableDefinition( p.pos, name, bases, columns, k == "resource" ) )}
-		
+		protection ~ ("table" | "resource") ~ pos ~ ident ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case pro ~ k ~ p ~ name ~ bases ~ columns => List( TableDefinition( pro, p.pos, name, bases, columns, k == "resource" ) )}
+
+	lazy val protection: PackratParser[Protection] =
+		opt("protected" ~> opt("(" ~> ident <~ ")")) ^^ Protection
+
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
 			case name ~ typ ~ modifiers =>
 				TableColumn( modifiers, typ, name )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
-
 		positioned( "string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType |
-		"array" ~> ident ^^ ArrayReferenceType |
+		"array" ~> ident ^^ (ArrayReferenceType( _, null )) |
 		ident ^^ (ReferenceType( _, null )) )
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =

@@ -11,8 +11,10 @@ trait AST
 case class SourceAST( statements: List[StatementAST] ) extends AST
 
 trait StatementAST extends AST
-case class TableDefinition( pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn], resource: Boolean ) extends StatementAST
-	
+case class TableDefinition( protection: Protection, pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn], resource: Boolean ) extends StatementAST
+
+case class Protection( level: Option[Option[String]] )
+
 case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String ) extends Positional
 
 trait ColumnType extends Positional
@@ -21,10 +23,12 @@ case object IntegerType extends ColumnType
 case object LongType extends ColumnType
 case object UUIDType extends ColumnType
 case object DateType extends ColumnType
-case class ReferenceType(table: String, var ref: Table ) extends ColumnType
-case class ArrayReferenceType(table: String ) extends ColumnType
+case class ReferenceType( table: String, var ref: Table ) extends ColumnType
+case class ArrayReferenceType( table: String, var ref: Table ) extends ColumnType
 
 case class ColumnTypeModifier( modifier: String ) extends Positional
+
+case class RealmDefinition( pos: Position, realm: String ) extends StatementAST
 
 case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST
 	
