@@ -13,6 +13,7 @@ import org.apache.http.protocol.HttpContext
 
 
 class Server( env: Env ) {
+	val origin = SERVER.getString( "origin" )
 	val config = IOReactorConfig.custom
 		.setSoTimeout( SERVER.getInt("timeout") )
 		.setTcpNoDelay(true)
@@ -72,7 +73,7 @@ class Server( env: Env ) {
 				else
 					method
 
-			response.setHeader( "Access-Control-Allow-Origin", "*" )
+			response.setHeader( "Access-Control-Allow-Origin", origin )
 
 			try {
 				val data =
