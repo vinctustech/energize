@@ -62,10 +62,6 @@ class Server( env: Env ) {
 				context: HttpContext) {
 
 			val method = request.getRequestLine.getMethod.toUpperCase
-			
-			if (method == "OPTION")
-					throw new MethodNotSupportedException(method + " method not supported")
-
 			val target = request.getRequestLine.getUri
 			val method1 =
 				if (method == "HEAD")
@@ -75,48 +71,54 @@ class Server( env: Env ) {
 
 			response.setHeader( "Access-Control-Allow-Origin", origin )
 
-			try {
-				val data =
-					request match {
-						case withEntity: HttpEntityEnclosingRequest =>
-							val buf = new ByteArrayOutputStream
-							val entity = withEntity.getEntity
-								
-							entity.writeTo( buf )
-							env.process( method1, target, buf.toString )
-						case _ =>
-							env.process( method1, target, null )
-					}
-					
-				data match {
-					case Some( d ) =>
-						if (d eq null) {
-							response.setStatusCode( HttpStatus.SC_NO_CONTENT )
-						} else {
-							response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
+			if (method1 == "OPTIONS") {
+				response.setHeader( "Allow", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS" )
+				response.setStatusCode( HttpStatus.SC_OK )
+				response.setEntity(
+					new NStringEntity( s"<html><body><p>Supported methods: HEAD, GET, PUT, POST, PATCH, DELETE, OPTIONS</p></body></html>", ContentType.TEXT_HTML ) )
+			} else
+				try {
+					val data =
+						request match {
+							case withEntity: HttpEntityEnclosingRequest =>
+								val buf = new ByteArrayOutputStream
+								val entity = withEntity.getEntity
 
-							val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
-							
-							if (method == "HEAD") {
-								val empty =
-									new NByteArrayEntity( new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON ) {
-										override def getContentLength = entity.getContentLength
-									}
-									
-								response.setEntity( empty )
-							} else
-								response.setEntity( entity )
+								entity.writeTo( buf )
+								env.process( method1, target, buf.toString )
+							case _ =>
+								env.process( method1, target, null )
 						}
-					case None => 
-						response.setStatusCode( HttpStatus.SC_NOT_FOUND )
-						response.setEntity( new NStringEntity("<html><body><h1>404: Not Found</h1></body></html>", ContentType.TEXT_HTML) )
+
+					data match {
+						case Some( d ) =>
+							if (d eq null) {
+								response.setStatusCode( HttpStatus.SC_NO_CONTENT )
+							} else {
+								response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
+
+								val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
+
+								if (method == "HEAD") {
+									val empty =
+										new NByteArrayEntity( new Array[Byte]( 0 ), 0, 0, ContentType.APPLICATION_JSON ) {
+											override def getContentLength = entity.getContentLength
+										}
+
+									response.setEntity( empty )
+								} else
+									response.setEntity( entity )
+							}
+						case None =>
+							response.setStatusCode( HttpStatus.SC_NOT_FOUND )
+							response.setEntity( new NStringEntity( "<html><body><h1>404: Not Found</h1></body></html>", ContentType.TEXT_HTML ) )
+					}
+				} catch {
+					case e: Exception =>
+						response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
+						response.setEntity(
+							new NStringEntity( s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p></body></html>", ContentType.TEXT_HTML ) )
 				}
-			} catch {
-				case e: Exception =>
-					response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
-					response.setEntity(
-						new NStringEntity(s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p></body></html>", ContentType.TEXT_HTML) )
-			}
 		}
 	}
 }
