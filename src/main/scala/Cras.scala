@@ -40,7 +40,7 @@ object Cras {
 					case o: JSON =>
 						o getString "type" match {
 							case "resource" =>
-								TableDefinition( null, o getString "name", null, null, resource = true )
+								TableDefinition( Protection(None), null, o getString "name", null, null, resource = true )
 						}
 				} )
 
@@ -75,7 +75,7 @@ object Cras {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
-				case TableDefinition( pos, name, bases, columns, resource ) =>
+				case TableDefinition( _, pos, name, bases, columns, resource ) =>
 					if (tables contains db.desensitize( name ))
 						problem( pos, s"'$name' already defined" )
 					
