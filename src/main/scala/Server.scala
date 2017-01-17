@@ -71,7 +71,9 @@ class Server( env: Env ) {
 					"GET"
 				else
 					method
-					
+
+			response.setHeader( "Access-Control-Allow-Origin", "*" )
+
 			try {
 				val data =
 					request match {
@@ -91,7 +93,7 @@ class Server( env: Env ) {
 							response.setStatusCode( HttpStatus.SC_NO_CONTENT )
 						} else {
 							response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
-							
+
 							val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
 							
 							if (method == "HEAD") {

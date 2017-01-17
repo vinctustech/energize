@@ -164,7 +164,9 @@ object Cras {
 			case Table( _, _, columns, _, _ ) =>
 				columns.values foreach {
 					case Column( _, t@ReferenceType(table, _), _, _, _, _ ) =>
-						t.ref = tables.getOrElse( db.desensitize( table ), problem(t.pos, s"'$table' not found") )
+						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
+					case Column( _, t@ArrayReferenceType(table, _), _, _, _, _ ) =>
+						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
 					case _ =>
 				}
 		}
@@ -173,14 +175,15 @@ object Cras {
 
 		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
 //			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
-//			println( db.create(sorted) )
+			println( db.create(sorted) )
 			statement.execute( db.create(sorted) )
 		}
 		
 		tables.values foreach {
-			case t@Table( name, cnames, _, _, _ ) =>
-				val columns = cnames mkString ","
-				val values = Seq.fill( cnames.length )( "?" ) mkString ","
+			case t@Table( name, cnames, cols, _, _ ) =>
+				val cnames1 = cnames filterNot (c => cols(db.desensitize(c)).typ.isInstanceOf[ArrayReferenceType])
+				val columns = cnames1 mkString ","
+				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 				
 				t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
 		}
