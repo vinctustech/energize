@@ -69,14 +69,14 @@ class Server( env: Env ) {
 				else
 					method
 
-			response.setHeader( "Access-Control-Allow-Origin", origin )
-
 			if (method1 == "OPTIONS") {
 				response.setHeader( "Allow", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS" )
 				response.setStatusCode( HttpStatus.SC_OK )
 				response.setEntity(
 					new NStringEntity( s"<html><body><p>Supported methods: HEAD, GET, PUT, POST, PATCH, DELETE, OPTIONS</p></body></html>", ContentType.TEXT_HTML ) )
-			} else
+			} else {
+				response.setHeader( "Access-Control-Allow-Origin", origin )
+
 				try {
 					val data =
 						request match {
@@ -119,6 +119,7 @@ class Server( env: Env ) {
 						response.setEntity(
 							new NStringEntity( s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p></body></html>", ContentType.TEXT_HTML ) )
 				}
+			}
 		}
 	}
 }
