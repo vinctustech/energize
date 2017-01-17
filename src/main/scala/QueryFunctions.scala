@@ -60,7 +60,7 @@ object QueryFunctionHelpers {
 
 object QueryFunctions {
 	def query( env: Env, resource: Table, sql: String ) = {
-		println( sql )
+//		println( sql )
 		val res = env.statement.executeQuery( sql )
 		val list = new ListBuffer[Map[String, Any]]
 		val md = res.getMetaData

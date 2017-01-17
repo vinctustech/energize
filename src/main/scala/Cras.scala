@@ -36,8 +36,8 @@ object Cras {
 		val json = DefaultJSONReader.fromString( src )
 		val ast =
 			SourceAST(
-				json.getList( "declarations" ).asInstanceOf[List[JSON]] map {
-					o =>
+				json.getList( "declarations" ) map {
+					case o: JSON =>
 						o getString "type" match {
 							case "resource" =>
 								TableDefinition( null, o getString "name", null, null, resource = true )
@@ -173,7 +173,7 @@ object Cras {
 
 		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
 //			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
-			println( db.create(sorted) )
+//			println( db.create(sorted) )
 			statement.execute( db.create(sorted) )
 		}
 		
