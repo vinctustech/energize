@@ -71,6 +71,8 @@ class Server( env: Env ) {
 
 			if (method1 == "OPTIONS") {
 				response.setHeader( "Allow", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS" )
+				response.setHeader( "Access-Control-Allow-Origin", origin )
+				response.setHeader( "Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin")
 				response.setStatusCode( HttpStatus.SC_OK )
 				response.setEntity(
 					new NStringEntity( s"<html><body><p>Supported methods: HEAD, GET, PUT, POST, PATCH, DELETE, OPTIONS</p></body></html>", ContentType.TEXT_HTML ) )

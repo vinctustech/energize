@@ -1,0 +1,3 @@
+resource projects
+	name string required
+	description string optional
