@@ -3,6 +3,8 @@ package xyz.hyperreal.cras
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
 
+import xyz.hyperreal.lia.Math
+
 	
 // 	def list( env: Env, resource: Table ) =
 // 		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
@@ -75,12 +77,13 @@ object QueryFunctions {
 				val obj = res.getObject( i )
 				
 				env.tables get dbtable match {
-					case None => sys.error( s"data from an unknown table: $dbtable" )
+//					case None => sys.error( s"data from an unknown table: $dbtable" )
+					case None => attr += (dbcol -> obj)
 					case Some( t ) if t == table =>
 						t.columns get dbcol match {
 							case None if dbcol.toLowerCase == "id" =>
 								attr += ("id" -> obj)
-							case None => sys.error( "data not from a known column" )
+							case None => sys.error( s"data from an unknown column: $dbcol" )
 							case Some( Column(cname, ReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
 								attr += (cname -> mkmap( reft ))
 							case Some( c ) =>
@@ -99,12 +102,8 @@ object QueryFunctions {
 		list.toList
 	}
 	
-	def size( env: Env, resource: Table ) = {
-		val res = env.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name}" )
-		
-		res.next
-		res.getInt( 1 )
-	}
+	def size( env: Env, resource: Table ) =
+		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}").head.values.head.asInstanceOf[Long] )
 
 	def list( env: Env, resource: Table,
 		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
