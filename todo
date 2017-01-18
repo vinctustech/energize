@@ -11,3 +11,6 @@ add 'ids' to reference.conf
 
 add OPTIONS request method
 	https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/OPTIONS
+
+add boolean field to Table that will be true if there are any array refs in it
+	to optimize QueryFunctions.scala line 37

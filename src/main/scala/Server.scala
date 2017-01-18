@@ -70,7 +70,6 @@ class Server( env: Env ) {
 					method
 
 			if (method1 == "OPTIONS") {
-//				response.setHeader( "Allow", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS" )
 				response.setHeader( "Access-Control-Allow-Origin", origin )
 				response.setHeader( "Access-Control-Allow-Headers", "Accept,Content-Type,Origin")
 				response.setHeader( "Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS")

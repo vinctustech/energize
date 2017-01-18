@@ -33,7 +33,17 @@ object QueryFunctionHelpers {
 		if (fssmid.intersect( resource.names.toSet ) != fssmid)
 			sys.error( "all fields must be apart of the resource definition" )
 			
-		val fs1 = if (fs == Nil) "*" else fs mkString ","
+		val fs1 =
+			if (resource.columns.values.exists( c => c.typ.isInstanceOf[ArrayReferenceType] ))
+				(if (fs == Nil) resource.names else fs) map (f =>
+					resource.columns(db.desensitize(f)) match {
+						case Column( _, ArrayReferenceType(_, _), _, _, _, _) => s"null as $f"
+						case _ => f
+					}) mkString ","
+			else if (fs == Nil)
+				"*"
+			else
+				fs mkString ","
 		val buf = new StringBuilder( s"SELECT $fs1 FROM ${resource.name}" )
 		val fssd = fss map (f => db.desensitize( f ))
 
@@ -61,8 +71,8 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Env, resource: Table, sql: String ) = {
-//		println( sql )
+	def query( env: Env, resource: Table, sql: String ): List[Map[String, Any]] = {
+		println( sql )
 		val res = env.statement.executeQuery( sql )
 		val list = new ListBuffer[Map[String, Any]]
 		val md = res.getMetaData
@@ -70,7 +80,7 @@ object QueryFunctions {
 
 		def mkmap( table: Table ): Map[String, Any] = {
 			val attr = new ListBuffer[(String, Any)]
-			
+
 			for (i <- 1 to count) {
 				val dbtable = md.getTableName( i )
 				val dbcol = md.getColumnName( i )
@@ -78,16 +88,23 @@ object QueryFunctions {
 				
 				env.tables get dbtable match {
 //					case None => sys.error( s"data from an unknown table: $dbtable" )
-					case None => attr += (dbcol -> obj)
+					case None =>
+						table.columns get dbcol match {
+							case None => attr += (dbcol -> obj)
+							case Some( Column(cname, ArrayReferenceType(ref, reft), _, _, _, _) ) =>
+								println( for (i <- 1 to res.getMetaData.getColumnCount) yield res.getMetaData.getColumnName(i) )
+								attr += (cname -> query( env, reft,
+									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+										s"WHERE ${table.name}$$$ref.${table.name}$$id == ${res.getLong(env.db.desensitize("id"))}" ))
+							case Some( c ) => attr += (c.name -> obj)
+						}
 					case Some( t ) if t == table =>
 						t.columns get dbcol match {
-							case None if dbcol.toLowerCase == "id" =>
-								attr += ("id" -> obj)
+							case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
 							case None => sys.error( s"data from an unknown column: $dbcol" )
 							case Some( Column(cname, ReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
 								attr += (cname -> mkmap( reft ))
-							case Some( c ) =>
-								attr += (c.name -> obj)
+							case Some( c ) => attr += (c.name -> obj)
 						}
 					case _ =>
 				}
