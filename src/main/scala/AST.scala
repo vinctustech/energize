@@ -11,7 +11,8 @@ trait AST
 case class SourceAST( statements: List[StatementAST] ) extends AST
 
 trait StatementAST extends AST
-case class TableDefinition( protection: Protection, pos: Position, name: String, bases: List[URIPath], fields: List[TableColumn], resource: Boolean ) extends StatementAST
+case class TableDefinition( protection: Protection, pos: Position, name: String, bases: List[URIPath],
+														fields: List[TableColumn], resource: Boolean ) extends StatementAST
 
 case class Protection( level: Option[Option[String]] )
 
@@ -45,9 +46,9 @@ case class HTTPMethod( method: String )
 trait URISegment
 case class NameURISegment( segment: String ) extends URISegment
 case class ParameterURISegment( name: String, typ: String ) extends URISegment
-	
+
 trait ExpressionAST extends AST
-case class ApplyExpression( function: ExpressionAST, args: List[ExpressionAST] ) extends ExpressionAST
+case class ApplyExpression( function: ExpressionAST, pos: Position, args: List[ExpressionAST] ) extends ExpressionAST
 case class VariableExpression( name: String ) extends ExpressionAST
 case class OptVariableExpression( name: String ) extends ExpressionAST
 case class LiteralExpression( value: Any ) extends ExpressionAST

@@ -1,5 +1,7 @@
 package xyz.hyperreal.cras
 
+import xyz.hyperreal.table.TextTable
+
 
 object SupportFunctions {
 	
@@ -31,5 +33,7 @@ object SupportFunctions {
 	def rndAlpha( env: Env, len: Int ) = List.fill( len )( (util.Random.nextInt('z' - 'a') + 'a').toChar ).mkString
 	
 	def rndInt( env: Env, low: Int, high: Int ) = util.Random.nextInt( high - low ) + low
-	
+
+
+	def show( env: Env, tab: Table ) = Console.print( TextTable(env.statement.executeQuery(s"select * from ${tab.name}")) )
 }

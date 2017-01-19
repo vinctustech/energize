@@ -72,7 +72,6 @@ object QueryFunctionHelpers {
 
 object QueryFunctions {
 	def query( env: Env, resource: Table, sql: String ): List[Map[String, Any]] = {
-		println( sql )
 		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[Map[String, Any]]
 
@@ -90,11 +89,9 @@ object QueryFunctions {
 						table.columns get dbcol match {
 							case None => attr += (dbcol -> obj)
 							case Some( Column(cname, ArrayReferenceType(ref, reft), _, _, _, _) ) =>
-//								println( for (i <- 1 to res.getMetaData.getColumnCount) yield res.getMetaData.getColumnName(i) )
 								attr += (cname -> query( env, reft,
 									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
 										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
-								println( 0)
 							case Some( c ) => attr += (c.name -> obj)
 						}
 					case Some( t ) if t == table =>
@@ -112,12 +109,8 @@ object QueryFunctions {
 			ListMap( attr: _* )
 		}
 
-		println( 456)
-		while (res.next) {
-			println( 123 )
+		while (res.next)
 			list += mkmap( resource )
-		}
-		println( list)
 
 		list.toList
 	}
@@ -177,4 +170,7 @@ object QueryFunctions {
 	
 	def find( env: Env, resource: Table, id: Long, fields: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + s" WHERE ${resource.name}.id = $id" )
+
+	def search( env: Env, resource: Table, field: String, value: Any ) =
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None) + s" WHERE ${resource.name}.$field = '$value'" )
 }

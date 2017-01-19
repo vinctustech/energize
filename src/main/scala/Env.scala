@@ -173,7 +173,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					l.asInstanceOf[String]*r.asInstanceOf[Int]
 				else
 					Math( func, l, r )
-			case ApplyExpression( function, args ) =>
+			case ApplyExpression( function, pos, args ) =>
 				deref( function ) match {
 					case f: Native =>
 						val list = args map (a => deref( a ))
@@ -181,12 +181,17 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 						if (f.applicable( list ))
 							f( list, this )
 						else
-							sys.error( "wrong number or type of arguments for native function: " + f )
+							problem( pos, "wrong number or type of arguments for native function: " + f )
 					case f: FunctionExpression =>
 						if (f.params.length != args.length)
-							sys.error( "wrong number of arguments for function: " + f )
+							problem( pos, "wrong number of arguments for function: " + f )
 							
 						(this add (f.params zip (args map (a => deref( a )))).toMap).deref( f.expr )
+					case m: Map[_, _] =>
+						if (args.tail != Nil)
+							problem( pos, "can only apply a map to one argument" )
+
+						m.asInstanceOf[Map[String, Any]]( evals(args.head) )
 				}
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer )
 			case LiteralExpression( v ) => v

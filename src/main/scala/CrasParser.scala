@@ -288,7 +288,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		applyExpression
 		
 	lazy val applyExpression: PackratParser[ExpressionAST] =
-		applyExpression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		applyExpression ~ ("(" ~> pos) ~ (repsep(expression, ",") <~ ")") ^^ {case func ~ p ~ args => ApplyExpression( func, p.pos, args )} |
 		applyExpression ~ ("." ~> ident) ^^ {case o ~ p => DotExpression( o, p )} |
 		primaryExpression
 		
@@ -350,7 +350,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		actionApplyExpression
 		
 	lazy val actionApplyExpression: PackratParser[ExpressionAST] =
-		actionApplyExpression ~ ("(" ~> repsep(expression, ",") <~ ")") ^^ {case name ~ args => ApplyExpression( name, args )} |
+		actionApplyExpression ~ ("(" ~> pos) ~ (repsep(expression, ",") <~ ")") ^^ {case name ~ p ~ args => ApplyExpression( name, p.pos, args )} |
 		actionPrimaryExpression
 		
 	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
