@@ -12,15 +12,16 @@ import org.h2.jdbcx.JdbcConnectionPool
 object Cras {
 
 	def dbconnect: (Connection, Statement) = {
+		val name = DATABASE.getString( "name" )
 		val driver = DATABASE.getString( "driver" )
 		val url = DATABASE.getString( "url" )
 		val user = DATABASE.getString( "user" )
 		val password = DATABASE.getString( "password" )
 
-		dbconnect( driver, url, user, password )
+		dbconnect( name, driver, url, user, password )
 	}
 
-	def dbconnect( driver: String, url: String, user: String, password: String ) = {
+	def dbconnect( name: String, driver: String, url: String, user: String, password: String ) = {
     Class.forName( driver )
 		
 		val connection =
@@ -57,7 +58,7 @@ object Cras {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
-		val db = if (connection eq null) null else Database( connection.getMetaData.getDriverName )
+		val db = if (connection eq null) null else Database( DATABASE.getString("name") )
 
 		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
 		

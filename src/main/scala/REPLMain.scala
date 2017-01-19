@@ -30,6 +30,7 @@ object REPLMain extends App {
 	var env: Env = _
 	var connection: Connection = _
 	var statement: Statement = _
+	var name = "H2"
 	var driver = "org.h2.Driver"
 	var url = "jdbc:h2:mem:"
 	var user = "sa"
@@ -41,7 +42,7 @@ object REPLMain extends App {
 	}
 	
 	def connect {
-		val (c, s) = Cras.dbconnect( driver, url, user, password )
+		val (c, s) = Cras.dbconnect( name, driver, url, user, password )
 		
 		connection = c
 		statement = s
@@ -65,6 +66,7 @@ object REPLMain extends App {
 		try {
 			com match {
 				case List( "config"|"co" ) =>
+					name = DATABASE.getString( "name" )
 					driver = DATABASE.getString( "driver" )
 					url = DATABASE.getString( "url" )
 					user = DATABASE.getString( "user" )

@@ -223,9 +223,9 @@ object MySQLDatabase extends Database {
 
 object Database {
 	private val supported = Map[String, Database](
-		"H2 JDBC Driver" -> H2Database,
-		"PostgreSQL Native Driver" -> PostgresDatabase,
-		"MySQL Connector Java" -> MySQLDatabase
+		"H2" -> H2Database,
+		"PostgreSQL" -> PostgresDatabase,
+		"MySQL" -> MySQLDatabase
 	)
 
 	def isSupported( name: String ) = supported contains name

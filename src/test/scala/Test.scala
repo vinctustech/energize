@@ -5,7 +5,7 @@ import java.io.{PrintStream, ByteArrayOutputStream}
 
 object Test {
 
-  def dbconnect = Cras.dbconnect( "org.h2.Driver", "jdbc:h2:mem:", "sa", "" )
+  def dbconnect = Cras.dbconnect( "H2", "org.h2.Driver", "jdbc:h2:mem:", "sa", "" )
 //		Class.forName( "org.h2.Driver" )
 //
 //		val connection = DriverManager.getConnection( "jdbc:h2:mem:test", "sa", "" )

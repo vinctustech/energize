@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
 	"org.mariadb.jdbc" % "mariadb-java-client" % "1.5.7",
 	"org.xerial" % "sqlite-jdbc" % "3.16.1",
 	"org.firebirdsql.jdbc" % "jaybird-jdk16" % "2.2.12",
-//	"org.apache.derby" % "derby" % "10.13.1.1",
+	"org.apache.derby" % "derby" % "10.13.1.1",
 	"jline" % "jline" % "2.14.2",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
