@@ -25,6 +25,7 @@ object Cras {
     Class.forName( driver )
 		
 		val connection =
+//				JdbcConnectionPool.create( url, user, password ).getConnection
 			if (user eq null)
 				DriverManager.getConnection( url )
 			else
