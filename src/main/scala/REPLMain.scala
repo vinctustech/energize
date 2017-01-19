@@ -32,7 +32,7 @@ object REPLMain extends App {
 	var statement: Statement = _
 	var driver = "org.h2.Driver"
 	var url = "jdbc:h2:mem:"
-	var username = "sa"
+	var user = "sa"
 	var password = ""
 
 		
@@ -41,7 +41,7 @@ object REPLMain extends App {
 	}
 	
 	def connect {
-		val (c, s) = Cras.dbconnect( driver, url, username, password )
+		val (c, s) = Cras.dbconnect( driver, url, user, password )
 		
 		connection = c
 		statement = s
@@ -67,7 +67,7 @@ object REPLMain extends App {
 				case List( "config"|"co" ) =>
 					driver = DATABASE.getString( "driver" )
 					url = DATABASE.getString( "url" )
-					username = DATABASE.getString( "username" )
+					user = DATABASE.getString( "user" )
 					password = DATABASE.getString( "password" )
 				case List( "connect"|"c" ) =>
 					if (connection ne null)
@@ -83,7 +83,7 @@ object REPLMain extends App {
 					connect
 					env = null
 				case List( "db" ) =>
-					println( driver, url, username, password )
+					println( driver, url, user, password )
 				case List( "driver"|"d", d ) =>
 					driver = d
 				case List( "help"|"h" ) =>
@@ -99,7 +99,7 @@ object REPLMain extends App {
 					|quit (q)                             exit the REPL
 					|routes (r)                           print all routes showing absolute paths
 					|stack (s) on/off                     turn exception stack trace on or off
-					|username (u) <username>              set database <username>
+					|user (u) <user>                      set database <user>
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
@@ -136,8 +136,8 @@ object REPLMain extends App {
 					}
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
-				case List( "username"|"u", u ) =>
-					username = u
+				case List( "user"|"u", u ) =>
+					user = u
 				case Nil|List( "" ) =>
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )

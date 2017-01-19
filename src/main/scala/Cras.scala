@@ -12,16 +12,20 @@ object Cras {
 	def dbconnect: (Connection, Statement) = {
 		val driver = DATABASE.getString( "driver" )
 		val url = DATABASE.getString( "url" )
-		val username = DATABASE.getString( "username" )
+		val user = DATABASE.getString( "user" )
 		val password = DATABASE.getString( "password" )
 
-		dbconnect( driver, url, username, password )
+		dbconnect( driver, url, user, password )
 	}
 
-	def dbconnect( driver: String, url: String, username: String, password: String ) = {
+	def dbconnect( driver: String, url: String, user: String, password: String ) = {
     Class.forName( driver )
 		
-		val connection = DriverManager.getConnection( url, username, password )
+		val connection =
+			if (user eq null)
+				DriverManager.getConnection( url )
+			else
+				DriverManager.getConnection( url, user, password )
 		
 		(connection, connection.createStatement)
 	}
