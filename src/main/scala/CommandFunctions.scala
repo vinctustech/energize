@@ -111,10 +111,10 @@ object CommandFunctions {
 						else {
 							val reft = typ.asInstanceOf[ReferenceType].ref
 							val refc =
-								(reft.columns.values.find( c => c.unique ) match {
+								reft.columns.values.find( c => c.unique ) match {
 									case None => throw new CrasErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
 									case Some( c ) => c.name
-								})
+								}
 
 							k + s" = (SELECT id FROM $reft WHERE $refc = '$v')"
 						}
@@ -124,4 +124,11 @@ object CommandFunctions {
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
 		}
-}
+
+	def associate( env: Env, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) =
+		insert( env, env.tables(src.name + '$' + dst.name),
+			Map(
+				src.name + "$id" -> QueryFunctions.findOne(env, src, sfield, svalue)("id"),
+				dst.name + "$id" -> QueryFunctions.findOne(env, dst, dfield, dvalue)("id")) )
+
+}//findOne(students, "name", "rayna").id, findOne(classrooms, "number", "105").id

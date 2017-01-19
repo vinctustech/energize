@@ -71,12 +71,12 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Env, resource: Table, sql: String ): List[Map[String, Any]] = {
+	def query( env: Env, resource: Table, sql: String ): List[Map[String, AnyRef]] = {
 		val res = new Relation( env.statement.executeQuery(sql) )
-		val list = new ListBuffer[Map[String, Any]]
+		val list = new ListBuffer[Map[String, AnyRef]]
 
-		def mkmap( table: Table ): Map[String, Any] = {
-			val attr = new ListBuffer[(String, Any)]
+		def mkmap( table: Table ): Map[String, AnyRef] = {
+			val attr = new ListBuffer[(String, AnyRef)]
 
 			for (i <- 0 until res.columnCount) {
 				val dbtable = res.columns(i).table
@@ -168,9 +168,11 @@ object QueryFunctions {
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + where + orderby + limoff )
 	}
 	
-	def find( env: Env, resource: Table, id: Long, fields: Option[String] ) =
+	def findId( env: Env, resource: Table, id: Long, fields: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + s" WHERE ${resource.name}.id = $id" )
 
-	def search( env: Env, resource: Table, field: String, value: Any ) =
+	def findValue( env: Env, resource: Table, field: String, value: Any ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None) + s" WHERE ${resource.name}.$field = '$value'" )
+
+	def findOne( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
 }

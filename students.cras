@@ -8,7 +8,7 @@ resource classrooms
 if size( students ) == 0
 	batchInsert( students, [["rayna"], ["carys"], ["soren"], ["larkin"]] )
 	batchInsert( classrooms, [["101"], ["105"], ["208"], ["302"], ["307"]] )
-#	associate( students, classrooms, search(students, "name", "rayna")("id"), search(classrooms, "number", "105")("id") )
+	associate( students, "name", "rayna", classrooms, "number", "105" )
 
 show( students )
-print( search( students, "name", "soren" ) )
+print( findOne( students, "name", "soren" ) )
