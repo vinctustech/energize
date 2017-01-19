@@ -73,18 +73,16 @@ object QueryFunctionHelpers {
 object QueryFunctions {
 	def query( env: Env, resource: Table, sql: String ): List[Map[String, Any]] = {
 		println( sql )
-		val res = env.statement.executeQuery( sql )
+		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[Map[String, Any]]
-		val md = res.getMetaData
-		val count = md.getColumnCount
 
 		def mkmap( table: Table ): Map[String, Any] = {
 			val attr = new ListBuffer[(String, Any)]
 
-			for (i <- 1 to count) {
-				val dbtable = md.getTableName( i )
-				val dbcol = md.getColumnName( i )
-				val obj = res.getObject( i )
+			for (i <- 0 until res.columnCount) {
+				val dbtable = res.columns(i).table
+				val dbcol = res.columns(i).name
+				val obj = res.get( i )
 				
 				env.tables get dbtable match {
 //					case None => sys.error( s"data from an unknown table: $dbtable" )
@@ -92,7 +90,7 @@ object QueryFunctions {
 						table.columns get dbcol match {
 							case None => attr += (dbcol -> obj)
 							case Some( Column(cname, ArrayReferenceType(ref, reft), _, _, _, _) ) =>
-								println( for (i <- 1 to res.getMetaData.getColumnCount) yield res.getMetaData.getColumnName(i) )
+//								println( for (i <- 1 to res.getMetaData.getColumnCount) yield res.getMetaData.getColumnName(i) )
 								attr += (cname -> query( env, reft,
 									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
 										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
@@ -173,7 +171,7 @@ object QueryFunctions {
 				case (Some( p ), None, Some( l )) => s" LIMIT $l OFFSET " + (p*l.toInt)
 				case (None, Some( s ), Some( l )) => s" LIMIT $l OFFSET $s"
 			}
-			
+
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + where + orderby + limoff )
 	}
 	
