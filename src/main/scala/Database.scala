@@ -31,6 +31,10 @@ object H2Database extends Database {
 								case LongType => "BIGINT"
 								case UUIDType => "UUID"
 								case DateType => "DATE"
+								case DatetimeType => "DATETIME"
+								case TimeType => "TIME"
+								case TimestampType => "TIMESTAMP"
+								case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
 								case ReferenceType( _, _ ) => "BIGINT"
 							})
 
@@ -100,6 +104,10 @@ object PostgresDatabase extends Database {
 							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
+							case DatetimeType => "TIMESTAMP"
+							case TimeType => "TIME"
+							case TimestampType => "TIMESTAMP"
+							case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
 							case ReferenceType( _, _ ) => "BIGINT"
 						})
 
@@ -168,6 +176,10 @@ object MySQLDatabase extends Database {
 							case LongType => "BIGINT"
 							case UUIDType => "UUID"
 							case DateType => "DATE"
+							case DatetimeType => "DATETIME"
+							case TimeType => "TIME"
+							case TimestampType => "TIMESTAMP"
+							case TimestamptzType => problem( typ.pos, "'with timezone' is not supported by MySQL" )
 							case ReferenceType( _, _ ) => "BIGINT"
 						})
 
