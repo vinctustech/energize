@@ -1,5 +1,7 @@
 package xyz.hyperreal.cras
 
+import scala.collection.mutable.ListBuffer
+
 
 object H2Database extends Database {
 	val caseSensitive = false
@@ -8,34 +10,36 @@ object H2Database extends Database {
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
-		
+
 		tables foreach {
 			case Table( name, names, columns, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
-				buf ++= "(id IDENTITY NOT NULL PRIMARY KEY"
+				buf ++= " (id IDENTITY NOT NULL PRIMARY KEY"
 				
 				for (cname <- names) {
 					val Column( _, typ, secret, required, unique, indexed ) = columns(desensitize(cname))
-					
-					buf ++= ", "
-					buf ++= cname
-					buf += ' '
-					buf ++=
-						(typ match {
-							case StringType => "VARCHAR(255)"
-							case IntegerType => "INT"
-							case LongType => "BIGINT"
-							case UUIDType => "UUID"
-							case DateType => "DATE"
-							case ArrayReferenceType( _, _ ) | ReferenceType( _, _ ) => "BIGINT"
-						})
-						
-					if (required)
-						buf ++= " NOT NULL"
-						
-					if (unique)
-						buf ++= " UNIQUE"
+
+					if (!typ.isInstanceOf[ArrayReferenceType]) {
+						buf ++= ", "
+						buf ++= cname
+						buf += ' '
+						buf ++=
+							(typ match {
+								case StringType => "VARCHAR(255)"
+								case IntegerType => "INT"
+								case LongType => "BIGINT"
+								case UUIDType => "UUID"
+								case DateType => "DATE"
+								case ReferenceType( _, _ ) => "BIGINT"
+							})
+
+						if (required)
+							buf ++= " NOT NULL"
+
+						if (unique)
+							buf ++= " UNIQUE"
+					}
 				}
 
 				columns.values foreach {
@@ -57,6 +61,10 @@ object H2Database extends Database {
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
+					case Column( _, ArrayReferenceType(ref, _), _, _, _, _ ) =>
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
 		}
@@ -77,7 +85,7 @@ object PostgresDatabase extends Database {
 			case Table( name, names, columns, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
-				buf ++= "(id BIGSERIAL NOT NULL PRIMARY KEY"
+				buf ++= " (id BIGSERIAL NOT NULL PRIMARY KEY"
 
 				for (cname <- names) {
 					val Column( _, typ, secret, required, unique, indexed ) = columns(cname)
@@ -121,6 +129,10 @@ object PostgresDatabase extends Database {
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
+					case Column( _, ArrayReferenceType(ref, _), _, _, _, _ ) =>
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
 		}
@@ -141,7 +153,7 @@ object MySQLDatabase extends Database {
 			case Table( name, names, columns, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
-				buf ++= "(id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+				buf ++= " (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
 
 				for (cname <- names) {
 					val Column( _, typ, secret, required, unique, indexed ) = columns(cname)
@@ -185,6 +197,10 @@ object MySQLDatabase extends Database {
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
+					case Column( _, ArrayReferenceType(ref, _), _, _, _, _ ) =>
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
 		}

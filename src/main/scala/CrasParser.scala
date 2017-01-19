@@ -154,7 +154,7 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
 		"date" ^^^ DateType |
-		"array" ~> ident ^^ (ArrayReferenceType( _, null )) |
+		ident <~ "array" ^^ (ArrayReferenceType( _, null )) |
 		ident ^^ (ReferenceType( _, null )) )
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =

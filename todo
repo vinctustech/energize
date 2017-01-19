@@ -6,4 +6,11 @@ allow json syntax for inserting values into reference columns
 
 deep properties in filters
 
-add 'ids' to reference.conf - "int" means INTEGER will be used for id, ""big" means BIGINT will used for ids, "uuid" means UUID will be generated (and checked for collisions)
+add 'ids' to reference.conf
+	"int" means INTEGER will be used for id, ""big" means BIGINT will used for ids, "uuid" means UUID will be generated (and checked for collisions)
+
+add OPTIONS request method
+	https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/OPTIONS
+
+add boolean field to Table that will be true if there are any array refs in it
+	to optimize QueryFunctions.scala line 37

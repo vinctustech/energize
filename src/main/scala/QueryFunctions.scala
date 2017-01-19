@@ -3,6 +3,8 @@ package xyz.hyperreal.cras
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
 
+import xyz.hyperreal.lia.Math
+
 	
 // 	def list( env: Env, resource: Table ) =
 // 		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
@@ -31,7 +33,17 @@ object QueryFunctionHelpers {
 		if (fssmid.intersect( resource.names.toSet ) != fssmid)
 			sys.error( "all fields must be apart of the resource definition" )
 			
-		val fs1 = if (fs == Nil) "*" else fs mkString ","
+		val fs1 =
+			if (resource.columns.values.exists( c => c.typ.isInstanceOf[ArrayReferenceType] ))
+				(if (fs == Nil) resource.names else fs) map (f =>
+					resource.columns(db.desensitize(f)) match {
+						case Column( _, ArrayReferenceType(_, _), _, _, _, _) => s"null as $f"
+						case _ => f
+					}) mkString ","
+			else if (fs == Nil)
+				"*"
+			else
+				fs mkString ","
 		val buf = new StringBuilder( s"SELECT $fs1 FROM ${resource.name}" )
 		val fssd = fss map (f => db.desensitize( f ))
 
@@ -59,8 +71,8 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Env, resource: Table, sql: String ) = {
-//		println( sql )
+	def query( env: Env, resource: Table, sql: String ): List[Map[String, Any]] = {
+		println( sql )
 		val res = env.statement.executeQuery( sql )
 		val list = new ListBuffer[Map[String, Any]]
 		val md = res.getMetaData
@@ -68,23 +80,31 @@ object QueryFunctions {
 
 		def mkmap( table: Table ): Map[String, Any] = {
 			val attr = new ListBuffer[(String, Any)]
-			
+
 			for (i <- 1 to count) {
 				val dbtable = md.getTableName( i )
 				val dbcol = md.getColumnName( i )
 				val obj = res.getObject( i )
 				
 				env.tables get dbtable match {
-					case None => sys.error( s"data from an unknown table: $dbtable" )
+//					case None => sys.error( s"data from an unknown table: $dbtable" )
+					case None =>
+						table.columns get dbcol match {
+							case None => attr += (dbcol -> obj)
+							case Some( Column(cname, ArrayReferenceType(ref, reft), _, _, _, _) ) =>
+								println( for (i <- 1 to res.getMetaData.getColumnCount) yield res.getMetaData.getColumnName(i) )
+								attr += (cname -> query( env, reft,
+									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+										s"WHERE ${table.name}$$$ref.${table.name}$$id == ${res.getLong(env.db.desensitize("id"))}" ))
+							case Some( c ) => attr += (c.name -> obj)
+						}
 					case Some( t ) if t == table =>
 						t.columns get dbcol match {
-							case None if dbcol.toLowerCase == "id" =>
-								attr += ("id" -> obj)
-							case None => sys.error( "data not from a known column" )
+							case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
+							case None => sys.error( s"data from an unknown column: $dbcol" )
 							case Some( Column(cname, ReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
 								attr += (cname -> mkmap( reft ))
-							case Some( c ) =>
-								attr += (c.name -> obj)
+							case Some( c ) => attr += (c.name -> obj)
 						}
 					case _ =>
 				}
@@ -99,12 +119,8 @@ object QueryFunctions {
 		list.toList
 	}
 	
-	def size( env: Env, resource: Table ) = {
-		val res = env.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name}" )
-		
-		res.next
-		res.getInt( 1 )
-	}
+	def size( env: Env, resource: Table ) =
+		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}").head.values.head.asInstanceOf[Long] )
 
 	def list( env: Env, resource: Table,
 		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
