@@ -2,9 +2,11 @@ package xyz.hyperreal.cras
 
 import java.sql._
 
+import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
+
 import xyz.hyperreal.json.{DefaultJSONReader, JSON}
 
-import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
+import org.h2.jdbcx.JdbcConnectionPool
 
 
 object Cras {

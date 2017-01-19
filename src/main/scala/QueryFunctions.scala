@@ -35,11 +35,11 @@ object QueryFunctionHelpers {
 			
 		val fs1 =
 			if (resource.columns.values.exists( c => c.typ.isInstanceOf[ArrayReferenceType] ))
-				(if (fs == Nil) resource.names else fs) map (f =>
+				((if (fs == Nil) resource.names else fs) map (f =>
 					resource.columns(db.desensitize(f)) match {
 						case Column( _, ArrayReferenceType(_, _), _, _, _, _) => s"null as $f"
 						case _ => f
-					}) mkString ","
+					})) :+ "id" mkString ","
 			else if (fs == Nil)
 				"*"
 			else
@@ -95,7 +95,8 @@ object QueryFunctions {
 								println( for (i <- 1 to res.getMetaData.getColumnCount) yield res.getMetaData.getColumnName(i) )
 								attr += (cname -> query( env, reft,
 									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
-										s"WHERE ${table.name}$$$ref.${table.name}$$id == ${res.getLong(env.db.desensitize("id"))}" ))
+										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
+								println( 0)
 							case Some( c ) => attr += (c.name -> obj)
 						}
 					case Some( t ) if t == table =>
@@ -112,10 +113,14 @@ object QueryFunctions {
 			
 			ListMap( attr: _* )
 		}
-		
-		while (res.next)
+
+		println( 456)
+		while (res.next) {
+			println( 123 )
 			list += mkmap( resource )
-		
+		}
+		println( list)
+
 		list.toList
 	}
 	
