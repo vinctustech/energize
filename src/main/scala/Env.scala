@@ -5,18 +5,17 @@ import java.net.URI
 
 import collection.JavaConverters._
 import util.matching.Regex
-import collection.mutable.{HashMap, MultiMap, Set}
+import collection.mutable.HashMap
 
 import org.apache.http.client.utils.URLEncodedUtils
-import org.apache.http.NameValuePair
 
 import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
 case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement, db: Database ) {
-	
-	private val varRegex = """\$([a-zA-Z][a-zA-Z0-9]*)""".r
+
+	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
@@ -140,7 +139,14 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		deref( ast.expr )	
 	}
 
-	def replacer = (m: Regex.Match) => lookup( m group 1 ).toString
+	def replacer =
+		(m: Regex.Match) =>
+			Regex quoteReplacement(
+				if (m.group( 1 ) eq null)
+					"$"
+				else
+					lookup( m group 1 ).toString
+				)
 	
 	def eval( expr: ExpressionAST ): Any =
 		expr match {

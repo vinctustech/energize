@@ -124,11 +124,4 @@ object CommandFunctions {
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
 		}
-
-	def associate( env: Env, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) =
-		insert( env, env.tables(src.name + '$' + dst.name),
-			Map(
-				src.name + "$id" -> QueryFunctions.findOne(env, src, sfield, svalue)("id"),
-				dst.name + "$id" -> QueryFunctions.findOne(env, dst, dfield, dvalue)("id")) )
-
-}//findOne(students, "name", "rayna").id, findOne(classrooms, "number", "105").id
+}
