@@ -52,7 +52,8 @@ object REPLMain extends App {
 	}
 	
 	connect
-	
+	env = Env( Map(), Nil, Builtins.map, connection, statement, H2Database )
+
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
 		val com = line1 split "\\s+" toList
@@ -105,6 +106,7 @@ object REPLMain extends App {
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
+					|?<expression>                        evaluate a CRAS action script expression
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
 					env = Cras.configure( io.Source.fromFile(config + ".cras"), connection, statement )
