@@ -11,13 +11,17 @@ object CommandFunctionHelpers {
 		val json1 = escapeQuotes( json )
 
 		com ++= resource.name
-		com ++= resource.names.mkString( " (", ", ", ") " )
+		com ++= resource.names.
+			filterNot (n => resource.columns(env.db.desensitize( n )).typ.isInstanceOf[ManyReferenceType]).
+			mkString( " (", ", ", ") " )
 		com ++= "VALUES ("
 
 		val values = new ListBuffer[String]
 
 		for (c <- resource.names)
 			json1 get c match {
+				case None if resource.columns(env.db.desensitize( c )).typ.isInstanceOf[ManyReferenceType] =>
+					throw new CrasErrorException( s"insert: manay-to-many field cannot be NULL: $c" )
 				case None => values += "NULL"
 				case Some( v ) =>
 					resource.columns(env.db.desensitize( c )).typ match {
@@ -27,7 +31,9 @@ object CommandFunctionHelpers {
 									case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
 									case Some( uc ) => uc.name
 								}) + " = '" + String.valueOf( v ) + "')"
-						case ManyReferenceType( tname, tref ) =>
+						case ManyReferenceType( _, _ ) =>
+							if (v eq null)
+								throw new CrasErrorException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case StringType => values += '\'' + String.valueOf( v ) + '\''
 						case _ => values += String.valueOf( v )
 					}
@@ -98,7 +104,7 @@ object CommandFunctions {
 		}
 	}
 	
-	def update( env: Env, resource: Table, json: Map[String, Any], id: Long, all: Boolean ) =
+	def update( env: Env, resource: Table, json: Map[String, AnyRef], id: Long, all: Boolean ) =
 		if (all && json.keySet != resource.names.toSet)
 			throw new CrasErrorException( "update: missing column(s) in PUT request" )
 		else {

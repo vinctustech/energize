@@ -6,19 +6,6 @@ object H2Database extends Database {
 
 	val publicSchema = "PUBLIC"
 
-	def primitive( typ: PrimitiveColumnType ) =
-		typ match {
-			case StringType => "VARCHAR(255)"
-			case IntegerType => "INT"
-			case LongType => "BIGINT"
-			case UUIDType => "UUID"
-			case DateType => "DATE"
-			case DatetimeType => "DATETIME"
-			case TimeType => "TIME"
-			case TimestampType => "TIMESTAMP"
-			case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
-		}
-
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
@@ -38,7 +25,7 @@ object H2Database extends Database {
 						dimension( typ )
 						buf ++=
 							(typ match {
-								case p: PrimitiveColumnType => primitive( p )
+								case StringType => "VARCHAR(255)"
 								case IntegerType => "INT"
 								case LongType => "BIGINT"
 								case UUIDType => "UUID"
@@ -283,8 +270,6 @@ abstract class Database {
 					problem( p, "dimension must be an integer" )
 			case _ =>
 		}
-
-	def primitive( typ: PrimitiveColumnType ): String
 
 	def create( tables: List[Table] ): String
 }
