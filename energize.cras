@@ -1,6 +1,13 @@
 resource apis
 	name string required
+	description string optional
 	resources resources array
 
 resource resources
 	name string required
+	description string optional
+	fields fields array
+
+table fields
+	name string required
+	properties string required
