@@ -1,12 +1,23 @@
 package xyz.hyperreal.cras
 
-import scala.collection.mutable.ListBuffer
-
 
 object H2Database extends Database {
 	val caseSensitive = false
 
 	val publicSchema = "PUBLIC"
+
+	def primitive( typ: PrimitiveColumnType ) =
+		typ match {
+			case StringType => "VARCHAR(255)"
+			case IntegerType => "INT"
+			case LongType => "BIGINT"
+			case UUIDType => "UUID"
+			case DateType => "DATE"
+			case DatetimeType => "DATETIME"
+			case TimeType => "TIME"
+			case TimestampType => "TIMESTAMP"
+			case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
+		}
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
@@ -24,9 +35,10 @@ object H2Database extends Database {
 						buf ++= ", "
 						buf ++= cname
 						buf += ' '
+						dimension( typ )
 						buf ++=
 							(typ match {
-								case StringType => "VARCHAR(255)"
+								case p: PrimitiveColumnType => primitive( p )
 								case IntegerType => "INT"
 								case LongType => "BIGINT"
 								case UUIDType => "UUID"
@@ -36,6 +48,7 @@ object H2Database extends Database {
 								case TimestampType => "TIMESTAMP"
 								case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
 								case SingleReferenceType( _, _ ) => "BIGINT"
+								case ArrayType( _, _, _, _ ) => "ARRAY"
 							})
 
 						if (required)
@@ -82,6 +95,19 @@ object PostgresDatabase extends Database {
 
 	val publicSchema = "public"
 
+	def primitive( typ: PrimitiveColumnType ) =
+		typ match {
+			case StringType => "VARCHAR(255)"
+			case IntegerType => "INT"
+			case LongType => "BIGINT"
+			case UUIDType => "UUID"
+			case DateType => "DATE"
+			case DatetimeType => "TIMESTAMP"
+			case TimeType => "TIME"
+			case TimestampType => "TIMESTAMP"
+			case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
+		}
+
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
@@ -97,18 +123,12 @@ object PostgresDatabase extends Database {
 					buf ++= ", "
 					buf ++= cname
 					buf += ' '
+					dimension( typ )
 					buf ++=
 						(typ match {
-							case StringType => "VARCHAR(255)"
-							case IntegerType => "INT"
-							case LongType => "BIGINT"
-							case UUIDType => "UUID"
-							case DateType => "DATE"
-							case DatetimeType => "TIMESTAMP"
-							case TimeType => "TIME"
-							case TimestampType => "TIMESTAMP"
-							case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
+							case p: PrimitiveColumnType => primitive( p )
 							case SingleReferenceType( _, _ ) => "BIGINT"
+							case ArrayType( t, _, _, d ) => primitive( t ) + "[]"( d )
 						})
 
 					if (required)
@@ -154,6 +174,19 @@ object MySQLDatabase extends Database {
 
 	val publicSchema = "public"
 
+	def primitive( typ: PrimitiveColumnType ) =
+		typ match {
+			case StringType => "VARCHAR(255)"
+			case IntegerType => "INT"
+			case LongType => "BIGINT"
+			case UUIDType => "UUID"
+			case DateType => "DATE"
+			case DatetimeType => "DATETIME"
+			case TimeType => "TIME"
+			case TimestampType => "TIMESTAMP"
+			case TimestamptzType => problem( typ.pos, "'with timezone' is not supported by MySQL" )
+		}
+
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
@@ -171,15 +204,7 @@ object MySQLDatabase extends Database {
 					buf += ' '
 					buf ++=
 						(typ match {
-							case StringType => "VARCHAR(255)"
-							case IntegerType => "INT"
-							case LongType => "BIGINT"
-							case UUIDType => "UUID"
-							case DateType => "DATE"
-							case DatetimeType => "DATETIME"
-							case TimeType => "TIME"
-							case TimestampType => "TIMESTAMP"
-							case TimestamptzType => problem( typ.pos, "'with timezone' is not supported by MySQL" )
+							case p: PrimitiveColumnType => primitive( p )
 							case SingleReferenceType( _, _ ) => "BIGINT"
 						})
 
@@ -243,6 +268,23 @@ abstract class Database {
 			name
 		else
 			name.toUpperCase
+
+	def dimension( typ: ColumnType ) =
+		typ match {
+			case a@ArrayType( _, p, d, _ ) =>
+				if (d matches "[0-9]+") {
+					val v = BigInt( d )
+
+					if (!v.isValidInt || v < 1)
+						problem( p, "dimension out of range" )
+
+					a.dimint = v.toInt
+				} else
+					problem( p, "dimension must be an integer" )
+			case _ =>
+		}
+
+	def primitive( typ: PrimitiveColumnType ): String
 
 	def create( tables: List[Table] ): String
 }

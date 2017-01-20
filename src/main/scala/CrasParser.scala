@@ -150,18 +150,22 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
-			"string" ^^^ StringType |
-			"integer" ^^^ IntegerType |
-			"long" ^^^ LongType |
-			"uuid" ^^^ UUIDType |
-			"date" ^^^ DateType |
-			"datetime" ^^^ DatetimeType |
-			"time" ^^^ TimeType |
-			"timestamp" ^^^ TimestampType |
-			"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType |
+			primitiveColumnType ~ (("array" ~ "(") ~> pos) ~ (numericLit <~ ")") ^^ {case t ~ p ~ d => ArrayType( t, p.pos, d, -1 )} |
+			primitiveColumnType |
 			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
 			ident ^^ (SingleReferenceType( _, null ))
 		)
+
+	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
+		"string" ^^^ StringType |
+		"integer" ^^^ IntegerType |
+		"long" ^^^ LongType |
+		"uuid" ^^^ UUIDType |
+		"date" ^^^ DateType |
+		"datetime" ^^^ DatetimeType |
+		"time" ^^^ TimeType |
+		"timestamp" ^^^ TimestampType |
+		"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )

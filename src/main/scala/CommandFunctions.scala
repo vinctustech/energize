@@ -2,6 +2,8 @@ package xyz.hyperreal.cras
 
 import java.sql.Statement
 
+import collection.mutable.ListBuffer
+
 
 object CommandFunctionHelpers {
 	def insertCommand( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
@@ -11,24 +13,27 @@ object CommandFunctionHelpers {
 		com ++= resource.name
 		com ++= resource.names.mkString( " (", ", ", ") " )
 		com ++= "VALUES ("
-		com ++=
-			(for (c <- resource.names)
-				yield {
-					json1 get c match {
-						case None => "NULL"
-						case Some( v ) =>
-							resource.columns(env.db.desensitize( c )).typ match {
-								case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-									s"(SELECT id FROM $tname WHERE " +
-										(tref.columns.values.find( c => c.unique ) match {
-											case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
-											case Some( uc ) => uc.name
-										}) + " = '" + String.valueOf( v ) + "')"
-								case StringType => '\'' + String.valueOf( v ) + '\''
-								case _ => String.valueOf( v )
-							}
+
+		val values = new ListBuffer[String]
+
+		for (c <- resource.names)
+			json1 get c match {
+				case None => values += "NULL"
+				case Some( v ) =>
+					resource.columns(env.db.desensitize( c )).typ match {
+						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+							values += s"(SELECT id FROM $tname WHERE " +
+								(tref.columns.values.find( c => c.unique ) match {
+									case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
+									case Some( uc ) => uc.name
+								}) + " = '" + String.valueOf( v ) + "')"
+						case ManyReferenceType( tname, tref ) =>
+						case StringType => values += '\'' + String.valueOf( v ) + '\''
+						case _ => values += String.valueOf( v )
 					}
-				}) mkString ", "
+			}
+
+		com ++= values mkString ", "
 		com += ')'
 		com.toString
 	}

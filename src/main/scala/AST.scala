@@ -24,15 +24,17 @@ trait ReferenceType {
 }
 
 trait ColumnType extends Positional
-case object StringType extends ColumnType
-case object IntegerType extends ColumnType
-case object LongType extends ColumnType
-case object UUIDType extends ColumnType
-case object DateType extends ColumnType
-case object DatetimeType extends ColumnType
-case object TimeType extends ColumnType
-case object TimestampType extends ColumnType
-case object TimestamptzType extends ColumnType
+trait PrimitiveColumnType extends ColumnType
+case object StringType extends PrimitiveColumnType
+case object IntegerType extends PrimitiveColumnType
+case object LongType extends PrimitiveColumnType
+case object UUIDType extends PrimitiveColumnType
+case object DateType extends PrimitiveColumnType
+case object DatetimeType extends PrimitiveColumnType
+case object TimeType extends PrimitiveColumnType
+case object TimestampType extends PrimitiveColumnType
+case object TimestamptzType extends PrimitiveColumnType
+case class ArrayType( parm: PrimitiveColumnType, dpos: Position, dim: String, var dimint: Int ) extends ColumnType
 case class SingleReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 case class ManyReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 

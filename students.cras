@@ -5,6 +5,9 @@ resource students
 resource classrooms
 	number string
 
+resource test
+	a integer array(3)
+
 if size( students ) == 0
 	batchInsert( students, [["rayna"], ["carys"], ["soren"], ["larkin"]] )
 	batchInsert( classrooms, [["101"], ["105"], ["208"], ["302"], ["307"]] )

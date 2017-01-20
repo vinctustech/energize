@@ -51,6 +51,10 @@ mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMai
 
 mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".ServerMain" )
 
+//Revolver.settings
+//
+//mainClass in Revolver.reStart := Some("xyz.hyperreal." + name.value + ".ServerMain" )
+
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 
 publishMavenStyle := true
