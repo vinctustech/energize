@@ -147,7 +147,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 				else
 					lookup( m group 1 ).toString
 				)
-	
+
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
 			case AssignmentExpression( v, expr ) =>
