@@ -88,20 +88,32 @@ object CommandFunctions {
 // 			g.getLong(1)
 // 		} else {
 		val com = CommandFunctionHelpers.insertCommand( env, resource, json )
+		val id =
+			if (env.db == PostgresDatabase) {
+				val res = env.statement.executeQuery( com + "RETURNING id" )
 
-		if (env.db == PostgresDatabase) {
-			val res = env.statement.executeQuery( com + "RETURNING id" )
+				res.next
+				res.getLong( 1 )
+			} else {
+				env.statement.executeUpdate( com, Statement.RETURN_GENERATED_KEYS )
 
-			res.next
-			res.getLong( 1 )
-		} else {
-			env.statement.executeUpdate( com, Statement.RETURN_GENERATED_KEYS )
+				val g = env.statement.getGeneratedKeys
 
-			val g = env.statement.getGeneratedKeys
+				g.next
+				g.getLong( 1 )
+			}
 
-			g.next
-			g.getLong( 1 )
+		resource.columns.values.foreach {
+			case Column( col, ManyReferenceType(tab, ref), _, _, _, _ ) =>
+				json get col match {
+					case None =>
+					case Some( v ) =>
+
+				}
+			case _ =>
 		}
+
+		id
 	}
 	
 	def update( env: Env, resource: Table, json: Map[String, AnyRef], id: Long, all: Boolean ) =
