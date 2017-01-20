@@ -159,8 +159,8 @@ class CrasParser extends StandardTokenParsers with PackratParsers
 			"time" ^^^ TimeType |
 			"timestamp" ^^^ TimestampType |
 			"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType |
-			ident <~ "array" ^^ (ArrayReferenceType( _, null )) |
-			ident ^^ (ReferenceType( _, null ))
+			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
+			ident ^^ (SingleReferenceType( _, null ))
 		)
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =

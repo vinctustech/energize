@@ -18,6 +18,11 @@ case class Protection( level: Option[Option[String]] )
 
 case class TableColumn( modifiers: List[ColumnTypeModifier], typ: ColumnType, name: String ) extends Positional
 
+trait ReferenceType {
+	val table: String
+	var ref: Table
+}
+
 trait ColumnType extends Positional
 case object StringType extends ColumnType
 case object IntegerType extends ColumnType
@@ -28,8 +33,8 @@ case object DatetimeType extends ColumnType
 case object TimeType extends ColumnType
 case object TimestampType extends ColumnType
 case object TimestamptzType extends ColumnType
-case class ReferenceType( table: String, var ref: Table ) extends ColumnType
-case class ArrayReferenceType( table: String, var ref: Table ) extends ColumnType
+case class SingleReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
+case class ManyReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 
 case class ColumnTypeModifier( modifier: String ) extends Positional
 

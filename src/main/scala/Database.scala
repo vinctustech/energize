@@ -20,7 +20,7 @@ object H2Database extends Database {
 				for (cname <- names) {
 					val Column( _, typ, secret, required, unique, indexed ) = columns(desensitize(cname))
 
-					if (!typ.isInstanceOf[ArrayReferenceType]) {
+					if (!typ.isInstanceOf[ManyReferenceType]) {
 						buf ++= ", "
 						buf ++= cname
 						buf += ' '
@@ -35,7 +35,7 @@ object H2Database extends Database {
 								case TimeType => "TIME"
 								case TimestampType => "TIMESTAMP"
 								case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
-								case ReferenceType( _, _ ) => "BIGINT"
+								case SingleReferenceType( _, _ ) => "BIGINT"
 							})
 
 						if (required)
@@ -47,7 +47,7 @@ object H2Database extends Database {
 				}
 
 				columns.values foreach {
-					case Column( fk, ReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "
@@ -65,7 +65,7 @@ object H2Database extends Database {
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
-					case Column( _, ArrayReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
 						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
@@ -108,7 +108,7 @@ object PostgresDatabase extends Database {
 							case TimeType => "TIME"
 							case TimestampType => "TIMESTAMP"
 							case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
-							case ReferenceType( _, _ ) => "BIGINT"
+							case SingleReferenceType( _, _ ) => "BIGINT"
 						})
 
 					if (required)
@@ -119,7 +119,7 @@ object PostgresDatabase extends Database {
 				}
 
 				columns.values foreach {
-					case Column( fk, ReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "
@@ -137,7 +137,7 @@ object PostgresDatabase extends Database {
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
-					case Column( _, ArrayReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
 						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
@@ -180,7 +180,7 @@ object MySQLDatabase extends Database {
 							case TimeType => "TIME"
 							case TimestampType => "TIMESTAMP"
 							case TimestamptzType => problem( typ.pos, "'with timezone' is not supported by MySQL" )
-							case ReferenceType( _, _ ) => "BIGINT"
+							case SingleReferenceType( _, _ ) => "BIGINT"
 						})
 
 					if (required)
@@ -191,7 +191,7 @@ object MySQLDatabase extends Database {
 				}
 
 				columns.values foreach {
-					case Column( fk, ReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
 						buf ++= ") REFERENCES "
@@ -209,7 +209,7 @@ object MySQLDatabase extends Database {
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
-					case Column( _, ArrayReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
 						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"

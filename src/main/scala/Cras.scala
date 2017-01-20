@@ -171,9 +171,9 @@ object Cras {
 		tables.values foreach {
 			case Table( _, _, columns, _, _ ) =>
 				columns.values foreach {
-					case Column( _, t@ReferenceType(table, _), _, _, _, _ ) =>
+					case Column( _, t@SingleReferenceType(table, _), _, _, _, _ ) =>
 						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
-					case Column( _, t@ArrayReferenceType(table, _), _, _, _, _ ) =>
+					case Column( _, t@ManyReferenceType(table, _), _, _, _, _ ) =>
 						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
 					case _ =>
 				}
@@ -189,7 +189,7 @@ object Cras {
 		
 		tables.values foreach {
 			case t@Table( name, cnames, cols, _, _ ) =>
-				val cnames1 = cnames filterNot (c => cols(db.desensitize(c)).typ.isInstanceOf[ArrayReferenceType])
+				val cnames1 = cnames filterNot (c => cols(db.desensitize(c)).typ.isInstanceOf[ManyReferenceType])
 				val columns = cnames1 mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 				
