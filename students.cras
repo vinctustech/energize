@@ -1,9 +1,9 @@
 resource students
-	name string
+	name string unique
 	classrooms classrooms array
 
 resource classrooms
-	number string
+	number string unique
 
 resource test
 	a integer array(3)

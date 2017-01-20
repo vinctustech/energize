@@ -103,14 +103,28 @@ object CommandFunctions {
 				g.getLong( 1 )
 			}
 
+		val values = new ListBuffer[(String, String)]
+
 		resource.columns.values.foreach {
 			case Column( col, ManyReferenceType(tab, ref), _, _, _, _ ) =>
 				json get col match {
 					case None =>
 					case Some( v ) =>
-
+						values += (s"(SELECT id FROM $tab WHERE " +
+							(ref.columns.values.find( c => c.unique ) match {
+								case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
+								case Some( uc ) => uc.name
+							}) + " = '" + String.valueOf( v ) + "')" -> tab)
 				}
 			case _ =>
+		}
+
+		if (values nonEmpty) {
+			values groupBy {case (_, r) => r} foreach {
+				case (tab, vs) =>
+					for (v <- vs)
+						println( s"INSERT INTO $tab VALUES ($id, $v)" )
+			}
 		}
 
 		id

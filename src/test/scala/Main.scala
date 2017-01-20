@@ -31,6 +31,7 @@ object Main extends App {
 	val (c, s) = Test.dbconnect
 	val env = Cras.configure( io.Source.fromFile("students.cras"), c, s )
 
-	println( env.process("GET", "/students/1", null) )
+	println( env.process("POST", "/students", """{"name": "asdf", "classrooms": ["101"]}""") )
+//	println( env.process("GET", "/students/1", null) )
 	c.close
 }
