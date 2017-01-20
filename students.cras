@@ -10,6 +10,3 @@ if size( students ) == 0
 	batchInsert( classrooms, [["101"], ["105"], ["208"], ["302"], ["307"]] )
 	associate( students, "name", "rayna", classrooms, "number", "105" )
 	associate( students, "name", "rayna", classrooms, "number", "307" )
-
-show( "students$$classrooms" )
-print( findOne( students, "name", "rayna" ) )

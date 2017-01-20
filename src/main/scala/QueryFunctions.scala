@@ -82,28 +82,38 @@ object QueryFunctions {
 				val dbtable = res.columns(i).table
 				val dbcol = res.columns(i).name
 				val obj = res.get( i )
-				
-				env.tables get dbtable match {
-//					case None => sys.error( s"data from an unknown table: $dbtable" )
-					case None =>
-						table.columns get dbcol match {
-							case None => attr += (dbcol -> obj)
-							case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
-								attr += (cname -> query( env, reft,
-									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
-										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
-							case Some( c ) => attr += (c.name -> obj)
-						}
-					case Some( t ) if t == table =>
-						t.columns get dbcol match {
-							case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
-							case None => sys.error( s"data from an unknown column: $dbcol" )
-							case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
-								attr += (cname -> mkmap( reft ))
-							case Some( c ) => attr += (c.name -> obj)
-						}
-					case _ =>
-				}
+
+				if (dbtable == "")
+					table.columns get dbcol match {
+						case None => attr += (dbcol -> obj)
+						case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
+							attr += (cname -> query( env, reft,
+								s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
+						case Some( c ) => sys.error( s"data not from a table: matching column: ${c.name}" )
+					}
+				else
+					env.tables get dbtable match {
+						case None if !(dbtable contains '$') => sys.error( s"data from an unknown table: $dbtable" )
+	//					case None =>
+	//						table.columns get dbcol match {
+	//							case None => attr += (dbcol -> obj)
+	//							case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
+	//								attr += (cname -> query( env, reft,
+	//									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+	//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
+	//							case Some( c ) => attr += (c.name -> obj)
+	//						}
+						case Some( t ) if t == table =>
+							t.columns get dbcol match {
+								case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
+								case None => sys.error( s"data from an unknown column: $dbcol" )
+								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
+									attr += (cname -> mkmap( reft ))
+								case Some( c ) => attr += (c.name -> obj)
+							}
+						case _ =>
+					}
 			}
 			
 			ListMap( attr: _* )
