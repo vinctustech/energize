@@ -8,7 +8,8 @@ object Builtins {
 		List(
 			"i" -> ComplexBigInt.i,
 			"e" -> math.E,
-			"pi" -> math.Pi
+			"pi" -> math.Pi,
+			"None" -> None
 		)
 	
 	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
@@ -23,7 +24,8 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long                  dataResult( "<resource>", singleOrNotFound(findId(<resource>, id, ?fields)) )
+		|  GET     /id:long                  dataResult( "<resource>", singleOrNotFound(findID(<resource>, id, ?fields)) )
+		|  GET     /id:long/field:           dataResult( "<resource>", findID(<resource>, id, Some(field)) )
 		|  GET     /                         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /                         dataResult( "<resource>", insert(<resource>, json) )
 		|  POST    /id:long/field:           dataResult( "<resource>", insertLinks(<resource>, id, field, json) )
@@ -37,7 +39,7 @@ object Builtins {
 //	val mtmroutes =
 //		"""
 //		|route <base>/<resource>
-//		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(findId(<resource>, id, ?fields)) )
+//		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(findID(<resource>, id, ?fields)) )
 //		|  GET     /         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 //		|  POST    /         dataResult( "<resource>", insert(<resource>, json) )
 //		|  DELETE  /id:long  atLeastOneOrNotFound( delete(<resource>, id) ); null

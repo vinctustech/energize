@@ -180,7 +180,7 @@ object QueryFunctions {
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + where + orderby + limoff )
 	}
 	
-	def findId( env: Env, resource: Table, id: Long, fields: Option[String] ) =
+	def findID( env: Env, resource: Table, id: Long, fields: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + s" WHERE ${resource.name}.id = $id" )
 
 	def findValue( env: Env, resource: Table, field: String, value: Any ) =
