@@ -166,19 +166,49 @@ object CommandFunctions {
 			env.statement.executeUpdate( com.toString )
 		}
 
-	def append( env: Env, resource: Table, id: Long, json: OBJ ) =
-		for ((k, vs) <- json)
-			resource.columns( env.db.desensitize(k) ).typ match {
-				case ManyReferenceType( _, ref ) =>
-					for (v <- vs.asInstanceOf[List[AnyRef]])
-						associateID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn(ref), v )
-				case _ => throw new CrasErrorException( s"append: field not many-to-many: $k" )
-			}
+	def insertLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
+		json get field match {
+			case None => throw new CrasErrorException( s"append: field not found: $field" )
+			case Some( vs ) =>
+				resource.columns( env.db.desensitize(field) ).typ match {
+					case ManyReferenceType( _, ref ) =>
+						for (v <- vs.asInstanceOf[List[AnyRef]])
+							associateID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn(ref), v )
+					case _ => throw new CrasErrorException( s"append: field not many-to-many: $field" )
+				}
+		}
+
+	def deleteLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
+		json get field match {
+			case None => throw new CrasErrorException( s"append: field not found: $field" )
+			case Some( vs ) =>
+				resource.columns( env.db.desensitize(field) ).typ match {
+					case ManyReferenceType( _, ref ) =>
+						for (v <- vs.asInstanceOf[List[AnyRef]])
+							deleteLinkID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn( ref ), v )
+					case _ => throw new CrasErrorException( s"append: field not many-to-many: $field" )
+				}
+		}
+
+	def deleteLinksID( env: Env, resource: Table, id: Long, field: String, tid: Long ) =
+		resource.columns( env.db.desensitize(field) ).typ match {
+			case ManyReferenceType( _, ref ) => deleteLinkIDs( env, resource, id, ref, tid )
+			case _ => throw new CrasErrorException( s"append: field not many-to-many: $field" )
+		}
+
+	def deleteLinkID( env: Env, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
+		val dobj = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
+
+		deleteLinkIDs( env, src, id, dst, dobj )
+	}
+
+	def deleteLinkIDs( env: Env, src: Table, sid: Long, dst: Table, did: Long ) =
+		command( env, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
 
 	def associateID( env: Env, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
 		val dobj = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" )
 
-		command( env, s"insert into ${src.name}$$${dst.name} values ('$id', '$dobj')" )
+		command( env, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($id, $dobj)" )
 	}
 
 	def associate( env: Env, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) = {

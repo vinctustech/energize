@@ -23,13 +23,15 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(findId(<resource>, id, ?fields)) )
-		|  GET     /         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
-		|  POST    /         dataResult( "<resource>", insert(<resource>, json) )
-		|  POST    /id:long  dataResult( "<resource>", append(<resource>, id, json) )
-		|  PATCH   /id:long  atLeastOneOrNotFound( update(<resource>, id, json, false) ); null
-		|  PUT     /id:long  atLeastOneOrNotFound( update(<resource>, id, json, true) ); null
-		|  DELETE  /id:long  atLeastOneOrNotFound( delete(<resource>, id) ); null
+		|  GET     /id:long                  dataResult( "<resource>", singleOrNotFound(findId(<resource>, id, ?fields)) )
+		|  GET     /                         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+		|  POST    /                         dataResult( "<resource>", insert(<resource>, json) )
+		|  POST    /id:long/field:           dataResult( "<resource>", insertLinks(<resource>, id, field, json) )
+		|  PATCH   /id:long                  atLeastOneOrNotFound( update(<resource>, id, json, false) ); null
+		|  PUT     /id:long                  atLeastOneOrNotFound( update(<resource>, id, json, true) ); null
+		|  DELETE  /id:long                  atLeastOneOrNotFound( delete(<resource>, id) ); null
+		|  DELETE  /id:long/field:           deleteLinks( <resource>, id, field, json )
+		|  DELETE  /id:long/field:/tid:long  atLeastOneOrNotFound( deleteLinksID(<resource>, id, field, tid) ); null
 		""".stripMargin
 
 //	val mtmroutes =
