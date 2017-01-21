@@ -109,12 +109,13 @@ object CommandFunctions {
 			case Column( col, ManyReferenceType(tab, ref), _, _, _, _ ) =>
 				json get col match {
 					case None =>
-					case Some( v ) =>
-						values += (s"(SELECT id FROM $tab WHERE " +
-							(ref.columns.values.find( c => c.unique ) match {
-								case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
-								case Some( uc ) => uc.name
-							}) + " = '" + String.valueOf( v ) + "')" -> tab)
+					case Some( vs ) =>
+						for (v <- vs.asInstanceOf[List[AnyRef]])
+							values += (s"(SELECT id FROM $tab WHERE " +
+								(ref.columns.values.find( c => c.unique ) match {
+									case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
+									case Some( uc ) => uc.name
+								}) + " = '" + String.valueOf( v ) + "')" -> tab)
 				}
 			case _ =>
 		}
@@ -122,8 +123,8 @@ object CommandFunctions {
 		if (values nonEmpty) {
 			values groupBy {case (_, r) => r} foreach {
 				case (tab, vs) =>
-					for (v <- vs)
-						println( s"INSERT INTO $tab VALUES ($id, $v)" )
+					for ((v, _) <- vs)
+						command( env, s"INSERT INTO ${resource.name}$$$tab VALUES ($id, $v)" )
 			}
 		}
 
