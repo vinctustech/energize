@@ -7,7 +7,7 @@ import util.parsing.input.Position
 
 package object cras {
 	
-//	type JSON = Map[String, Any]
+	type OBJ = Map[String, AnyRef]
 
 	lazy val VERSION = "0.5"
 	lazy val CONFIG = ConfigFactory.load
@@ -18,7 +18,7 @@ package object cras {
 	
 	def escapeQuotes( s: String ): String = s replace ("'", "''")
 		
-	def escapeQuotes( json: Map[String, AnyRef] ): Map[String, AnyRef] =
+	def escapeQuotes( json: OBJ ): OBJ =
 		json map {case (k, v) =>
 			(k, v match {
 				case s: String => escapeQuotes( s )

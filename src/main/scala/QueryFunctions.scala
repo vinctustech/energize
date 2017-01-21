@@ -71,11 +71,11 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Env, resource: Table, sql: String ): List[Map[String, AnyRef]] = {
+	def query( env: Env, resource: Table, sql: String ): List[OBJ] = {
 		val res = new Relation( env.statement.executeQuery(sql) )
-		val list = new ListBuffer[Map[String, AnyRef]]
+		val list = new ListBuffer[OBJ]
 
-		def mkmap( table: Table ): Map[String, AnyRef] = {
+		def mkOBJ( table: Table ): OBJ = {
 			val attr = new ListBuffer[(String, AnyRef)]
 
 			for (i <- 0 until res.columnCount) {
@@ -109,7 +109,7 @@ object QueryFunctions {
 								case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
 								case None => sys.error( s"data from an unknown column: $dbcol" )
 								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
-									attr += (cname -> mkmap( reft ))
+									attr += (cname -> mkOBJ( reft ))
 								case Some( Column(cname, ArrayType(t, p, _, d), _, _, _, _) ) =>
 									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
 								case Some( c ) => attr += (c.name -> obj)
@@ -122,7 +122,7 @@ object QueryFunctions {
 		}
 
 		while (res.next)
-			list += mkmap( resource )
+			list += mkOBJ( resource )
 
 		list.toList
 	}

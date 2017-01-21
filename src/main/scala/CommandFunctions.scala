@@ -6,7 +6,7 @@ import collection.mutable.ListBuffer
 
 
 object CommandFunctionHelpers {
-	def insertCommand( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
+	def insertCommand( env: Env, resource: Table, json: OBJ ) = {
 		val com = new StringBuilder( "INSERT INTO " )
 		val json1 = escapeQuotes( json )
 
@@ -43,6 +43,12 @@ object CommandFunctionHelpers {
 		com += ')'
 		com.toString
 	}
+
+	def uniqueColumn( resource: Table ) =
+		resource.columns.values.find( c => c.unique ) match {
+			case None => throw new CrasErrorException( s"insert: no unique column in '${resource.name}'" )
+			case Some( uc ) => uc.name
+		}
 }
 
 object CommandFunctions {
@@ -70,7 +76,7 @@ object CommandFunctions {
 		resource.preparedInsert.clearParameters
 	}
 	
-	def insert( env: Env, resource: Table, json: Map[String, AnyRef] ) = {
+	def insert( env: Env, resource: Table, json: OBJ ) = {
 // 		if (json.keySet == resource.names.toSet) {
 // 			
 // 			for ((n, i) <- resource.names zipWithIndex)
@@ -112,10 +118,7 @@ object CommandFunctions {
 					case Some( vs ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							values += (s"(SELECT id FROM $tab WHERE " +
-								(ref.columns.values.find( c => c.unique ) match {
-									case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
-									case Some( uc ) => uc.name
-								}) + " = '" + String.valueOf( v ) + "')" -> tab)
+								CommandFunctionHelpers.uniqueColumn( ref ) + " = '" + String.valueOf( v ) + "')" -> tab)
 				}
 			case _ =>
 		}
@@ -131,7 +134,7 @@ object CommandFunctions {
 		id
 	}
 	
-	def update( env: Env, resource: Table, json: Map[String, AnyRef], id: Long, all: Boolean ) =
+	def update( env: Env, resource: Table, id: Long, json: OBJ, all: Boolean ) =
 		if (all && json.keySet != resource.names.toSet)
 			throw new CrasErrorException( "update: missing column(s) in PUT request" )
 		else {
@@ -162,4 +165,25 @@ object CommandFunctions {
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
 		}
+
+	def append( env: Env, resource: Table, id: Long, json: OBJ ) =
+		for ((k, vs) <- json)
+			resource.columns( env.db.desensitize(k) ).typ match {
+				case ManyReferenceType( _, ref ) =>
+					for (v <- vs.asInstanceOf[List[AnyRef]])
+						associateID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn(ref), v )
+				case _ => throw new CrasErrorException( s"append: field not many-to-many: $k" )
+			}
+
+	def associateID( env: Env, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
+		val dobj = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" )
+
+		command( env, s"insert into ${src.name}$$${dst.name} values ('$id', '$dobj')" )
+	}
+
+	def associate( env: Env, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) = {
+		val sobj = QueryFunctions.findOne( env, src, sfield, svalue )( "id" ).asInstanceOf[Long]
+
+		associateID( env, src, sobj, dst, dfield, dvalue )
+	}
 }

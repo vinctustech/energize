@@ -26,10 +26,20 @@ object Builtins {
 		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(findId(<resource>, id, ?fields)) )
 		|  GET     /         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /         dataResult( "<resource>", insert(<resource>, json) )
-		|  PATCH   /id:long  atLeastOneOrNotFound( update(<resource>, json, id, false) ); null
-		|  PUT     /id:long  atLeastOneOrNotFound( update(<resource>, json, id, true) ); null
+		|  POST    /id:long  dataResult( "<resource>", append(<resource>, id, json) )
+		|  PATCH   /id:long  atLeastOneOrNotFound( update(<resource>, id, json, false) ); null
+		|  PUT     /id:long  atLeastOneOrNotFound( update(<resource>, id, json, true) ); null
 		|  DELETE  /id:long  atLeastOneOrNotFound( delete(<resource>, id) ); null
 		""".stripMargin
+
+//	val mtmroutes =
+//		"""
+//		|route <base>/<resource>
+//		|  GET     /id:long  dataResult( "<resource>", singleOrNotFound(findId(<resource>, id, ?fields)) )
+//		|  GET     /         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+//		|  POST    /         dataResult( "<resource>", insert(<resource>, json) )
+//		|  DELETE  /id:long  atLeastOneOrNotFound( delete(<resource>, id) ); null
+//		""".stripMargin
 
 	val control = io.Source.fromString(
 		"""
