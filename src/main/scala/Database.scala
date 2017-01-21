@@ -1,5 +1,7 @@
 package xyz.hyperreal.cras
 
+import java.sql._
+
 
 object H2Database extends Database {
 	val caseSensitive = false

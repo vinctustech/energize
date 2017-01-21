@@ -110,6 +110,8 @@ object QueryFunctions {
 								case None => sys.error( s"data from an unknown column: $dbcol" )
 								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
 									attr += (cname -> mkmap( reft ))
+								case Some( Column(cname, ArrayType(t, p, _, d), _, _, _, _) ) =>
+									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
 								case Some( c ) => attr += (c.name -> obj)
 							}
 						case _ =>
