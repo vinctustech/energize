@@ -5,7 +5,7 @@ import com.typesafe.config.ConfigFactory
 import util.parsing.input.Position
 
 
-package object cras {
+package object energize {
 	
 	type OBJ = Map[String, AnyRef]
 
@@ -27,7 +27,7 @@ package object cras {
 		}
 
 	def parseCode( code: String ) = {
-		val p = new CrasParser
+		val p = new EnergizeParser
 
 		p.parseFromString( code, p.statements )
 	}

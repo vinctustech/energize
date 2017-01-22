@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import java.sql._
 
@@ -9,7 +9,7 @@ import xyz.hyperreal.json.{DefaultJSONReader, JSON}
 import org.h2.jdbcx.JdbcConnectionPool
 
 
-object Cras {
+object Energize {
 
 	def dbconnect: (Connection, Statement) = {
 		val name = DATABASE.getString( "name" )
@@ -35,7 +35,7 @@ object Cras {
 	}
 
 	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
-		val p = new CrasParser
+		val p = new EnergizeParser
 
 		configure( p.parseFromSource(src, p.source), connection: Connection, statement: Statement )
 	}

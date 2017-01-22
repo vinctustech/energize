@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
@@ -12,7 +12,7 @@ import xyz.hyperreal.lia.Math
 // 				query( env, resource, s"SELECT * FROM ${resource.name}" )
 // 			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
 // 				query( env, resource, s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id" )
-// 			case _ => throw new CrasErrorException( "shouldn't be impossible" )
+// 			case _ => throw new EnergizeErrorException( "shouldn't be impossible" )
 // 		}
 
 object QueryFunctionHelpers {

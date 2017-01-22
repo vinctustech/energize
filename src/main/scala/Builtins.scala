@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import xyz.hyperreal.numbers.ComplexBigInt
 

@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
@@ -9,7 +9,7 @@ import xyz.hyperreal.indentation_lexical._
 import xyz.hyperreal.lia.Math
 
 
-class CrasParser extends StandardTokenParsers with PackratParsers
+class EnergizeParser extends StandardTokenParsers with PackratParsers
 {
 	override val lexical: IndentationLexical =
 		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" )

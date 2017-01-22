@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import java.sql._
 import java.io.PrintWriter
@@ -21,7 +21,7 @@ object REPLMain extends App {
 	var stacktrace = false
 
 	s"""
-	|Welcome to CRAS version $VERSION.
+	|Welcome to ENERGIZE version $VERSION.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
 	""".trim.stripMargin.lines foreach println
@@ -42,7 +42,7 @@ object REPLMain extends App {
 	}
 	
 	def connect {
-		val (c, s) = Cras.dbconnect( name, driver, url, user, password )
+		val (c, s) = Energize.dbconnect( name, driver, url, user, password )
 		
 		connection = c
 		statement = s
@@ -96,7 +96,7 @@ object REPLMain extends App {
 					|connect (c) <url>                    connect to database using <url> clearing in-memory table and routing information
 					|db                                   show current database parameters
 					|driver (d) <driver>                  set database <driver>
-					|load (l) <config>                    load a <config> (".cras" file) creating all tables and routes as specified
+					|load (l) <config>                    load a <config> (".energize" file) creating all tables and routes as specified
 					|help (h)                             print this summary
 					|password (p) <password>              set database <password>
 					|quit (q)                             exit the REPL
@@ -106,10 +106,10 @@ object REPLMain extends App {
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
-					|?<expression>                        evaluate a CRAS action script expression
+					|?<expression>                        evaluate an ENERGIZE action script expression
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					env = Cras.configure( io.Source.fromFile(config + ".cras"), connection, statement )
+					env = Energize.configure( io.Source.fromFile(config + ".energize"), connection, statement )
 //				case List( "wipe"|"w" ) =>
 //					connection.close
 //					new File( sys.props("user.home"), db + ".mv.db" ).delete

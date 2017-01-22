@@ -1,4 +1,4 @@
-CRAS [![Build Status](https://travis-ci.org/edadma/cras.svg?branch=0.5)](https://travis-ci.org/edadma/cras) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+energize [![Build Status](https://travis-ci.org/edadma/energize.svg?branch=0.5)](https://travis-ci.org/edadma/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ====
 
 Configurable ReST API Server
@@ -7,21 +7,21 @@ Configurable ReST API Server
 Overview
 --------
 
-*cras* (which is an acronym for "configurable ReST API server") allows you to get your ReST API up and running in very little time by drastically reducing the amount of typing normally required.
+*energize* allows you to get your ReST API server and database up and running in very little time by drastically reducing the amount of typing normally required.
 
 
 License
 -------
 
-*cras* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
+*energize* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
 
 
 Documentation
 -------------
 
-- [Example inside this README](http://github.com/edadma/cras#example)
-- [CRAS Reference Manual](http://edadma.github.io/cras)
-- Type `java -jar cras-0.5.jar --help` for executable options
+- [Example inside this README](http://github.com/edadma/energize#example)
+- [*Energize* Reference Manual](http://edadma.github.io/energize)
+- Type `java -jar energize-0.5.jar --help` for executable options
 - Type `help` inside the REPL for commands
 
 
@@ -30,13 +30,13 @@ Usage
 
 ### Executable
 
-If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/cras-0.5.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
+If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/energize-0.5.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
 
-Run it as a normal Java executable JAR with the command `java -jar cras-0.5.jar <config>` in the folder where you downloaded the file, where *config* is the name of the `.cras` file (without the file extension) that defines your API.
+Run it as a normal Java executable JAR with the command `java -jar energize-0.5.jar <config>` in the folder where you downloaded the file, where *config* is the name of the `.energize` file (without the file extension) that defines your API.
 
 ### Library
 
-Use the following definition to use *cras* in your Maven project:
+Use the following definition to use *energize* in your Maven project:
 
 	<repository>
 		<id>hyperreal</id>
@@ -45,15 +45,15 @@ Use the following definition to use *cras* in your Maven project:
 
 	<dependency>
 		<groupId>xyz.hyperreal</groupId>
-		<artifactId>cras</artifactId>
+		<artifactId>energize</artifactId>
 		<version>0.5</version>
 	</dependency>
 
-Add the following to your `build.sbt` file to use *cras* in your SBT project:
+Add the following to your `build.sbt` file to use *energize* in your SBT project:
 
 	resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
 
-	libraryDependencies += "xyz.hyperreal" %% "cras" % "0.5"
+	libraryDependencies += "xyz.hyperreal" %% "energize" % "0.5"
 
 
 Building
@@ -67,8 +67,8 @@ Building
 
 ### Clone and Run the SBT (Simple Build Tool)
 
-	git clone git://github.com/edadma/cras.git
-	cd cras
+	git clone git://github.com/edadma/energize.git
+	cd energize
 	sbt
 	
 ### SBT Commands
@@ -76,16 +76,16 @@ Building
 Once the SBT prompt appears, use the following commands.
 
 - `test` builds and executes tests
-- `re-start <config>` starts the server where *config* is the name of the `.cras` file (without the file extension) that defines your API. You can press ENTER once the server has started to get the SBT prompt in order to enter SBT commands while the server is running.
+- `re-start <config>` starts the server where *config* is the name of the `.energize` file (without the file extension) that defines your API. You can press ENTER once the server has started to get the SBT prompt in order to enter SBT commands while the server is running.
 - `re-stop` stops the server. The port will be unbound some time after the server process has been killed (on Linux).
-- `runMain xyz.hyperreal.cras.REPLMain` starts the REPL
+- `runMain xyz.hyperreal.energize.REPLMain` starts the REPL
 - `run <config>` this will also start the server, however, it is recommended to use `re-start` instead. Starting the server using `run` means that the JVM process that SBT is running in is the one that is bound to the port that the server is using, whereas using `re-start` causes the server to run in a separate process that can later be killed using `re-stop`.
 
 
 Example
 -------
 
-This example shows how to get a simple API to support a "to do list" app working. Start by creating a folder for the example. Now download the [executable](https://dl.bintray.com/edadma/generic/cras-0.5.jar) and place it in the example folder you just created. Now, create a text file called `todo.cras` will the following text in it.
+This example shows how to get a simple API to support a "to do list" app working. Start by creating a folder for the example. Now download the [executable](https://dl.bintray.com/edadma/generic/energize-0.5.jar) and place it in the example folder you just created. Now, create a text file called `todo.energize` will the following text in it.
 
 	resource todo /api/v1
 	  name        string  required
@@ -99,7 +99,7 @@ The executable contains both an HTTP server and a REPL to make it easier to deve
 
 Now, on the command line in the example folder, start the server with the command
 
-	java -jar cras-0.5.jar todo
+	java -jar energize-0.5.jar todo
 	
 You should now have a working HTTP server bound to port 8080 that will serve API requests for a todo list. Let's try it out. Using `curl`, let's add an item to our todo list database. To do that, type
 
@@ -167,7 +167,7 @@ Press `Ctrl-C` to stop the server.
 
 To start the REPL, type the following command (while in the same folder where the executable was placed)
 
-	java -cp cras-0.5.jar xyz.hyperreal.cras.REPLMain
+	java -cp energize-0.5.jar xyz.hyperreal.energize.REPLMain
 	
 By default, the REPL creates an in-memory H2 database for you and connects to it. Type `help` to see all the REPL commands. Tell the REPL to load the `todo` configuration by typing
 

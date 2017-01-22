@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import java.sql._
 import java.net.URI
@@ -29,7 +29,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case res => res
 		}
 	
-	def lookup( name: String ) = get( name ) getOrElse (throw new CrasErrorException( "variable not found: " + name ))
+	def lookup( name: String ) = get( name ) getOrElse (throw new EnergizeErrorException( "variable not found: " + name ))
 
 	def process( reqmethod: String, requri: String, reqbody: String ) = {
 		val uri = new URI( requri )
@@ -125,15 +125,15 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					
 					Some( if (res eq null) null else DefaultJSONWriter.toString(res) )
 				} catch {
-					case e: CrasErrorException =>
+					case e: EnergizeErrorException =>
 						Some( DefaultJSONWriter.toString(variables("errorResult").asInstanceOf[Native](List(e.getMessage), this).asInstanceOf[Map[String, Any]]) )
-					case e: CrasNotFoundException => None
+					case e: EnergizeNotFoundException => None
 				}
 		}
 	}
 
 	def evaluate( expr: String ): Any = {
-		val p = new CrasParser
+		val p = new EnergizeParser
 		val ast = p.parseFromString( expr, p.expressionStatement )
 		
 		deref( ast.expr )	
@@ -298,8 +298,8 @@ case class Table( name: String, names: List[String], columns: Map[String, Column
 
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )
 	
-class CrasErrorException( message: String ) extends Exception( message )
+class EnergizeErrorException( message: String ) extends Exception( message )
 
-class CrasNotFoundException extends Exception
+class EnergizeNotFoundException extends Exception
 
 class Variable( var value: Any )

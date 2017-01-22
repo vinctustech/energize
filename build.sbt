@@ -1,4 +1,4 @@
-name := "cras"
+name := "energize"
 
 version := "0.5"
 

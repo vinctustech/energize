@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import util.parsing.input.Position
 import util.parsing.input.Positional

@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import java.lang.reflect.InvocationTargetException
 
@@ -28,8 +28,8 @@ object Native {
 						m.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
 					} catch {
 						case e: InvocationTargetException => throw e.getCause
-// 							if (e.getCause.isInstanceOf[CrasNotFoundException])
-// 								throw new CrasNotFoundException
+// 							if (e.getCause.isInstanceOf[EnergizeNotFoundException])
+// 								throw new EnergizeNotFoundException
 					}
 			}
 		}) toList

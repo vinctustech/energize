@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import xyz.hyperreal.table.TextTable
 
@@ -15,14 +15,14 @@ object SupportFunctions {
 	
 	def singleOrNotFound( env: Env, list: List[Any] ) =
 		list.length match {
-			case 0 => throw new CrasNotFoundException
+			case 0 => throw new EnergizeNotFoundException
 			case 1 => list.head
-			case _ => throw new CrasErrorException( "more than one item in list" )
+			case _ => throw new EnergizeErrorException( "more than one item in list" )
 		}
 	
 	def atLeastOneOrNotFound( env: Env, count: Int ) =
 		count match {
-			case 0 => throw new CrasNotFoundException
+			case 0 => throw new EnergizeNotFoundException
 			case _ => count
 		}
 		

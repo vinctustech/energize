@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import java.util.concurrent.TimeUnit
 import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}

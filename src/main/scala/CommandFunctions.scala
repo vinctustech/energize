@@ -1,4 +1,4 @@
-package xyz.hyperreal.cras
+package xyz.hyperreal.energize
 
 import java.sql.Statement
 
@@ -27,12 +27,12 @@ object CommandFunctionHelpers {
 						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
 							values += s"(SELECT id FROM $tname WHERE " +
 								(tref.columns.values.find( c => c.unique ) match {
-									case None => throw new CrasErrorException( "insert: no unique column in referenced resource in POST request" )
+									case None => throw new EnergizeErrorException( "insert: no unique column in referenced resource in POST request" )
 									case Some( uc ) => uc.name
 								}) + " = '" + String.valueOf( v ) + "')"
 						case ManyReferenceType( _, _ ) =>
 							if (v eq null)
-								throw new CrasErrorException( s"insert: manay-to-many field cannot be NULL: $c" )
+								throw new EnergizeErrorException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case StringType => values += '\'' + String.valueOf( v ) + '\''
 						case _ => values += String.valueOf( v )
 					}
@@ -45,7 +45,7 @@ object CommandFunctionHelpers {
 
 	def uniqueColumn( resource: Table ) =
 		resource.columns.values.find( c => c.unique ) match {
-			case None => throw new CrasErrorException( s"insert: no unique column in '${resource.name}'" )
+			case None => throw new EnergizeErrorException( s"insert: no unique column in '${resource.name}'" )
 			case Some( uc ) => uc.name
 		}
 }
@@ -136,9 +136,9 @@ object CommandFunctions {
 	def update( env: Env, resource: Table, id: Long, json: OBJ, all: Boolean ) =
 		if (all && json.keySet != (resource.names.toSet filterNot (n => resource.columns(env.db.desensitize(n)).typ.isInstanceOf[ManyReferenceType])))
 			if ((resource.names.toSet -- json.keySet) nonEmpty)
-				throw new CrasErrorException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
+				throw new EnergizeErrorException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
 			else
-				throw new CrasErrorException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
+				throw new EnergizeErrorException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
 		else {
 			val com = new StringBuilder( "UPDATE " )
 			var typ: ColumnType = null
@@ -155,7 +155,7 @@ object CommandFunctions {
 							val reft = typ.asInstanceOf[SingleReferenceType].ref
 							val refc =
 								reft.columns.values.find( c => c.unique ) match {
-									case None => throw new CrasErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
+									case None => throw new EnergizeErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
 									case Some( c ) => c.name
 								}
 
@@ -170,13 +170,13 @@ object CommandFunctions {
 
 	def insertLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
-			case None => throw new CrasErrorException( s"insertLinks: field not found: $field" )
+			case None => throw new EnergizeErrorException( s"insertLinks: field not found: $field" )
 			case Some( vs ) =>
 				resource.columns( env.db.desensitize(field) ).typ match {
 					case ManyReferenceType( _, ref ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							associateID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn(ref), v )
-					case _ => throw new CrasErrorException( s"insertLinks: field not many-to-many: $field" )
+					case _ => throw new EnergizeErrorException( s"insertLinks: field not many-to-many: $field" )
 				}
 		}
 
@@ -187,27 +187,27 @@ object CommandFunctions {
 
 				associateIDs( env, resource, id, ref, tid )
 				tid
-			case Some( _ ) => throw new CrasErrorException( s"append: field not many-to-many: $field" )
-			case None => throw new CrasErrorException( s"append: field not found: $field" )
+			case Some( _ ) => throw new EnergizeErrorException( s"append: field not many-to-many: $field" )
+			case None => throw new EnergizeErrorException( s"append: field not found: $field" )
 		}
 	}
 
 	def deleteLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
-			case None => throw new CrasErrorException( s"append: field not found: $field" )
+			case None => throw new EnergizeErrorException( s"append: field not found: $field" )
 			case Some( vs ) =>
 				resource.columns( env.db.desensitize(field) ).typ match {
 					case ManyReferenceType( _, ref ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							deleteLinkID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn( ref ), v )
-					case _ => throw new CrasErrorException( s"append: field not many-to-many: $field" )
+					case _ => throw new EnergizeErrorException( s"append: field not many-to-many: $field" )
 				}
 		}
 
 	def deleteLinksID( env: Env, resource: Table, id: Long, field: String, tid: Long ) =
 		resource.columns( env.db.desensitize(field) ).typ match {
 			case ManyReferenceType( _, ref ) => deleteLinkIDs( env, resource, id, ref, tid )
-			case _ => throw new CrasErrorException( s"append: field not many-to-many: $field" )
+			case _ => throw new EnergizeErrorException( s"append: field not many-to-many: $field" )
 		}
 
 	def deleteLinkID( env: Env, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {

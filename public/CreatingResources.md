@@ -1,6 +1,6 @@
 # Defining a Resource
 
-Let's say we want to define a resource for users. Here's an example of a `.cras` file of what that would look like.
+Let's say we want to define a resource for users. Here's an example of a `.energize` file of what that would look like.
 
 	resource users
 	  unique required string email
