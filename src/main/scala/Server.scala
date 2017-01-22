@@ -121,6 +121,7 @@ class Server( env: Env ) {
 						val writer = new PrintWriter( trace )
 
 						e.printStackTrace( writer )
+						Console.withOut( Console.err ) {println( e )}
 						response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
 							new NStringEntity( s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p><pre>$trace</pre></body></html>", ContentType.TEXT_HTML ) )
