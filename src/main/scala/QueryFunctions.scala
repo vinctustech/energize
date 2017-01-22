@@ -21,7 +21,7 @@ object QueryFunctionHelpers {
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
 	
-	def listQuery( db: Database, resource: Table, fields: Option[String] ) = {
+	def listQuery( db: Database, resource: Table, fields: Option[String], where: String, page: Option[String], start: Option[String], limit: Option[String] ) = {
 		val fs =
 			fields match {
 				case None => Nil
@@ -62,16 +62,28 @@ object QueryFunctionHelpers {
 				innerReferenceFieldJoin( reft, reftref )
 			case _ =>
 		}
-		
-//		println( buf )
+
+		buf ++= where
+		buf ++= pageStartLimit( page, start, limit )
 		buf.toString
 	}
-	
+
+	def pageStartLimit( page: Option[String], start: Option[String], limit: Option[String] ) =
+		(page map (p => p.toInt - 1), start, limit) match {
+			case (None, None, None) => ""
+			case (Some( p ), None, None) => s" LIMIT 10 OFFSET " + (p*10)
+			case (None, Some( s ), None) => s" LIMIT 10 OFFSET $s"
+			case (Some( _ ), Some( _ ), _) => sys.error( "'page' and 'start' can't be used in the same query" )
+			case (None, None, Some( l )) => s" LIMIT $l"
+			case (Some( p ), None, Some( l )) => s" LIMIT $l OFFSET " + (p*l.toInt)
+			case (None, Some( s ), Some( l )) => s" LIMIT $l OFFSET $s"
+		}
+
 	def numeric( s: String ) = NUMERIC.pattern.matcher( s ).matches
 }
 
 object QueryFunctions {
-	def query( env: Env, resource: Table, sql: String ): List[OBJ] = {
+	def query( env: Env, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String] ): List[OBJ] = {
 		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[OBJ]
 
@@ -89,7 +101,8 @@ object QueryFunctions {
 						case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 							attr += (cname -> query( env, reft,
 								s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
-									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
+									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" +
+									QueryFunctionHelpers.pageStartLimit(page, start, limit), page, start, limit ))
 						case Some( c ) => sys.error( s"data not from a table: matching column: ${c.name}" )
 					}
 				else
@@ -128,7 +141,7 @@ object QueryFunctions {
 	}
 	
 	def size( env: Env, resource: Table ) =
-		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}").head.values.head.asInstanceOf[Long] )
+		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}", None, None, None).head.values.head.asInstanceOf[Long] )
 
 	def list( env: Env, resource: Table,
 		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
@@ -165,26 +178,18 @@ object QueryFunctions {
 						}
 					} mkString ", ")
 			}
-			
-		val limoff =
-			(page map (p => p.toInt - 1), start, limit) match {
-				case (None, None, None) => ""
-				case (Some( p ), None, None) => s" LIMIT 10 OFFSET " + (p*10)
-				case (None, Some( s ), None) => s" LIMIT 10 OFFSET $s"
-				case (Some( _ ), Some( _ ), _) => sys.error( "'page' and 'start' can't be used in the same query" )
-				case (None, None, Some( l )) => s" LIMIT $l"
-				case (Some( p ), None, Some( l )) => s" LIMIT $l OFFSET " + (p*l.toInt)
-				case (None, Some( s ), Some( l )) => s" LIMIT $l OFFSET $s"
-			}
 
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + where + orderby + limoff )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), None, None, None )
 	}
 	
-	def findID( env: Env, resource: Table, id: Long, fields: Option[String] ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields) + s" WHERE ${resource.name}.id = $id" )
+	def findID( env: Env, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id", page, start, limit), None, None, None )
+
+	def findIDMany( env: Env, resource: Table, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.id = $id", None, None, None), page, start, limit )
 
 	def findValue( env: Env, resource: Table, field: String, value: Any ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None) + s" WHERE ${resource.name}.$field = '$value'" )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.$field = '$value'", None, None, None), None, None, None )
 
 	def findOne( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
 }

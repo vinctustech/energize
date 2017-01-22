@@ -24,8 +24,8 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long                  dataResult( "<resource>", singleOrNotFound(findID(<resource>, id, ?fields)) )
-		|  GET     /id:long/field:           dataResult( "<resource>", findID(<resource>, id, Some(field)) )
+		|  GET     /id:long                  dataResult( "<resource>", singleOrNotFound(findID(<resource>, id, ?fields, None, None, None)) )
+		|  GET     /id:long/field:           dataResult( "<resource>", singleOrNotFound(findIDMany(<resource>, id, field, ?page, ?start, ?limit)) )
 		|  GET     /                         dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /                         dataResult( "<resource>", insert(<resource>, json) )
 		|  POST    /id:long/field:           dataResult( "<resource>", insertLinks(<resource>, id, field, json) )
