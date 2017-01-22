@@ -1,9 +1,9 @@
 package xyz.hyperreal.cras
 
 import java.util.concurrent.TimeUnit
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
 
-import org.apache.http.{MethodNotSupportedException, HttpStatus, HttpResponse, ExceptionLogger, HttpRequest, HttpEntityEnclosingRequest}
+import org.apache.http.{ExceptionLogger, HttpEntityEnclosingRequest, HttpRequest, HttpResponse, HttpStatus, MethodNotSupportedException}
 import org.apache.http.entity.ContentType
 import org.apache.http.impl.nio.bootstrap.ServerBootstrap
 import org.apache.http.impl.nio.reactor.IOReactorConfig
@@ -117,9 +117,13 @@ class Server( env: Env ) {
 					}
 				} catch {
 					case e: Exception =>
+						val trace = new StringWriter
+						val writer = new PrintWriter( trace )
+
+						e.printStackTrace( writer )
 						response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
-							new NStringEntity( s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p></body></html>", ContentType.TEXT_HTML ) )
+							new NStringEntity( s"<html><body><h1>500: Internal Server Error</h1><p>${e.getMessage}</p></pre>$trace</body></html>", ContentType.TEXT_HTML ) )
 				}
 			}
 		}
