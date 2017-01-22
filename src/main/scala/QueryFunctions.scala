@@ -179,7 +179,7 @@ object QueryFunctions {
 					} mkString ", ")
 			}
 
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), None, None, None )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None )
 	}
 	
 	def findID( env: Env, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
