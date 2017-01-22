@@ -135,7 +135,10 @@ object CommandFunctions {
 	
 	def update( env: Env, resource: Table, id: Long, json: OBJ, all: Boolean ) =
 		if (all && json.keySet != (resource.names.toSet filterNot (n => resource.columns(env.db.desensitize(n)).typ.isInstanceOf[ManyReferenceType])))
-			throw new CrasErrorException( "update: missing column(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
+			if ((resource.names.toSet -- json.keySet) nonEmpty)
+				throw new CrasErrorException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
+			else
+				throw new CrasErrorException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
 		else {
 			val com = new StringBuilder( "UPDATE " )
 			var typ: ColumnType = null
