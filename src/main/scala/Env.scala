@@ -23,11 +23,11 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	
 	def add( m: Map[String, Any] ) = Env( tables, routes, variables ++ m, connection, statement, db )
 	
-	def get( name: String ) = variables get name
-//		variables get name match {
-//			case None => tables get db.desensitize( name )
-//			case res => res
-//		}
+	def get( name: String ) =
+		variables get name match {
+			case None => tables get db.desensitize( name )
+			case res => res
+		}
 	
 	def lookup( name: String ) = get( name ) getOrElse (throw new CrasErrorException( "variable not found: " + name ))
 
@@ -202,7 +202,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer )
 			case LiteralExpression( v ) => v
 			case VariableExpression( n ) => lookup( n )
-			case OptVariableExpression( n ) => get( n )
+			case OptVariableExpression( n ) => variables get n
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v))}: _* )
 			case ConditionalExpression( cond, no ) =>
