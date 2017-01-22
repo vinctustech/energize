@@ -25,7 +25,8 @@ object QueryFunctionHelpers {
 		val fs =
 			fields match {
 				case None => Nil
-				case Some( f ) => DELIMITER.split( f ).toList
+				case Some( f ) =>
+					DELIMITER.split( f ).toList
 			}
 		val fss = fs.toSet
 		val fssmid = fss - "id"
@@ -183,13 +184,16 @@ object QueryFunctions {
 	}
 	
 	def findID( env: Env, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id", page, start, limit), None, None, None )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id",
+			page, start, limit), None, None, None )
 
 	def findIDMany( env: Env, resource: Table, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.id = $id", None, None, None), page, start, limit )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.id = $id",
+			None, None, None), page, start, limit )
 
 	def findValue( env: Env, resource: Table, field: String, value: Any ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.$field = '$value'", None, None, None), None, None, None )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.$field = '$value'",
+			None, None, None), None, None, None )
 
 	def findOne( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
 }
