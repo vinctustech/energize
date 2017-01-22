@@ -1,6 +1,7 @@
 resource apis
 	name string required
 	description string optional
+	database string required
 	resources resources array
 
 resource resources
