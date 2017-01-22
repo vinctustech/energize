@@ -20,8 +20,7 @@ object CommandFunctionHelpers {
 
 		for (c <- resource.names)
 			json1 get c match {
-				case None if resource.columns(env.db.desensitize( c )).typ.isInstanceOf[ManyReferenceType] =>
-					throw new CrasErrorException( s"insert: manay-to-many field cannot be NULL: $c" )
+				case None if resource.columns(env.db.desensitize( c )).typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
 				case None => values += "NULL"
 				case Some( v ) =>
 					resource.columns(env.db.desensitize( c )).typ match {
