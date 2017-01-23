@@ -9,7 +9,7 @@ package object energize {
 	
 	type OBJ = Map[String, AnyRef]
 
-	lazy val VERSION = "0.5"
+	lazy val VERSION = "0.6"
 	lazy val CONFIG = ConfigFactory.load
 	lazy val DATABASE = CONFIG.getConfig( "database" )
 	lazy val SERVER = CONFIG.getConfig( "server" )

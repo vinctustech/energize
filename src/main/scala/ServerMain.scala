@@ -4,7 +4,7 @@ package xyz.hyperreal.energize
 object ServerMain extends App {
 	
 	if (args.length < 1) {
-		println( "usage: java -jar energize-0.5.jar <config>" )
+		println( "usage: java -jar energize-0.6.jar <config>" )
 		sys.exit( 1 )
 	}
 	
