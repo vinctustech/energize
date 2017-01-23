@@ -211,8 +211,8 @@ object Energize {
 		
 		interpretExpressions( ast )
 
-//		if (src ne Builtins.control)
-//			routes ++= configure( Builtins.control, null, null ).routes
+//		if (src ne Builtins.special)
+//			routes ++= configure( Builtins.special, null, null ).routes
 
 		env
 	}

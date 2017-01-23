@@ -44,9 +44,14 @@ object Builtins {
 
 	//insertLinks(<resource>, id, field, json)
 
-	val control = io.Source.fromString(
+	val special =
 		"""
-		|route /control
-		|  DELETE  /res:     dataResult( res, deleteResource(res) )
-		""".stripMargin )
+		|route /meta
+		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
+		|
+		|route <auth>
+		|  GET     /login                     login()
+		|  GET     /logout                    logout()
+		|  GET     /register                  register()
+		""".stripMargin
 }
