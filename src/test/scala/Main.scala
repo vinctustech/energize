@@ -3,7 +3,8 @@ package xyz.hyperreal.energize
 
 object Main extends App {
 
-// 	val (c, s) = Test.dbconnect
+ 	val (c, s) = Test.dbconnect
+
 // 	val env = Energize.configure( io.Source.fromFile("books.energize"), c, s )
 
 //  	println( env.process("GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books.id=3", null) )
@@ -23,19 +24,16 @@ object Main extends App {
 // //   	println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
 //   	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
 
-//	val (c, s) = Test.dbconnect
-//	val env = Energize.configure( io.Source.fromFile("t1.energize"), c, s )
-//
-//	println( env.process("GET", "/r1s", null) )
+	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/test.energize"), c, s )
 
-	val (c, s) = Test.dbconnect
-	val env = Energize.configure( io.Source.fromFile("students.energize"), c, s )
+//	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/students.energize"), c, s )
 
 //	println( env.process("POST", "/students", """{"name": "asdf", "classrooms": ["101", "307"]}""") )
 //	println( env.process("GET", "/students/5", null) )
 //	println( env.process("PUT", "/students/5", """{"name": "zxvc", "classrooms": ["105", "302"]}""") )
-	println( env.process("PUT", "/students/1", """{"name": "zxvc"}""") )
+//	println( env.process("PUT", "/students/1", """{"name": "zxvc"}""") )
 //	println( env.process("DELETE", "/students/5/classrooms/5", null) )
-	println( env.process("GET", "/students/1", null) )
+//	println( env.process("GET", "/students/1", null) )
+
 	c.close
 }
