@@ -192,6 +192,14 @@ object CommandFunctions {
 		}
 	}
 
+	def appendIDs( env: Env, src: Table, sid: Long, field: String, tid: Long ) =
+		src.columns.get( env.db.desensitize(field) ) match {
+			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
+				associateIDs( env, src, sid, ref, tid )
+			case Some( _ ) => throw new EnergizeErrorException( s"appendIDs: field not many-to-many: $field" )
+			case None => throw new EnergizeErrorException( s"appendIDs: field not found: $field" )
+		}
+
 	def deleteLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
 			case None => throw new EnergizeErrorException( s"append: field not found: $field" )
