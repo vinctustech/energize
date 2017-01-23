@@ -11,20 +11,18 @@ object Main extends App {
 //	println( env.process("GET", "/books?order=title:asc", null) )
 // 	println( env.process("GET", "/books/1", null) )
 
-// 	val (c, s) = dbconnect( "customers", true )
-// 	val env = configure( io.Source.fromFile("customers.energize"), c, s )
-// 	
-// //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
-//  	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
+ 	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/customers.energize"), c, s )
 
-// 	val (c, s) = dbconnect( "data", true )
-// 	val env = configure( io.Source.fromFile("data.energize"), c, s )
-// 	
-// //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
-// //   	println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
+ //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
+  	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
+
+// 	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/data.energize"), c, s )
+
+//  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
+//   	println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
 //   	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
 
-	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/test.energize"), c, s )
+//	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/t1.energize"), c, s )
 
 //	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/students.energize"), c, s )
 
