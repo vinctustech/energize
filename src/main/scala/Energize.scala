@@ -147,7 +147,7 @@ object Energize {
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
 
 					if (resource) {
-						val mtm = cols exists {case (_, Column(_, typ, _, _, _, _)) => typ.isInstanceOf[ManyReferenceType]}
+						val mtm = cols.values exists (c => c.typ.isInstanceOf[ManyReferenceType])
 
 						if (bases isEmpty) {
 							routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<base>", "" ).

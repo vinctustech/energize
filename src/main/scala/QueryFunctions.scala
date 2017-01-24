@@ -35,7 +35,7 @@ object QueryFunctionHelpers {
 			sys.error( "all fields must be apart of the resource definition" )
 			
 		val fs1 =
-			if (resource.columns exists (c => c.typ.isInstanceOf[ManyReferenceType])) {
+			if (resource.mtm) {
 				val cs =
 					if (fs == Nil)
 						resource.columns

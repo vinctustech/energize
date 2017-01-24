@@ -42,7 +42,7 @@ object CommandFunctionHelpers {
 	}
 
 	def uniqueColumn( resource: Table ) =
-		resource.columnMap.values.find(c => c.unique ) match {
+		resource.columns.find(c => c.unique ) match {
 			case None => throw new EnergizeErrorException( s"insert: no unique column in '${resource.name}'" )
 			case Some( uc ) => uc.name
 		}
@@ -108,7 +108,7 @@ object CommandFunctions {
 
 		val values = new ListBuffer[(String, String)]
 
-		resource.columnMap.values.foreach {
+		resource.columns.foreach {
 			case Column( col, ManyReferenceType(tab, ref), _, _, _, _ ) =>
 				json get col match {
 					case None =>
@@ -151,8 +151,8 @@ object CommandFunctions {
 							k + " = " + String.valueOf( v )
 						else {
 							val reft = typ.asInstanceOf[SingleReferenceType].ref
-							val refc =
-								reft.columnMap.values.find(c => c.unique ) match {
+							val refc = CommandFunctionHelpers.uniqueColumn( reft )
+								reft.columns.find(c => c.unique ) match {
 									case None => throw new EnergizeErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
 									case Some( c ) => c.name
 								}
