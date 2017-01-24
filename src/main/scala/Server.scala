@@ -80,7 +80,7 @@ class Server( env: Env ) {
 				response.setHeader( "Access-Control-Allow-Origin", origin )
 
 				try {
-					val data =
+					val (status, contents) =
 						request match {
 							case withEntity: HttpEntityEnclosingRequest =>
 								val buf = new ByteArrayOutputStream
@@ -92,35 +92,27 @@ class Server( env: Env ) {
 								env.process( method1, target, null )
 						}
 
-					data match {
-						case Some( d ) =>
-							if (d eq null) {
-								response.setStatusCode( HttpStatus.SC_NO_CONTENT )
-							} else {
-								response.setStatusCode( if (method == "POST") HttpStatus.SC_CREATED else HttpStatus.SC_OK )
+					response.setStatusCode( status )
 
-								val entity = new NStringEntity( d, ContentType.APPLICATION_JSON )
+					if (contents ne null) {
+						val entity = new NStringEntity(contents, ContentType.APPLICATION_JSON)
 
-								if (method == "HEAD") {
-									val empty =
-										new NByteArrayEntity( new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON ) {
-											override def getContentLength = entity.getContentLength
-										}
+						if (method == "HEAD") {
+							val empty =
+								new NByteArrayEntity(new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON) {
+									override def getContentLength = entity.getContentLength
+								}
 
-									response.setEntity( empty )
-								} else
-									response.setEntity( entity )
-							}
-						case None =>
-							response.setStatusCode( HttpStatus.SC_NOT_FOUND )
-							response.setEntity( new NStringEntity( "<html><body><h1>404: Not Found</h1></body></html>", ContentType.TEXT_HTML ) )
+							response.setEntity(empty)
+						} else
+							response.setEntity(entity)
 					}
 				} catch {
 					case e: Exception =>
 						e.printStackTrace( Console.err )
 						response.setStatusCode( HttpStatus.SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
-							new NStringEntity( s"<html><body><h1>500: Internal Server Error</h1></body></html>", ContentType.TEXT_HTML ) )
+							new NStringEntity( s"""{"error": "${e.getMessage}"}"""", ContentType.APPLICATION_JSON ) )
 				}
 			}
 		}

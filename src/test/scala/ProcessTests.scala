@@ -3,6 +3,8 @@ package xyz.hyperreal.energize
 import org.scalatest._
 import prop.PropertyChecks
 
+import org.apache.http.HttpStatus._
+
 
 class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	
@@ -21,16 +23,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/test", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )

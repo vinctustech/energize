@@ -59,11 +59,8 @@ object REPLMain extends App {
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, path: String, json: String ) =
-			env.process( method, path, json ) match {
-				case None => println( "route not found" )
-				case Some( data ) => println( data )
-			}
-		
+			println( env.process(method, path, json) )
+
 		try {
 			com match {
 				case List( "config"|"co" ) =>

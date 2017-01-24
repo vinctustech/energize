@@ -8,6 +8,7 @@ import util.matching.Regex
 import collection.mutable.HashMap
 
 import org.apache.http.client.utils.URLEncodedUtils
+import org.apache.http.HttpStatus._
 
 import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
@@ -31,7 +32,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	
 	def lookup( name: String ) = get( name ) getOrElse (throw new EnergizeErrorException( "variable not found: " + name ))
 
-	def process( reqmethod: String, requri: String, reqbody: String ) = {
+	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String) = {
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
 		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)) toMap
@@ -113,22 +114,16 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		}
 		
 		find( reqmethod, reqpath, routes ) match {
-			case None => None
+			case None => (SC_NOT_FOUND, """{"error": "route not found"}""")
 			case Some( (urivars, expr) ) =>
-				try {
-					val reqvars =
-						(if (reqbody eq null)
-							urivars
-						else
-							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
-					val res = (this add reqvars).evalm( expr )
-					
-					Some( if (res eq null) null else DefaultJSONWriter.toString(res) )
-				} catch {
-					case e: EnergizeErrorException =>
-						Some( DefaultJSONWriter.toString(variables("errorResult").asInstanceOf[Native](List(e.getMessage), this).asInstanceOf[Map[String, Any]]) )
-					case e: EnergizeNotFoundException => None
-				}
+				val reqvars =
+					(if (reqbody eq null)
+						urivars
+					else
+						urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
+				val (sc, obj) = (this add reqvars).deref( expr ).asInstanceOf[(Int, OBJ)]
+
+				(sc, if (obj eq null) null else DefaultJSONWriter.toString( obj ))
 		}
 	}
 
@@ -294,7 +289,9 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		}
 	
 	def evalm( expr: ExpressionAST ) = deref( expr ).asInstanceOf[Map[String, Any]]
-	
+
+	def evalp( expr: ExpressionAST ) = deref( expr ).asInstanceOf[(AnyRef, AnyRef)]
+
 	def evalb( expr: ExpressionAST ) = deref( expr ).asInstanceOf[Boolean]
 	
 	def evalt( expr: ExpressionAST ) = deref( expr ).asInstanceOf[TraversableOnce[Any]]
