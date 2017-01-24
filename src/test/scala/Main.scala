@@ -11,10 +11,10 @@ object Main extends App {
 //	println( env.process("GET", "/books?order=title:asc", null) )
 // 	println( env.process("GET", "/books/1", null) )
 
- 	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/customers.energize"), c, s )
+// 	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/customers.energize"), c, s )
 
  //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
-  	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
+//	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
 
 // 	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/data.energize"), c, s )
 
@@ -33,5 +33,8 @@ object Main extends App {
 //	println( env.process("DELETE", "/students/5/classrooms/5", null) )
 //	println( env.process("GET", "/students/1", null) )
 
+	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/todo.energize"), c, s )
+
+	println( env.process("POST", "/todo", """{"name": "asdf", "status": 1}""") )
 	c.close
 }

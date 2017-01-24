@@ -11,22 +11,20 @@ object CommandFunctionHelpers {
 		val json1 = escapeQuotes( json )
 
 		com ++= resource.name
-		com ++= resource.columns.
-			filterNot (n => resource.columnMap(env.db.desensitize( n )).typ.isInstanceOf[ManyReferenceType]).
-			mkString( " (", ", ", ") " )
+		com ++= resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) mkString (" (", ", ", ") ")
 		com ++= "VALUES ("
 
 		val values = new ListBuffer[String]
 
 		for (c <- resource.columns)
-			json1 get c match {
-				case None if resource.columnMap(env.db.desensitize( c )).typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
+			json1 get c.name match {
+				case None if c.typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
 				case None => values += "NULL"
 				case Some( v ) =>
-					resource.columnMap(env.db.desensitize( c )).typ match {
+					c.typ match {
 						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
 							values += s"(SELECT id FROM $tname WHERE " +
-								(tref.columnMap.values.find(c => c.unique ) match {
+								(tref.columns.find(c => c.unique ) match {
 									case None => throw new EnergizeErrorException( "insert: no unique column in referenced resource in POST request" )
 									case Some( uc ) => uc.name
 								}) + " = '" + String.valueOf( v ) + "')"
@@ -56,7 +54,7 @@ object CommandFunctions {
 	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 	
 	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
-		val types = for ((n, i) <- resource.columns zipWithIndex) yield (i + 1, resource.columnMap(env.db.desensitize(n)).typ)
+		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
 			
 		for (r <- rows) {
 			for (((i, t), c) <- types zip r) {

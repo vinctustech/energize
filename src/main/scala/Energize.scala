@@ -207,7 +207,7 @@ object Energize {
 		
 		tables.values foreach {
 			case t@Table( name, cols, _, _, _, _ ) =>
-				val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType])
+				val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name)
 				val columns = cnames1 mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 				
