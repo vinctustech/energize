@@ -157,8 +157,17 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					case _ => sys.error( s"'$v' is not a variable" )
 				}
 			case RangeExpression( start, end ) => evalbi( start ) to evalbi( end )
-			case ListExpression( Nil ) => Nil
 			case ListExpression( exprs ) => exprs map deref
+			case TupleExpression( first, rest ) =>
+				val e1 = deref( first )
+				val r = rest map deref
+
+				r match {
+					case List( e2 ) => (e1, e2)
+					case List( e2, e3 ) => (e1, e2, e3)
+					case List( e2, e3, e4 ) => (e1, e2, e3, e4)
+					case List( e2, e3, e4, e5 ) => (e1, e2, e3, e4, e5)
+				}
 			case DotExpression( obj, field ) => evalm( obj )( field )
 			case CompoundExpression( left, right ) =>
 				eval( left )

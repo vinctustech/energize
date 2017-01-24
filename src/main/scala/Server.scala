@@ -1,9 +1,9 @@
 package xyz.hyperreal.energize
 
 import java.util.concurrent.TimeUnit
-import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
+import java.io.ByteArrayOutputStream
 
-import org.apache.http.{ExceptionLogger, HttpEntityEnclosingRequest, HttpRequest, HttpResponse, HttpStatus, MethodNotSupportedException}
+import org.apache.http.{ExceptionLogger, HttpEntityEnclosingRequest, HttpRequest, HttpResponse, HttpStatus}
 import org.apache.http.entity.ContentType
 import org.apache.http.impl.nio.bootstrap.ServerBootstrap
 import org.apache.http.impl.nio.reactor.IOReactorConfig
@@ -103,7 +103,7 @@ class Server( env: Env ) {
 
 								if (method == "HEAD") {
 									val empty =
-										new NByteArrayEntity( new Array[Byte]( 0 ), 0, 0, ContentType.APPLICATION_JSON ) {
+										new NByteArrayEntity( new Array[Byte](0), 0, 0, ContentType.APPLICATION_JSON ) {
 											override def getContentLength = entity.getContentLength
 										}
 

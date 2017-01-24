@@ -311,6 +311,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		stringLit ^^ LiteralExpression |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
 		"null" ^^^ LiteralExpression( null ) |
+		("(" ~> expression <~ ",") ~ (rep1sep(expression, ",") <~ ")") ^^ {case f ~ r => TupleExpression( f, r )} |
 		"(" ~> expression <~ ")" |
 		"{" ~> repsep(pair, ",") <~ "}" ^^ ObjectExpression |
 		"[" ~> repsep(expression, ",") <~ "]" ^^ ListExpression

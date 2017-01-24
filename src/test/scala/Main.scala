@@ -33,8 +33,11 @@ object Main extends App {
 //	println( env.process("DELETE", "/students/5/classrooms/5", null) )
 //	println( env.process("GET", "/students/1", null) )
 
-	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/todo.energize"), c, s )
+//	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/todo.energize"), c, s )
+//
+//	println( env.process("POST", "/todo", """{"name": "asdf", "status": 1}""") )
 
-	println( env.process("POST", "/todo", """{"name": "asdf", "status": 1}""") )
+	val env = Energize.configure( io.Source.fromFile("/home/ed/projects/energize/examples/test.energize"), c, s )
+
 	c.close
 }

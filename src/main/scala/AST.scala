@@ -61,6 +61,7 @@ case class OptVariableExpression( name: String ) extends ExpressionAST
 case class LiteralExpression( value: Any ) extends ExpressionAST
 case class ObjectExpression( pairs: List[(String, ExpressionAST)] ) extends ExpressionAST
 case class ListExpression( exprs: List[ExpressionAST] ) extends ExpressionAST
+case class TupleExpression( first: ExpressionAST, rest: List[ExpressionAST] ) extends ExpressionAST
 //case class FunctionExpression( parts: List[FunctionPart] ) extends ExpressionAST
 // case class FunctionPart( pattern: PatternAST, expr: ExpressionAST )
 case class FunctionExpression( params: List[String], expr: ExpressionAST ) extends ExpressionAST
