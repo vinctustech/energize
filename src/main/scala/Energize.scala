@@ -84,6 +84,8 @@ object Energize {
 						
 					defines(name) = function
 				case TableDefinition( _, pos, name, bases, columns, resource ) =>
+					var mtm = false
+
 					if (tables contains db.desensitize( name ))
 						problem( pos, s"'$name' already defined" )
 					
@@ -135,11 +137,14 @@ object Energize {
 								case tm@ColumnTypeModifier( m ) =>
 									problem( tm.pos, s"unknown modifier '$m'" )
 							}
-							
+
+							if (typ.isInstanceOf[ManyReferenceType])
+								mtm = true
+
 							cols(db.desensitize( cname )) = Column( cname, typ, secret, required, unique, indexed )
 					}
 		
-					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo.name} toList, cols.toMap, resource, null )
+					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
 
 					if (resource) {
 						val mtm = cols exists {case (_, Column(_, typ, _, _, _, _)) => typ.isInstanceOf[ManyReferenceType]}
@@ -182,8 +187,8 @@ object Energize {
 		interpretDefinitions( ast )
 
 		tables.values foreach {
-			case Table( _, _, columns, _, _ ) =>
-				columns.values foreach {
+			case Table( _, columns, _, _, _, _ ) =>
+				columns foreach {
 					case Column( _, t@SingleReferenceType(table, _), _, _, _, _ ) =>
 						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
 					case Column( _, t@ManyReferenceType(table, _), _, _, _, _ ) =>
@@ -201,8 +206,8 @@ object Energize {
 		}
 		
 		tables.values foreach {
-			case t@Table( name, cnames, cols, _, _ ) =>
-				val cnames1 = cnames filterNot (c => cols(db.desensitize(c)).typ.isInstanceOf[ManyReferenceType])
+			case t@Table( name, cols, _, _, _, _ ) =>
+				val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType])
 				val columns = cnames1 mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 				

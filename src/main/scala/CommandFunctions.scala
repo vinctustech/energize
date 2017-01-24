@@ -11,22 +11,22 @@ object CommandFunctionHelpers {
 		val json1 = escapeQuotes( json )
 
 		com ++= resource.name
-		com ++= resource.names.
-			filterNot (n => resource.columns(env.db.desensitize( n )).typ.isInstanceOf[ManyReferenceType]).
+		com ++= resource.columns.
+			filterNot (n => resource.columnMap(env.db.desensitize( n )).typ.isInstanceOf[ManyReferenceType]).
 			mkString( " (", ", ", ") " )
 		com ++= "VALUES ("
 
 		val values = new ListBuffer[String]
 
-		for (c <- resource.names)
+		for (c <- resource.columns)
 			json1 get c match {
-				case None if resource.columns(env.db.desensitize( c )).typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
+				case None if resource.columnMap(env.db.desensitize( c )).typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
 				case None => values += "NULL"
 				case Some( v ) =>
-					resource.columns(env.db.desensitize( c )).typ match {
+					resource.columnMap(env.db.desensitize( c )).typ match {
 						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
 							values += s"(SELECT id FROM $tname WHERE " +
-								(tref.columns.values.find( c => c.unique ) match {
+								(tref.columnMap.values.find(c => c.unique ) match {
 									case None => throw new EnergizeErrorException( "insert: no unique column in referenced resource in POST request" )
 									case Some( uc ) => uc.name
 								}) + " = '" + String.valueOf( v ) + "')"
@@ -44,7 +44,7 @@ object CommandFunctionHelpers {
 	}
 
 	def uniqueColumn( resource: Table ) =
-		resource.columns.values.find( c => c.unique ) match {
+		resource.columnMap.values.find(c => c.unique ) match {
 			case None => throw new EnergizeErrorException( s"insert: no unique column in '${resource.name}'" )
 			case Some( uc ) => uc.name
 		}
@@ -56,7 +56,7 @@ object CommandFunctions {
 	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 	
 	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
-		val types = for ((n, i) <- resource.names zipWithIndex) yield (i + 1, resource.columns(env.db.desensitize(n)).typ)
+		val types = for ((n, i) <- resource.columns zipWithIndex) yield (i + 1, resource.columnMap(env.db.desensitize(n)).typ)
 			
 		for (r <- rows) {
 			for (((i, t), c) <- types zip r) {
@@ -110,7 +110,7 @@ object CommandFunctions {
 
 		val values = new ListBuffer[(String, String)]
 
-		resource.columns.values.foreach {
+		resource.columnMap.values.foreach {
 			case Column( col, ManyReferenceType(tab, ref), _, _, _, _ ) =>
 				json get col match {
 					case None =>
@@ -134,8 +134,8 @@ object CommandFunctions {
 	}
 	
 	def update( env: Env, resource: Table, id: Long, json: OBJ, all: Boolean ) =
-		if (all && json.keySet != (resource.names.toSet filterNot (n => resource.columns(env.db.desensitize(n)).typ.isInstanceOf[ManyReferenceType])))
-			if ((resource.names.toSet -- json.keySet) nonEmpty)
+		if (all && json.keySet != (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet))
+			if ((resource.columns.toSet -- json.keySet) nonEmpty)
 				throw new EnergizeErrorException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
 			else
 				throw new EnergizeErrorException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
@@ -147,14 +147,14 @@ object CommandFunctions {
 			com ++= " SET "
 			com ++=
 				escapeQuotes( json ).toList map {
-					case (k, v) if resource.columns(env.db.desensitize(k)).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
-					case (k, v) if {typ = resource.columns(env.db.desensitize(k)).typ; typ.isInstanceOf[SingleReferenceType]} =>
+					case (k, v) if resource.columnMap(env.db.desensitize(k)).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
+					case (k, v) if {typ = resource.columnMap(env.db.desensitize(k)).typ; typ.isInstanceOf[SingleReferenceType]} =>
 						if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 							k + " = " + String.valueOf( v )
 						else {
 							val reft = typ.asInstanceOf[SingleReferenceType].ref
 							val refc =
-								reft.columns.values.find( c => c.unique ) match {
+								reft.columnMap.values.find(c => c.unique ) match {
 									case None => throw new EnergizeErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
 									case Some( c ) => c.name
 								}
@@ -172,7 +172,7 @@ object CommandFunctions {
 		json get field match {
 			case None => throw new EnergizeErrorException( s"insertLinks: field not found: $field" )
 			case Some( vs ) =>
-				resource.columns( env.db.desensitize(field) ).typ match {
+				resource.columnMap( env.db.desensitize(field) ).typ match {
 					case ManyReferenceType( _, ref ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							associateID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn(ref), v )
@@ -181,7 +181,7 @@ object CommandFunctions {
 		}
 
 	def append( env: Env, resource: Table, id: Long, field: String, json: OBJ ) = {
-		resource.columns.get( env.db.desensitize(field) ) match {
+		resource.columnMap.get( env.db.desensitize(field) ) match {
 			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
 				val tid = insert( env, ref, json )
 
@@ -193,7 +193,7 @@ object CommandFunctions {
 	}
 
 	def appendIDs( env: Env, src: Table, sid: Long, field: String, tid: Long ) =
-		src.columns.get( env.db.desensitize(field) ) match {
+		src.columnMap.get( env.db.desensitize(field) ) match {
 			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
 				associateIDs( env, src, sid, ref, tid )
 			case Some( _ ) => throw new EnergizeErrorException( s"appendIDs: field not many-to-many: $field" )
@@ -204,7 +204,7 @@ object CommandFunctions {
 		json get field match {
 			case None => throw new EnergizeErrorException( s"append: field not found: $field" )
 			case Some( vs ) =>
-				resource.columns( env.db.desensitize(field) ).typ match {
+				resource.columnMap( env.db.desensitize(field) ).typ match {
 					case ManyReferenceType( _, ref ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							deleteLinkID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn( ref ), v )
@@ -213,7 +213,7 @@ object CommandFunctions {
 		}
 
 	def deleteLinksID( env: Env, resource: Table, id: Long, field: String, tid: Long ) =
-		resource.columns( env.db.desensitize(field) ).typ match {
+		resource.columnMap( env.db.desensitize(field) ).typ match {
 			case ManyReferenceType( _, ref ) => deleteLinkIDs( env, resource, id, ref, tid )
 			case _ => throw new EnergizeErrorException( s"append: field not many-to-many: $field" )
 		}

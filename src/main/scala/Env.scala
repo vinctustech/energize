@@ -267,7 +267,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 				block( exprs )
 			case _ => sys.error( "error evaluating expression: " + expr )
 		}
-	
+
 	def deref( expr: ExpressionAST ) =
 		eval( expr ) match {
 			case h: Variable => h.value
@@ -294,10 +294,12 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 
 case class Route( method: String, path: List[URISegment], action: ExpressionAST )
 
-case class Table( name: String, names: List[String], columns: Map[String, Column], resource: Boolean, var preparedInsert: PreparedStatement )
+case class Table(name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean, var preparedInsert: PreparedStatement ) {
+	def names = columns map (c => c.name)
+}
 
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )
-	
+
 class EnergizeErrorException( message: String ) extends Exception( message )
 
 class EnergizeNotFoundException extends Exception

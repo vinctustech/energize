@@ -7,7 +7,7 @@ object TableSorter extends TopologicalSorter[Table] {
 	def name( a: Table ) = a.name
 
 	def incoming(a: Table ) =
-		a.columns.values filter (c => c.typ.isInstanceOf[ReferenceType]) map (c => c.typ.asInstanceOf[ReferenceType].table)
+		a.columnMap.values filter (c => c.typ.isInstanceOf[ReferenceType]) map (c => c.typ.asInstanceOf[ReferenceType].table)
 }
 
 abstract class TopologicalSorter[T] {

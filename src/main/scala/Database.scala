@@ -1,24 +1,28 @@
 package xyz.hyperreal.energize
 
 import java.sql._
+import java.time.format.DateTimeFormatter
+import java.time.OffsetDateTime
 
 
 object H2Database extends Database {
 	val caseSensitive = false
-
 	val publicSchema = "PUBLIC"
+	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+
+	def datetime( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
 		tables foreach {
-			case Table( name, names, columns, _, _ ) =>
+			case Table( name, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
 				buf ++= " (id IDENTITY NOT NULL PRIMARY KEY"
-				
-				for (cname <- names) {
-					val Column( _, typ, secret, required, unique, indexed ) = columns(desensitize(cname))
+
+				columns foreach {
+					case Column( cname, typ, secret, required, unique, indexed ) =>
 
 					if (!typ.isInstanceOf[ManyReferenceType]) {
 						buf ++= ", "
@@ -48,7 +52,7 @@ object H2Database extends Database {
 					}
 				}
 
-				columns.values foreach {
+				columns foreach {
 					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
@@ -60,7 +64,7 @@ object H2Database extends Database {
 				
 				buf ++= ");\n"
 				
-				columns.values foreach {
+				columns foreach {
 					case Column( c, _, _, _, _, true ) =>
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
@@ -81,8 +85,10 @@ object H2Database extends Database {
 
 object PostgresDatabase extends Database {
 	val caseSensitive = true
-
 	val publicSchema = "public"
+	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+
+	def datetime( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
 
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
@@ -101,13 +107,13 @@ object PostgresDatabase extends Database {
 		val buf = new StringBuilder
 
 		tables foreach {
-			case Table( name, names, columns, _, _ ) =>
+			case Table( name, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
 				buf ++= " (id BIGSERIAL NOT NULL PRIMARY KEY"
 
-				for (cname <- names) {
-					val Column( _, typ, secret, required, unique, indexed ) = columns(cname)
+				columns foreach {
+					case Column( cname, typ, secret, required, unique, indexed ) =>
 
 					buf ++= ", "
 					buf ++= cname
@@ -127,7 +133,7 @@ object PostgresDatabase extends Database {
 						buf ++= " UNIQUE"
 				}
 
-				columns.values foreach {
+				columns foreach {
 					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
@@ -139,7 +145,7 @@ object PostgresDatabase extends Database {
 
 				buf ++= ");\n"
 
-				columns.values foreach {
+				columns foreach {
 					case Column( c, _, _, _, _, true ) =>
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
@@ -160,8 +166,10 @@ object PostgresDatabase extends Database {
 
 object MySQLDatabase extends Database {
 	val caseSensitive = true
-
 	val publicSchema = "public"
+	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+
+	def datetime( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
 
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
@@ -180,13 +188,13 @@ object MySQLDatabase extends Database {
 		val buf = new StringBuilder
 
 		tables foreach {
-			case Table( name, names, columns, _, _ ) =>
+			case Table( name, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
 				buf ++= " (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
 
-				for (cname <- names) {
-					val Column( _, typ, secret, required, unique, indexed ) = columns(cname)
+				columns foreach {
+					case Column( cname, typ, secret, required, unique, indexed ) =>
 
 					buf ++= ", "
 					buf ++= cname
@@ -204,7 +212,7 @@ object MySQLDatabase extends Database {
 						buf ++= " UNIQUE"
 				}
 
-				columns.values foreach {
+				columns foreach {
 					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
 						buf ++= ", FOREIGN KEY ("
 						buf ++= fk
@@ -216,7 +224,7 @@ object MySQLDatabase extends Database {
 
 				buf ++= ");\n"
 
-				columns.values foreach {
+				columns foreach {
 					case Column( c, _, _, _, _, true ) =>
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
@@ -272,6 +280,8 @@ abstract class Database {
 					problem( p, "dimension must be an integer" )
 			case _ =>
 		}
+
+	def datetime( d: String ): String
 
 	def create( tables: List[Table] ): String
 }

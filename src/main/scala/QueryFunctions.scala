@@ -31,17 +31,22 @@ object QueryFunctionHelpers {
 		val fss = fs.toSet
 		val fssmid = fss - "id"
 		
-		if (fssmid.intersect( resource.names.toSet ) != fssmid)
+		if (fssmid.intersect( resource.columns map (c => c.name) toSet ) != fssmid)
 			sys.error( "all fields must be apart of the resource definition" )
 			
 		val fs1 =
-			if (resource.columns.values.exists( c => c.typ.isInstanceOf[ManyReferenceType] ))
-				((if (fs == Nil) resource.names else fs) map (f =>
-					resource.columns(db.desensitize(f)) match {
-						case Column( _, ManyReferenceType(_, _), _, _, _, _) => s"null as $f"
-						case _ => f
-					})) :+ "id" mkString ","
-			else if (fs == Nil)
+			if (resource.columns exists (c => c.typ.isInstanceOf[ManyReferenceType])) {
+				val cs =
+					if (fs == Nil)
+						resource.columns
+					else
+						fs map (f => resource.columnMap( f ))
+
+				(cs map {
+						case Column(f, ManyReferenceType(_, _), _, _, _, _) => s"null as $f"
+						case Column(f, _, _, _, _, _) => f
+					}) :+ "id" mkString ","
+			} else if (fs == Nil)
 				"*"
 			else
 				fs mkString ","
@@ -49,7 +54,7 @@ object QueryFunctionHelpers {
 		val fssd = fss map (f => db.desensitize( f ))
 
 		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
-			tref.columns.values foreach {
+			tref.columns foreach {
 				case Column(col1, SingleReferenceType(tname1, tref1), _, _, _, _) =>
 					buf ++= s" LEFT OUTER JOIN $tname1 ON $tname.$col1 = $tname1.id"
 					innerReferenceFieldJoin( tname1, tref1 )
@@ -57,7 +62,7 @@ object QueryFunctionHelpers {
 			}
 		}
 
-		resource.columns.values foreach {
+		resource.columns foreach {
 			case Column(col, SingleReferenceType(reft, reftref), _, _, _, _) if fssd.isEmpty || fssd(col) =>
 				buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
 				innerReferenceFieldJoin( reft, reftref )
@@ -97,7 +102,7 @@ object QueryFunctions {
 				val obj = res.get( i )
 
 				if (dbtable == "")
-					table.columns get dbcol match {
+					table.columnMap get dbcol match {
 						case None => attr += (dbcol -> obj)
 						case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 							attr += (cname -> query( env, reft,
@@ -119,7 +124,7 @@ object QueryFunctions {
 	//							case Some( c ) => attr += (c.name -> obj)
 	//						}
 						case Some( t ) if t == table =>
-							t.columns get dbcol match {
+							t.columnMap get dbcol match {
 								case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
 								case None => sys.error( s"data from an unknown column: $dbcol" )
 								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
