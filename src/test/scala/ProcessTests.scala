@@ -42,8 +42,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		env.process( "GET", "/api/v1/test/1", null ) shouldBe None
- 		env.process( "GET", "/api/v1/tod", null ) shouldBe None
+ 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/api/v1/tod", null ) shouldBe (SC_NOT_FOUND, """{"error": "route not found"}""")
 		c.close
 	}
 	
@@ -73,9 +79,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		env.process( "GET", "/todo/1", null ) shouldBe None
- 		env.process( "GET", "/test/1", null ) shouldBe None
- 		env.process( "GET", "/tod", null ) shouldBe None
+ 		env.process( "GET", "/todo/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/test/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/tod", null ) shouldBe (SC_NOT_FOUND, """{"error": "route not found"}""")
 		c.close
 	}
 	
@@ -130,8 +148,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe Some( null )
- 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe None
+		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		env.process( "GET", "/api/v1/test", null ) shouldBe
 			(SC_OK, """
 			|{
@@ -152,8 +176,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe Some( null )
- 		env.process( "GET", "/api/v1/test/1", null ) shouldBe None
+		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		c.close
 	}
 	
@@ -164,10 +194,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 			|
 			|route
-			|	GET   /f/a:integer/b:integer dataResult( null, f(a, b) )
-			|	GET   /plus/a:/b:            dataResult( null, a + b )
-			|	GET   /combine               dataResult( null, {"a": 1} + json )
-			|	GET   /eval                  dataResult( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
+			|	GET   /f/a:integer/b:integer Ok( null, f(a, b) )
+			|	GET   /plus/a:/b:            Ok( null, a + b )
+			|	GET   /combine               Ok( null, {"a": 1} + json )
+			|	GET   /eval                  Ok( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
