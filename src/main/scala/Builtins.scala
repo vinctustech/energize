@@ -30,22 +30,22 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, id, ?fields, None, None, None), "<resource>", id )
+		|  GET     /id:long                   OkSingleOrNotFound( "<resource>", findID(<resource>, id, ?fields, None, None, None), id )
 		|  GET     /                          Ok( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /                          Created( "<resource>", insert(<resource>, json) )
-		|  PATCH   /id:long                   OkAtLeastOneOrNotFound( update(<resource>, id, json, false) )
-		|  PUT     /id:long                   OkAtLeastOneOrNotFound( update(<resource>, id, json, true) )
-		|  DELETE  /id:long                   OkAtLeastOneOrNotFound( delete(<resource>, id) )
+		|  PATCH   /id:long                   OkAtLeastOneOrNotFound( "<resource>", update(<resource>, id, json, false), id )
+		|  PUT     /id:long                   OkAtLeastOneOrNotFound( "<resource>", update(<resource>, id, json, true), id )
+		|  DELETE  /id:long                   OkAtLeastOneOrNotFound( "<resource>", delete(<resource>, id), id )
 		""".stripMargin
 
 	val mtmroutes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long/field:            OkSingleOrNotFound( findIDMany(<resource>, id, field, ?page, ?start, ?limit), "<resource>", id )
+		|  GET     /id:long/field:            OkSingleOrNotFound( "<resource>", findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
 		|  POST    /id:long/field:            Created( "<resource>", append(<resource>, id, field, json) )
 		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
 		|  DELETE  /id:long/field:            deleteLinks( <resource>, id, field, json ); NoContent()
-		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFound( deleteLinksID(<resource>, id, field, tid) )
+		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFound( "<resource>", deleteLinksID(<resource>, id, field, tid), id )
 		""".stripMargin
 
 	//insertLinks(<resource>, id, field, json)
