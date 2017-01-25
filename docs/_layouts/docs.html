@@ -11,21 +11,30 @@
 		<link rel="stylesheet" href="/energize/css/main.css">
 	</head>
 	<body>
-		<section class="page-header">
-			<h1 class="project-name">Energize</h1>
-			<h2 class="project-tagline">Configurable REST API Server</h2>
-			<a href="http://github.com/edadma/energize" class="btn">View on GitHub</a>
-			<a href="/energize/api" class="btn">Scaladoc</a>
-		</section>
+		<main class="main-content">
+			<div class="docs-body">
+				<div class="docs-left">
+					{% include nav_docs.html %}
+				</div>
 
-		<section class="main-content">
-			{{ content }}
-			
+				<div class="docs-right">
+					{{ content }}
+
+					<div class="docs-prevnext">
+						{% if page.prev %}
+							<a class="docs-prev" href="/energize/docs/{{ page.prev }}">&larr; Prev</a>
+						{% endif %}
+						{% if page.next %}
+							<a class="docs-next" href="/energize/docs/{{ page.next }}">Next &rarr;</a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
 			<footer class="site-footer">
 					<span class="site-footer-owner">
 						<a href="http://github.com/edadma/energize">Energize</a> is maintained by <a href="http://github.com/edadma">edadma</a>.
 					</span>
 			</footer>
-		</section>
+		</main>
 	</body>
 </html>

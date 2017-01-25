@@ -1,0 +1,21 @@
+.nav-docs ul {
+	list-style: none;
+	padding: 0px;
+}
+
+.docs-prevnext {
+	display: flex;
+	justify-content: space-between;
+}
+
+.docs-body {
+	display: flex;
+}
+
+.docs-left {
+	margin-right: 50px;
+}
+
+.docs-right {
+	flex: 1;
+}
