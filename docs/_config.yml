@@ -23,6 +23,6 @@ exclude:
 defaults:
 - scope:
     path: docs
-    type: docs
+    type: pages
   values:
-    layout: default
+    layout: docs

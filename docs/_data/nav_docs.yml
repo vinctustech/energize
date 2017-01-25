@@ -4,3 +4,14 @@
       title: Installation
     - id: hello-world
       title: Hello World
+- title: Advanced Guides
+  items:
+    - id: action-script
+      title: Action Script
+      subitems: 
+        - id: introduction
+          title: Introduction
+        - id: grammar
+          title: Grammar
+        - id: function-reference
+          title: Function Reference
