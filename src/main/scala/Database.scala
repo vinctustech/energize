@@ -1,17 +1,29 @@
 package xyz.hyperreal.energize
 
-import java.sql._
+import java.sql.Timestamp
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, OffsetDateTime}
+import java.time.{OffsetDateTime, Instant, ZoneOffset, ZoneId}
 
 
 object H2Database extends Database {
 	val caseSensitive = false
 	val publicSchema = "PUBLIC"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+	val ZONEID = zoneId
+	val SYSTEM_ZONEID = ZoneId.systemDefault
 
 	def readTimestamp( d: String ) = {
-		TIMESTAMP_FORMAT.format( LocalDateTime.parse(d) )
+		val t = OffsetDateTime.parse( d )
+		val u = t.toInstant.atZone( SYSTEM_ZONEID ).toLocalDateTime//atOffset( ZoneOffset.UTC )
+
+		u.format( TIMESTAMP_FORMAT )
+	}
+
+	def writeTimestamp( o: Any ) = {
+		val m = o.asInstanceOf[Timestamp].getTime
+		val t = Instant.ofEpochMilli( m )
+
+		t.atZone( ZONEID ).toOffsetDateTime.toString
 	}
 
 	def create( tables: List[Table] ) = {
@@ -89,8 +101,21 @@ object PostgresDatabase extends Database {
 	val caseSensitive = true
 	val publicSchema = "public"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+	val ZONEID = zoneId
 
-	def readTimestamp( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
+	def readTimestamp( d: String ) = {
+		val t = OffsetDateTime.parse( d )
+		val u = t.toInstant.atOffset( ZoneOffset.UTC ).toLocalDateTime
+
+		u.format( TIMESTAMP_FORMAT )
+	}
+
+	def writeTimestamp( o: Any ) = {
+		val m = o.asInstanceOf[Timestamp].getTime
+		val t = Instant.ofEpochMilli( m )
+
+		t.atZone( ZONEID ).toOffsetDateTime.toString
+	}
 
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
@@ -170,8 +195,21 @@ object MySQLDatabase extends Database {
 	val caseSensitive = true
 	val publicSchema = "public"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+	val ZONEID = zoneId
 
-	def readTimestamp( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
+	def readTimestamp( d: String ) = {
+		val t = OffsetDateTime.parse( d )
+		val u = t.toInstant.atOffset( ZoneOffset.UTC ).toLocalDateTime
+
+		u.format( TIMESTAMP_FORMAT )
+	}
+
+	def writeTimestamp( o: Any ) = {
+		val m = o.asInstanceOf[Timestamp].getTime
+		val t = Instant.ofEpochMilli( m )
+
+		t.atZone( ZONEID ).toOffsetDateTime.toString
+	}
 
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
@@ -251,7 +289,6 @@ object Database {
 		"PostgreSQL" -> PostgresDatabase,
 		"MySQL" -> MySQLDatabase
 	)
-
 	def isSupported( name: String ) = supported contains name
 
 	def apply( name: String ) = supported( name )
@@ -261,6 +298,13 @@ abstract class Database {
 	val caseSensitive: Boolean
 
 	val publicSchema: String
+
+	def zoneId =
+		DATETIME.getString( "timezone" ) match {
+			case "system" => ZoneId.systemDefault
+			case z => ZoneId.of( z )
+		}
+
 
 	def desensitize( name: String ) =
 		if (caseSensitive)
@@ -284,6 +328,8 @@ abstract class Database {
 		}
 
 	def readTimestamp( d: String ): String
+
+	def writeTimestamp( o: Any ): String
 
 	def create( tables: List[Table] ): String
 }
