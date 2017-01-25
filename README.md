@@ -19,8 +19,9 @@ License
 Documentation
 -------------
 
+- [Programmer's Reference](http://edadma.github.io/energize)
+- [Scaladoc](http://edadma.github.io/energize/api)
 - [Example inside this README](http://github.com/edadma/energize#example)
-- [*Energize* Reference Manual](http://edadma.github.io/energize)
 - Type `java -jar energize-0.6.jar --help` for executable options
 - Type `help` inside the REPL for commands
 
