@@ -1,0 +1,28 @@
+# Welcome to Jekyll!
+
+# Site settings
+# These are used to personalize your new site. If you look in the HTML files,
+# you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
+# You can create any custom variable you would like, and they will be accessible
+# in the templates via {{ site.myvariable }}.
+title: Energize
+description: Configurable REST API server
+url: "http://edadma.github.io"
+email: edadma@gmail.com
+baseurl: "/energize"
+github_username:  edadma
+timezone: America/Montreal
+
+# Build settings
+markdown: kramdown
+theme: jekyll-theme-cayman
+gems:
+exclude:
+  - Gemfile
+  - Gemfile.lock
+defaults:
+- scope:
+    path: docs
+    type: docs
+  values:
+    layout: default
