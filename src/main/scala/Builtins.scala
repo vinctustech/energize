@@ -1,7 +1,6 @@
 package xyz.hyperreal.energize
 
 import org.apache.http.HttpStatus._
-
 import xyz.hyperreal.numbers.ComplexBigInt
 
 
@@ -12,12 +11,10 @@ object Builtins {
 			"e" -> math.E,
 			"pi" -> math.Pi,
 			"None" -> None,
-			"SC_TEAPOT" -> 418,
 			"SC_OK" -> SC_OK,
 			"SC_CREATED" -> SC_CREATED,
 			"SC_NO_CONTENT" -> SC_NO_CONTENT,
-			"SC_BAD_REQUEST" -> SC_BAD_REQUEST,
-			"SC_NOT_FOUND" -> SC_NOT_FOUND,
+			"SC_BAD_REQUEST" -> SC_NOT_FOUND,
 			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
 		)
 	
@@ -33,22 +30,22 @@ object Builtins {
 	val routes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long                   dataResult( "<resource>", singleOrNotFound(findID(<resource>, id, ?fields, None, None, None)) )
-		|  GET     /                          dataResult( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
-		|  POST    /                          dataResult( "<resource>", insert(<resource>, json) )
-		|  PATCH   /id:long                   atLeastOneOrNotFound( update(<resource>, id, json, false) ); null
-		|  PUT     /id:long                   atLeastOneOrNotFound( update(<resource>, id, json, true) ); null
-		|  DELETE  /id:long                   atLeastOneOrNotFound( delete(<resource>, id) ); null
+		|  GET     /id:long                   OkSingleOrNotFound( "<resource>", findID(<resource>, id, ?fields, None, None, None), id )
+		|  GET     /                          Ok( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+		|  POST    /                          Created( "<resource>", insert(<resource>, json) )
+		|  PATCH   /id:long                   OkAtLeastOneOrNotFound( "<resource>", update(<resource>, id, json, false), id )
+		|  PUT     /id:long                   OkAtLeastOneOrNotFound( "<resource>", update(<resource>, id, json, true), id )
+		|  DELETE  /id:long                   OkAtLeastOneOrNotFound( "<resource>", delete(<resource>, id), id )
 		""".stripMargin
 
 	val mtmroutes =
 		"""
 		|route <base>/<resource>
-		|  GET     /id:long/field:            dataResult( "<resource>", singleOrNotFound(findIDMany(<resource>, id, field, ?page, ?start, ?limit)) )
-		|  POST    /id:long/field:            dataResult( "<resource>", append(<resource>, id, field, json) )
-		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid )
-		|  DELETE  /id:long/field:            deleteLinks( <resource>, id, field, json )
-		|  DELETE  /id:long/field:/tid:long   atLeastOneOrNotFound( deleteLinksID(<resource>, id, field, tid) ); null
+		|  GET     /id:long/field:            OkSingleOrNotFound( "<resource>", findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
+		|  POST    /id:long/field:            Created( "<resource>", append(<resource>, id, field, json) )
+		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
+		|  DELETE  /id:long/field:            deleteLinks( <resource>, id, field, json ); NoContent()
+		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFound( "<resource>", deleteLinksID(<resource>, id, field, tid), id )
 		""".stripMargin
 
 	//insertLinks(<resource>, id, field, json)

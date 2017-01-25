@@ -3,6 +3,8 @@ package xyz.hyperreal.energize
 import org.scalatest._
 import prop.PropertyChecks
 
+import org.apache.http.HttpStatus._
+
 
 class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	
@@ -21,22 +23,33 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/test", null ) shouldBe
-			Some( """
-			|{
-			|  "status": "ok",
-			|  "data": []
-			|}
-			""".trim.stripMargin )
- 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe None
- 		env.process( "GET", "/api/v1/test/1", null ) shouldBe None
- 		env.process( "GET", "/api/v1/tod", null ) shouldBe None
+			(SC_OK,
+				"""
+					|{
+					|  "data": []
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/api/v1/tod", null ) shouldBe (SC_NOT_FOUND, """{"error": "route not found"}""")
 		c.close
 	}
 	
@@ -55,22 +68,32 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/todo", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/test", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		env.process( "GET", "/todo/1", null ) shouldBe None
- 		env.process( "GET", "/test/1", null ) shouldBe None
- 		env.process( "GET", "/tod", null ) shouldBe None
+ 		env.process( "GET", "/todo/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/test/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/tod", null ) shouldBe (SC_NOT_FOUND, """{"error": "route not found"}""")
 		c.close
 	}
 	
@@ -89,24 +112,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""" ) shouldBe
-			Some( """
+			(SC_CREATED, """
 			|{
-			|  "status": "ok",
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
 
 		env.process( "POST", "/api/v1/test", """{"asdf": 123}""" ) shouldBe
-			Some( """
+			(SC_CREATED, """
 			|{
-			|  "status": "ok",
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": [
 			|    {
 			|      "id": 1,
@@ -118,9 +138,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": {
 			|    "id": 1,
 			|    "name": "do something",
@@ -129,12 +148,17 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe Some( null )
- 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe None
+		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		env.process( "GET", "/api/v1/test", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": [
 			|    {
 			|      "id": 1,
@@ -144,17 +168,22 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": {
 			|    "id": 1,
 			|    "asdf": 123
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe Some( null )
- 		env.process( "GET", "/api/v1/test/1", null ) shouldBe None
+		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		c.close
 	}
 	
@@ -165,24 +194,22 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 			|
 			|route
-			|	GET   /f/a:integer/b:integer dataResult( null, f(a, b) )
-			|	GET   /plus/a:/b:            dataResult( null, a + b )
-			|	GET   /combine               dataResult( null, {"a": 1} + json )
-			|	GET   /eval                  dataResult( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
+			|	GET   /f/a:integer/b:integer Ok( null, f(a, b) )
+			|	GET   /plus/a:/b:            Ok( null, a + b )
+			|	GET   /combine               Ok( null, {"a": 1} + json )
+			|	GET   /eval                  Ok( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/eval", """ {"expr": "(i + 2)/2*i"} """ ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": "-1/2+i"
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/f/3/4", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": {
 			|    "a": 3,
 			|    "b": 4,
@@ -207,22 +234,33 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "GET", "/users", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/roles", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		env.process( "GET", "/users/1", null ) shouldBe None
- 		env.process( "GET", "/roles/1", null ) shouldBe None
- 		env.process( "GET", "/user", null ) shouldBe None //deliberatly misspelled
+ 		env.process( "GET", "/users/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/roles/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
+ 		env.process( "GET", "/user", null ) shouldBe //deliberatly misspelled
+			(SC_NOT_FOUND, """{"error": "route not found"}""" )
 		c.close
 	}
 	
@@ -240,28 +278,25 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s )
 
 		env.process( "POST", "/roles", """{"type": "normal"}""" ) shouldBe
-			Some( """
+			(SC_CREATED, """
 			|{
-			|  "status": "ok",
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
 
-		env.process( "POST", "/users", """{"email": "joe@blow.com", "role": "normal"}""" ) shouldBe
-			Some( """
+		env.process( "POST", "/users", """{"email": "john@doe.com", "role": "normal"}""" ) shouldBe
+			(SC_CREATED,  """
 			|{
-			|  "status": "ok",
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/users", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": [
 			|    {
 			|      "id": 1,
-			|      "email": "joe@blow.com",
+			|      "email": "john@doe.com",
 			|      "role": {
 			|        "id": 1,
 			|        "type": "normal"
@@ -271,12 +306,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/users/1", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": {
 			|    "id": 1,
-			|    "email": "joe@blow.com",
+			|    "email": "john@doe.com",
 			|    "role": {
 			|      "id": 1,
 			|      "type": "normal"
@@ -284,12 +318,17 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/users/1", null ) shouldBe Some( null )
- 		env.process( "GET", "/users/1", null ) shouldBe None
+		env.process( "DELETE", "/users/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/users/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		env.process( "GET", "/roles", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": [
 			|    {
 			|      "id": 1,
@@ -299,17 +338,22 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/roles/1", null ) shouldBe
-			Some( """
+			(SC_OK, """
 			|{
-			|  "status": "ok",
 			|  "data": {
 			|    "id": 1,
 			|    "type": "normal"
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/roles/1", null ) shouldBe Some( null )
- 		env.process( "GET", "/roles/1", null ) shouldBe None
+		env.process( "DELETE", "/roles/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/roles/1", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		c.close
 	}
 }
