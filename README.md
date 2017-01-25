@@ -62,9 +62,8 @@ Building
 
 ### Requirements
 
-- Java 8+
-- SBT 0.13.13+
-- Scala 2.12.1+
+- Java 8 (any revision)
+- SBT 0.13.13+ (which then downloads Scala 2.12.x automatically)
 
 ### Clone and Run the SBT (Simple Build Tool)
 

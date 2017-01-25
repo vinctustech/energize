@@ -308,6 +308,4 @@ case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boo
 
 class EnergizeErrorException( message: String ) extends Exception( message )
 
-class EnergizeNotFoundException extends Exception
-
 class Variable( var value: Any )

@@ -31,7 +31,8 @@ object CommandFunctionHelpers {
 						case ManyReferenceType( _, _ ) =>
 							if (v eq null)
 								throw new EnergizeErrorException( s"insert: manay-to-many field cannot be NULL: $c" )
-						case StringType => values += '\'' + String.valueOf( v ) + '\''
+						case StringType if v ne null => values += '\'' + v.toString + '\''
+						case DateType|DatetimeType|TimeType|TimestampType if v ne null => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
 						case _ => values += String.valueOf( v )
 					}
 			}

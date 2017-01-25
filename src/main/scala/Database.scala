@@ -2,7 +2,7 @@ package xyz.hyperreal.energize
 
 import java.sql._
 import java.time.format.DateTimeFormatter
-import java.time.OffsetDateTime
+import java.time.{LocalDateTime, OffsetDateTime}
 
 
 object H2Database extends Database {
@@ -10,7 +10,9 @@ object H2Database extends Database {
 	val publicSchema = "PUBLIC"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 
-	def datetime( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
+	def readTimestamp( d: String ) = {
+		TIMESTAMP_FORMAT.format( LocalDateTime.parse(d) )
+	}
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
@@ -61,9 +63,9 @@ object H2Database extends Database {
 						buf ++= "(id)"
 					case _ =>
 				}
-				
+
 				buf ++= ");\n"
-				
+
 				columns foreach {
 					case Column( c, _, _, _, _, true ) =>
 						buf ++= "CREATE INDEX ON "
@@ -78,7 +80,7 @@ object H2Database extends Database {
 					case _ =>
 				}
 		}
-		
+
 		buf.toString
 	}
 }
@@ -88,7 +90,7 @@ object PostgresDatabase extends Database {
 	val publicSchema = "public"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 
-	def datetime( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
+	def readTimestamp( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
 
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
@@ -169,7 +171,7 @@ object MySQLDatabase extends Database {
 	val publicSchema = "public"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 
-	def datetime( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
+	def readTimestamp( d: String ) = TIMESTAMP_FORMAT.format( OffsetDateTime.parse(d) )
 
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
@@ -281,7 +283,7 @@ abstract class Database {
 			case _ =>
 		}
 
-	def datetime( d: String ): String
+	def readTimestamp( d: String ): String
 
 	def create( tables: List[Table] ): String
 }
