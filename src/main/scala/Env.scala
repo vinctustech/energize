@@ -114,7 +114,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		}
 		
 		find( reqmethod, reqpath, routes ) match {
-			case None => (SC_NOT_FOUND, """{"error": "route not found"}""")
+			case None => variables( "BAD_ROUTE" ).asInstanceOf[(Int, String)]
 			case Some( (urivars, expr) ) =>
 				val reqvars =
 					(if (reqbody eq null)

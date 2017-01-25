@@ -15,7 +15,8 @@ object Builtins {
 			"SC_CREATED" -> SC_CREATED,
 			"SC_NO_CONTENT" -> SC_NO_CONTENT,
 			"SC_BAD_REQUEST" -> SC_NOT_FOUND,
-			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
+			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE,
+			"BAD_ROUTE" -> (SC_NOT_FOUND, """{"error": "route not found"}""")
 		)
 	
 	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
