@@ -5,4 +5,4 @@ permalink: docs/installation.html
 next: hello-world.html
 ---
 
-Installation
+## Installation

@@ -7,6 +7,15 @@
           <li>
             <a href="/energize/docs/{{ item.id }}">{{ item.title }}</a>
           </li>
+          {% if item.subitems %}
+            <ul>
+            {% for subitem in item.subitems %}
+              <li>
+                <a href="/energize/docs/{{ item.id }}#{{ subitem.id }}">{{ subitem.title }}</a>
+              </li>
+            {% endfor %}
+            </ul>
+          {% endif %}
         {% endfor %}
       </ul>
     </div>
