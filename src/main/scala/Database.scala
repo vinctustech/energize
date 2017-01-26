@@ -26,6 +26,8 @@ object H2Database extends Database {
 		t.atZone( ZONEID ).toOffsetDateTime.toString
 	}
 
+	def desensitize( name: String ) = name.toUpperCase
+
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
@@ -98,7 +100,6 @@ object H2Database extends Database {
 }
 
 object PostgresDatabase extends Database {
-	val caseSensitive = true
 	val publicSchema = "public"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 	val ZONEID = zoneId
@@ -129,6 +130,8 @@ object PostgresDatabase extends Database {
 			case TimestampType => "TIMESTAMP"
 			case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
 		}
+
+	def desensitize( name: String ) = name.toLowerCase
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
@@ -192,7 +195,6 @@ object PostgresDatabase extends Database {
 }
 
 object MySQLDatabase extends Database {
-	val caseSensitive = true
 	val publicSchema = "public"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 	val ZONEID = zoneId
@@ -223,6 +225,8 @@ object MySQLDatabase extends Database {
 			case TimestampType => "TIMESTAMP"
 			case TimestamptzType => problem( typ.pos, "'with timezone' is not supported by MySQL" )
 		}
+
+	def desensitize( name: String ) = name
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
@@ -295,8 +299,6 @@ object Database {
 }
 
 abstract class Database {
-	val caseSensitive: Boolean
-
 	val publicSchema: String
 
 	def zoneId =
@@ -305,12 +307,7 @@ abstract class Database {
 			case z => ZoneId.of( z )
 		}
 
-
-	def desensitize( name: String ) =
-		if (caseSensitive)
-			name
-		else
-			name.toUpperCase
+	def desensitize( name: String ): String
 
 	def dimension( typ: ColumnType ) =
 		typ match {

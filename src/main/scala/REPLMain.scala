@@ -21,7 +21,7 @@ object REPLMain extends App {
 	var stacktrace = false
 
 	s"""
-	|Welcome to ENERGIZE version $VERSION.
+	|Welcome to Energize version $VERSION.
 	|Type in expressions to have them evaluated.
 	|Type help for more information.
 	""".trim.stripMargin.lines foreach println
@@ -30,6 +30,7 @@ object REPLMain extends App {
 	var env: Env = _
 	var connection: Connection = _
 	var statement: Statement = _
+	var db: Database = _
 	var name = "H2"
 	var driver = "org.h2.Driver"
 	var url = "jdbc:h2:mem:"
@@ -42,17 +43,19 @@ object REPLMain extends App {
 	}
 	
 	def connect {
-		val (c, s) = Energize.dbconnect( name, driver, url, user, password )
+		val (c, s, d) = Energize.dbconnect( name, driver, url, user, password )
 		
 		connection = c
 		statement = s
+		db = d
+		env = Env( Map(), Nil, Builtins.map, connection, statement, db )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
-		println
 	}
-	
+
+	def defaultEnv =
+
 	connect
-	env = Env( Map(), Nil, Builtins.map, connection, statement, H2Database )
 
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
@@ -74,14 +77,12 @@ object REPLMain extends App {
 						connection.close
 
 					connect
-					env = null
 				case List( "connect"|"c", u ) =>
 					if (connection ne null)
 						connection.close
 
 					url = u
 					connect
-					env = null
 				case List( "db" ) =>
 					println( driver, url, user, password )
 				case List( "driver"|"d", d ) =>
@@ -106,7 +107,7 @@ object REPLMain extends App {
 					|?<expression>                        evaluate an ENERGIZE action script expression
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					env = Energize.configure( io.Source.fromFile(config + ".energize"), connection, statement )
+					env = Energize.configure( io.Source.fromFile(config + ".energize"), connection, statement, db )
 //				case List( "wipe"|"w" ) =>
 //					connection.close
 //					new File( sys.props("user.home"), db + ".mv.db" ).delete

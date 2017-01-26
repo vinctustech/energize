@@ -11,7 +11,7 @@ import org.h2.jdbcx.JdbcConnectionPool
 
 object Energize {
 
-	def dbconnect: (Connection, Statement) = {
+	def dbconnect: (Connection, Statement, Database) = {
 		val name = DATABASE.getString( "name" )
 		val driver = DATABASE.getString( "driver" )
 		val url = DATABASE.getString( "url" )
@@ -21,6 +21,7 @@ object Energize {
 		dbconnect( name, driver, url, user, password )
 	}
 
+//DATABASE.getString("name")
 	def dbconnect( name: String, driver: String, url: String, user: String, password: String ) = {
     Class.forName( driver )
 		
@@ -31,16 +32,16 @@ object Energize {
 			else
 				DriverManager.getConnection( url, user, password )
 		
-		(connection, connection.createStatement)
+		(connection, connection.createStatement, Database( name ))
 	}
 
-	def configure( src: io.Source, connection: Connection, statement: Statement ): Env = {
+	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database ): Env = {
 		val p = new EnergizeParser
 
-		configure( p.parseFromSource(src, p.source), connection: Connection, statement: Statement )
+		configure( p.parseFromSource(src, p.source), connection, statement, database )
 	}
 
-	def configure( src: String, connection: Connection, statement: Statement ): Env = {
+	def configure( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
 		val json = DefaultJSONReader.fromString( src )
 		val ast =
 			SourceAST(
@@ -52,14 +53,13 @@ object Energize {
 						}
 				} )
 
-		configure( ast, connection: Connection, statement: Statement )
+		configure( ast, connection, statement, database )
 	}
 
-	def configure( ast: SourceAST, connection: Connection, statement: Statement ): Env = {
+	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Env = {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
-		val db = if (connection eq null) null else Database( DATABASE.getString("name") )
 
 		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
 		
@@ -143,7 +143,7 @@ object Energize {
 
 							cols(db.desensitize( cname )) = Column( cname, typ, secret, required, unique, indexed )
 					}
-		
+
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
 
 					if (resource) {
@@ -151,19 +151,19 @@ object Energize {
 
 						if (bases isEmpty) {
 							routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<base>", "" ).
-								replaceAll( "<resource>", name ) ), null, null ).routes
+								replaceAll( "<resource>", name ) ), null, null, db ).routes
 
 							if (mtm)
 								routes ++= configure( io.Source.fromString( Builtins.mtmroutes.replaceAll( "<base>", "" ).
-									replaceAll( "<resource>", name ) ), null, null ).routes
+									replaceAll( "<resource>", name ) ), null, null, db ).routes
 						} else
 							for (URIPath( base ) <- bases) {
 								routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<resource>", name ).
-									replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null ).routes
+									replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null, db ).routes
 
 								if (mtm)
 									routes ++= configure( io.Source.fromString( Builtins.mtmroutes.replaceAll( "<resource>", name ).
-										replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null ).routes
+										replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null, db ).routes
 							}
 					}
 

@@ -9,7 +9,7 @@ object ServerMain extends App {
 	}
 	
 	val config = args(0) + ".energize"
-	val (connection, statement) = Energize.dbconnect
+	val (connection, statement, db) = Energize.dbconnect
 	
 	sys.addShutdownHook {
 		connection.close
@@ -19,7 +19,7 @@ object ServerMain extends App {
 	println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	println( "loading " + config )
 
-	val env = Energize.configure( io.Source.fromFile(config), connection, statement )
+	val env = Energize.configure( io.Source.fromFile(config), connection, statement, db )
 	
 	println( "starting server on port " + SERVER.getInt("port") )
 	new Server( env ).start

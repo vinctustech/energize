@@ -16,13 +16,13 @@ object Test {
 	def capture( code: String ) = {
 		val buf = new ByteArrayOutputStream
 		
-		Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), null, null) )
+		Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), null, null, null) )
 		buf.toString.trim
 	}
 	
 	def captureReturn( code: String ) = {
 		val buf = new ByteArrayOutputStream
-		val ret = Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), null, null) )
+		val ret = Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), null, null, null) )
 		
 		(ret, buf.toString.trim)
 	}

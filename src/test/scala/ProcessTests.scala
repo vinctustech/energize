@@ -9,7 +9,7 @@ import org.apache.http.HttpStatus._
 class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	
 	"empty database" in {
-		val (c, s) = Test.dbconnect
+		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
 			|resource todo /api/v1
@@ -20,7 +20,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test /api/v1
 			|  asdf        integer required
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString(config), c, s )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
 			(SC_OK, """
@@ -54,7 +54,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"empty database (no base)" in {
-		val (c, s) = Test.dbconnect
+		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
 			|resource todo
@@ -65,7 +65,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test
 			|  asdf        integer required
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString(config), c, s )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/todo", null ) shouldBe
 			(SC_OK, """
@@ -98,7 +98,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"post/get/delete" in {
-		val (c, s) = Test.dbconnect
+		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
 			|resource todo /api/v1
@@ -109,7 +109,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test /api/v1
 			|  asdf       integer required
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString(config), c, s )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""" ) shouldBe
 			(SC_CREATED, """
@@ -188,7 +188,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"functions/evaluation" in {
-		val (c, s) = Test.dbconnect
+		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
@@ -199,7 +199,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|	GET   /combine               Ok( null, {"a": 1} + json )
 			|	GET   /eval                  Ok( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString(config), c, s )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/eval", """ {"expr": "(i + 2)/2*i"} """ ) shouldBe
 			(SC_OK, """
@@ -221,7 +221,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"empty database (one-to-many)" in {
-		val (c, s) = Test.dbconnect
+		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
 			|resource users
@@ -231,7 +231,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource roles
 			|  type        string  unique required
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString(config), c, s )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/users", null ) shouldBe
 			(SC_OK, """
@@ -265,7 +265,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 	}
 	
 	"post/get/delete (one-to-many)" in {
-		val (c, s) = Test.dbconnect
+		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
 			|resource users
@@ -275,7 +275,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource roles
 			|  type        string  unique required
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString(config), c, s )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "POST", "/roles", """{"type": "normal"}""" ) shouldBe
 			(SC_CREATED, """
