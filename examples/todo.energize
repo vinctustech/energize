@@ -1,5 +1,5 @@
 resource todo
-	name string required
+	name string required unique
 	desc string optional
 
 insert( todo, {name: "finish coding this project"} )

@@ -49,7 +49,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		env.process( "GET", "/api/v1/tod", null ) shouldBe (SC_NOT_FOUND, """{"error": "route not found"}""")
+ 		env.process( "GET", "/api/v1/tod", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""{
+					|  "error": "route not found"
+					|}""".stripMargin)
 		c.close
 	}
 	
@@ -93,7 +97,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		env.process( "GET", "/tod", null ) shouldBe (SC_NOT_FOUND, """{"error": "route not found"}""")
+ 		env.process( "GET", "/tod", null ) shouldBe
+			(SC_NOT_FOUND,
+				"""{
+					|  "error": "route not found"
+					|}""".stripMargin)
 		c.close
 	}
 	
@@ -260,7 +268,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
  		env.process( "GET", "/user", null ) shouldBe //deliberatly misspelled
-			(SC_NOT_FOUND, """{"error": "route not found"}""" )
+			(SC_NOT_FOUND,
+				"""{
+					|  "error": "route not found"
+					|}""".stripMargin )
 		c.close
 	}
 	

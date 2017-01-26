@@ -30,7 +30,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case res => res
 		}
 	
-	def lookup( name: String ) = get( name ) getOrElse (throw new EnergizeErrorException( "variable not found: " + name ))
+	def lookup( name: String ) = get( name ) getOrElse (sys.error( "variable not found: " + name ))
 
 	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String) = {
 		val uri = new URI( requri )
@@ -114,14 +114,25 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		}
 		
 		find( reqmethod, reqpath, routes ) match {
-			case None => variables( "BAD_ROUTE" ).asInstanceOf[(Int, String)]
+			case None =>
+				val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
+
+				(sc, DefaultJSONWriter.toString( obj ))
 			case Some( (urivars, expr) ) =>
 				val reqvars =
 					(if (reqbody eq null)
 						urivars
 					else
 						urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
-				val (sc, obj) = (this add reqvars).deref( expr ).asInstanceOf[(Int, OBJ)]
+				val (sc, obj) =
+					try {
+						(this add reqvars).deref( expr ).asInstanceOf[(Int, OBJ)]
+					} catch {
+						case e: BadRequestException =>
+							ResultFunctions.BadRequest( this, e.getMessage )
+						case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
+							ResultFunctions.Conflict( this, e.getMessage )
+					}
 
 				(sc, if (obj eq null) null else DefaultJSONWriter.toString( obj ))
 		}
@@ -306,6 +317,6 @@ case class Table(name: String, columns: List[Column], columnMap: Map[String, Col
 
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )
 
-class EnergizeErrorException( message: String ) extends Exception( message )
-
 class Variable( var value: Any )
+
+class BadRequestException( error: String ) extends Exception( error )
