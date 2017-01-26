@@ -91,6 +91,11 @@ object CommandFunctions {
 // 			g.next
 // 			g.getLong(1)
 // 		} else {
+		val diff = json.keySet -- (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet)
+
+		if (diff nonEmpty)
+			throw new BadRequestException( "insert: excess field(s): " + diff.mkString(", ") )
+
 		val com = CommandFunctionHelpers.insertCommand( env, resource, json )
 		val id =
 			if (env.db == PostgresDatabase) {
