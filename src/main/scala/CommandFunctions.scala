@@ -140,28 +140,32 @@ object CommandFunctions {
 				throw new EnergizeErrorException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
 		else {
 			val com = new StringBuilder( "UPDATE " )
-			var typ: ColumnType = null
+//			var typ: ColumnType = null
 			
 			com ++= resource.name
 			com ++= " SET "
 			com ++=
-				escapeQuotes( json ).toList map {
-					case (k, v) if resource.columnMap(env.db.desensitize(k)).typ == StringType => k + " = '" + String.valueOf( v ) + "'"
-					case (k, v) if {typ = resource.columnMap(env.db.desensitize(k)).typ; typ.isInstanceOf[SingleReferenceType]} =>
-						if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
-							k + " = " + String.valueOf( v )
-						else {
-							val reft = typ.asInstanceOf[SingleReferenceType].ref
-							val refc = CommandFunctionHelpers.uniqueColumn( reft )
-								reft.columns.find(c => c.unique ) match {
-									case None => throw new EnergizeErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
-									case Some( c ) => c.name
-								}
+				(for ((k, v) <- escapeQuotes( json ).toList)
+					yield {
+						resource.columnMap(env.db.desensitize( k )).typ match {
+							case StringType => k + " = '" + String.valueOf( v ) + "'"
+							case t: SingleReferenceType =>
+								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
+									k + " = " + String.valueOf( v )
+								else {
+									val reft = t.asInstanceOf[SingleReferenceType].ref
+									val refc = CommandFunctionHelpers.uniqueColumn( reft )
 
-							k + s" = (SELECT id FROM $reft WHERE $refc = '$v')"
+									reft.columns find (c => c.unique ) match {
+										case None => throw new EnergizeErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
+										case Some( c ) => c.name
+									}
+
+									k + s" = (SELECT id FROM $reft WHERE $refc = '$v')"
+								}
+							case _ => k + " = " + String.valueOf( v )
 						}
-					case (k, v) => k + " = " + String.valueOf( v )
-				} mkString ", "
+					}) mkString ", "
 			com ++= " WHERE id = "
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
