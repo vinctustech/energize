@@ -53,9 +53,8 @@ object REPLMain extends App {
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	}
 
-	def defaultEnv =
-
 	connect
+	println
 
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
@@ -117,7 +116,9 @@ object REPLMain extends App {
 				case List( "password"|"p", p ) =>
 					password = p
 				case List( "quit"|"q" ) =>
-					connection.close
+					if (connection ne null)
+						connection.close
+
 					sys.exit
 				case List( "routes"|"r" ) =>
 					for (Route(method, path, action) <- env.routes ) {
