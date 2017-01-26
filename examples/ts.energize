@@ -2,4 +2,4 @@ resource ts
 	t timestamp
 
 insert( ts, {t: "2017-01-25T15:32-05:00"} )
-insert( ts, {t: null} )
+insert( ts, {t: "2017-01-25T15:32:00.123-05:00"} )
