@@ -40,7 +40,7 @@ object QueryFunctionHelpers {
 					if (fs == Nil)
 						resource.columns
 					else
-						fs map (f => resource.columnMap( f ))
+						fs map (f => resource.columnMap( db.desensitize(f) ))
 
 				(cs map {
 						case Column(f, ManyReferenceType(_, _), _, _, _, _) => s"null as $f"
