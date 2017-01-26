@@ -148,20 +148,16 @@ object CommandFunctions {
 				(for ((k, v) <- escapeQuotes( json ).toList)
 					yield {
 						resource.columnMap(env.db.desensitize( k )).typ match {
-							case StringType => k + " = '" + String.valueOf( v ) + "'"
-							case t: SingleReferenceType =>
+							case DatetimeType|TimestampType if v ne null => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
+							case StringType if v ne null => s"$k = '$v'"
+							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
-									k + " = " + String.valueOf( v )
+									s"$k = $v"
 								else {
 									val reft = t.asInstanceOf[SingleReferenceType].ref
 									val refc = CommandFunctionHelpers.uniqueColumn( reft )
 
-									reft.columns find (c => c.unique ) match {
-										case None => throw new EnergizeErrorException( "update: no unique column in referenced resource in PUT/PATCH request" )
-										case Some( c ) => c.name
-									}
-
-									k + s" = (SELECT id FROM $reft WHERE $refc = '$v')"
+									s"$k = (SELECT id FROM $reft WHERE $refc = '$v')"
 								}
 							case _ => k + " = " + String.valueOf( v )
 						}
