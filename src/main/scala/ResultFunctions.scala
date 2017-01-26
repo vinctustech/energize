@@ -11,6 +11,7 @@ object ResultFunctions {
 	def BadRequest( env: Env, error: String ) = (SC_BAD_REQUEST, Map( "error" -> error ))
 	def NotFound( env: Env, error: String ) = (SC_NOT_FOUND, Map( "error" -> error ))
 	def NotAcceptable( env: Env, error: String ) = (SC_NOT_ACCEPTABLE, Map( "error" -> error ))
+	def Conflict( env: Env, error: String ) = (SC_CONFLICT, Map( "error" -> error ))
 
 	def OkSingleOrNotFound( env: Env, typ: String, list: List[Any], id: Long ) =
 		list match {

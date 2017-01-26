@@ -115,7 +115,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		
 		find( reqmethod, reqpath, routes ) match {
 			case None =>
-				val (sc, obj) = ResultFunctions.NotFound( this, variables("ROUTE_ERROR").asInstanceOf[String] )
+				val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
 
 				(sc, DefaultJSONWriter.toString( obj ))
 			case Some( (urivars, expr) ) =>
@@ -130,6 +130,8 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					} catch {
 						case e: BadRequestException =>
 							ResultFunctions.BadRequest( this, e.getMessage )
+						case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
+							ResultFunctions.Conflict( this, e.getMessage )
 					}
 
 				(sc, if (obj eq null) null else DefaultJSONWriter.toString( obj ))
