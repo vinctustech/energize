@@ -19,7 +19,7 @@ object Main extends App {
 
 // 	val env = Energize.configure( io.Source.fromFile("examples/data.energize"), c, s, d )
 //
-//	println( env.process("GET", "/data/20?fields=first_name", null) )
+//	println( env.process("GET", "/data/20?fields=id,first_name", null) )
 //  println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
 //   	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
 
@@ -44,9 +44,13 @@ object Main extends App {
 //
 //	println( env.process("GET", "/ts", null) )
 
-val env = Energize.configure( io.Source.fromFile("examples/energize.energize"), c, s, d )
+//	val env = Energize.configure( io.Source.fromFile("examples/energize.energize"), c, s, d )
+//
+//	println( env.process("GET", "/apis/1?fields=name", null) )
 
-	println( env.process("GET", "/apis/1?fields=name", null) )
+	val env = Energize.configure( io.Source.fromFile("examples/a.energize"), c, s, d )
+
+	println( env.process("GET", "/r", null) )
 
 	c.close
 }

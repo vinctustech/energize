@@ -311,6 +311,7 @@ abstract class Database {
 
 	def dimension( typ: ColumnType ) =
 		typ match {
+			case ArrayType( _, _, null, _ ) =>
 			case a@ArrayType( _, p, d, _ ) =>
 				if (d matches "[0-9]+") {
 					val v = BigInt( d )
