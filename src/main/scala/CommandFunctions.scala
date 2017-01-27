@@ -33,6 +33,7 @@ object CommandFunctionHelpers {
 								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case StringType if v ne null => values += '\'' + v.toString + '\''
 						case DatetimeType|TimestampType if v ne null => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
+						case ArrayType( parm, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 						case _ => values += String.valueOf( v )
 					}
 			}
