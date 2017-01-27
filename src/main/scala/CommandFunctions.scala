@@ -156,6 +156,7 @@ object CommandFunctions {
 						resource.columnMap(env.db.desensitize( k )).typ match {
 							case DatetimeType|TimestampType if v ne null => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
 							case StringType if v ne null => s"$k = '$v'"
+							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 									s"$k = $v"
