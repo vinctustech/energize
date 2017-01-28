@@ -223,8 +223,15 @@ object Energize {
 		
 		interpretExpressions( ast )
 
-		if (!internal)
-			routes ++= configure_( Builtins.special.replaceAll("<base>", AUTHORIZATION.getString("base")), connection, statement, db ).routes
+		if (!internal) {
+			val e = configure_( Builtins.special.
+				replaceAll( "<base>", AUTHORIZATION.getString("base") ).
+				replaceAll( "<email>", ADMIN.getString("email") ).
+				replaceAll( "<password>", ADMIN.getString("password") ), connection, statement, db )
+
+			routes ++= e.routes
+			tables ++= e.tables
+		}
 
 		env
 	}

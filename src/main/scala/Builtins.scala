@@ -50,13 +50,15 @@ object Builtins {
 
 	val special =
 		"""
-		|resource users
+		|resource users protected (admin)
 		|  email string unique
 		|  createdTime timestamp
 		|  updatedTime timestamp
 		|  state integer
 		|  groups string array
 		|  password string secret
+		|
+		|insert( users, {email: "<email>", createdTime: now(), groups: ["admin"], password: "<password>"} )
 		|
 		|route /meta
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )

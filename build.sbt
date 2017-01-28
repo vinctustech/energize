@@ -37,7 +37,8 @@ libraryDependencies ++= Seq(
 	"jline" % "jline" % "2.14.2",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
-	"org.apache.httpcomponents" % "httpclient" % "4.5.2"
+	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
+	"de.svenkubiak" % "jBCrypt" % "0.4"
 )
 
 libraryDependencies ++= Seq(

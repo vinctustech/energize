@@ -15,6 +15,7 @@ package object energize {
 	lazy val SERVER = CONFIG.getConfig( "server" )
 	lazy val AUTHORIZATION = CONFIG.getConfig( "authorization" )
 	lazy val DATETIME = CONFIG.getConfig( "datetime" )
+	lazy val ADMIN = CONFIG.getConfig( "admin" )
 
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	

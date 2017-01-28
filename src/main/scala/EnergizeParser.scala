@@ -137,8 +137,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		protection ~ ("table" | "resource") ~ pos ~ ident ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case pro ~ k ~ p ~ name ~ bases ~ columns => List( TableDefinition( pro, p.pos, name, bases, columns, k == "resource" ) )}
+		("table" | "resource") ~ pos ~ ident ~ protection ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case k ~ p ~ name ~ pro ~ bases ~ columns => List( TableDefinition( pro, p.pos, name, bases, columns, k == "resource" ) )}
 
 	lazy val protection: PackratParser[Protection] =
 		opt("protected" ~> opt("(" ~> ident <~ ")")) ^^ Protection

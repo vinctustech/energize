@@ -1,6 +1,7 @@
 package xyz.hyperreal.energize
 
 import xyz.hyperreal.table.TextTable
+import java.time.{Instant, ZoneOffset}
 
 
 object SupportFunctions {
@@ -24,4 +25,6 @@ object SupportFunctions {
 	def show( env: Env, tab: String ) = Console.print( TextTable(env.statement.executeQuery(s"select * from $tab")) )
 
 	def Some( env: Env, v: Any ) = scala.Some( v )
+
+	def now( env: Env ) = Instant.now.atOffset( ZoneOffset.UTC )
 }
