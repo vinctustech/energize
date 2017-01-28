@@ -232,42 +232,42 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
-			|resource users
-			|  email       string  unique required
-			|  role        roles   required
+			|resource products
+			|  code       string  unique required
+			|  type       types   required
 			|
-			|resource roles
-			|  type        string  unique required
+			|resource types
+			|  name       string  unique required
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
-		env.process( "GET", "/users", null ) shouldBe
+		env.process( "GET", "/products", null ) shouldBe
 			(SC_OK, """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		env.process( "GET", "/roles", null ) shouldBe
+		env.process( "GET", "/types", null ) shouldBe
 			(SC_OK, """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		env.process( "GET", "/users/1", null ) shouldBe
+ 		env.process( "GET", "/products/1", null ) shouldBe
 			(SC_NOT_FOUND,
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		env.process( "GET", "/roles/1", null ) shouldBe
+ 		env.process( "GET", "/types/1", null ) shouldBe
 			(SC_NOT_FOUND,
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		env.process( "GET", "/user", null ) shouldBe //deliberatly misspelled
+ 		env.process( "GET", "/product", null ) shouldBe //deliberatly misspelled
 			(SC_NOT_FOUND,
 				"""{
 					|  "error": "route not found"
@@ -279,86 +279,86 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
-			|resource users
-			|  email       string  unique required
-			|  role        roles   required
-			|
-			|resource roles
-			|  type        string  unique required
-			""".trim.stripMargin
+				|resource products
+				|  code       string  unique required
+				|  type       types   required
+				|
+				|resource types
+				|  name       string  unique required
+				|			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
-		env.process( "POST", "/roles", """{"type": "normal"}""" ) shouldBe
+		env.process( "POST", "/types", """{"name": "normal"}""" ) shouldBe
 			(SC_CREATED, """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
 
-		env.process( "POST", "/users", """{"email": "john@doe.com", "role": "normal"}""" ) shouldBe
+		env.process( "POST", "/products", """{"code": "12345", "type": "normal"}""" ) shouldBe
 			(SC_CREATED,  """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		env.process( "GET", "/users", null ) shouldBe
+		env.process( "GET", "/products", null ) shouldBe
 			(SC_OK, """
 			|{
 			|  "data": [
 			|    {
 			|      "id": 1,
-			|      "email": "john@doe.com",
-			|      "role": {
+			|      "code": "12345",
+			|      "type": {
 			|        "id": 1,
-			|        "type": "normal"
+			|        "name": "normal"
 			|      }
 			|    }
 			|  ]
 			|}
 			""".trim.stripMargin )
-		env.process( "GET", "/users/1", null ) shouldBe
+		env.process( "GET", "/products/1", null ) shouldBe
 			(SC_OK, """
 			|{
 			|  "data": {
 			|    "id": 1,
-			|    "email": "john@doe.com",
-			|    "role": {
+			|    "code": "12345",
+			|    "type": {
 			|      "id": 1,
-			|      "type": "normal"
+			|      "name": "normal"
 			|    }
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/users/1", null ) shouldBe (SC_NO_CONTENT, null)
- 		env.process( "GET", "/users/1", null ) shouldBe
+		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/products/1", null ) shouldBe
 			(SC_NOT_FOUND,
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		env.process( "GET", "/roles", null ) shouldBe
+		env.process( "GET", "/types", null ) shouldBe
 			(SC_OK, """
 			|{
 			|  "data": [
 			|    {
 			|      "id": 1,
-			|      "type": "normal"
+			|      "name": "normal"
 			|    }
 			|  ]
 			|}
 			""".trim.stripMargin )
-		env.process( "GET", "/roles/1", null ) shouldBe
+		env.process( "GET", "/types/1", null ) shouldBe
 			(SC_OK, """
 			|{
 			|  "data": {
 			|    "id": 1,
-			|    "type": "normal"
+			|    "name": "normal"
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/roles/1", null ) shouldBe (SC_NO_CONTENT, null)
- 		env.process( "GET", "/roles/1", null ) shouldBe
+		env.process( "DELETE", "/types/1", null ) shouldBe (SC_NO_CONTENT, null)
+ 		env.process( "GET", "/types/1", null ) shouldBe
 			(SC_NOT_FOUND,
 				"""
 					|{

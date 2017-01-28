@@ -15,15 +15,19 @@ object Test {
 
 	def capture( code: String ) = {
 		val buf = new ByteArrayOutputStream
-		
-		Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), null, null, null) )
+		val (c, s, d) = Test.dbconnect
+
+		Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), c, s, d) )
+		c.close
 		buf.toString.trim
 	}
 	
 	def captureReturn( code: String ) = {
 		val buf = new ByteArrayOutputStream
-		val ret = Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), null, null, null) )
-		
+		val (c, s, d) = Test.dbconnect
+		val ret = Console.withOut( new PrintStream(buf) )( Energize.configure(io.Source.fromString(code), c, s, d) )
+
+		c.close
 		(ret, buf.toString.trim)
 	}
 }
