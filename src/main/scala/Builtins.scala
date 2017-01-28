@@ -48,14 +48,20 @@ object Builtins {
 		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFound( "<resource>", deleteLinksID(<resource>, id, field, tid), id )
 		""".stripMargin
 
-	//insertLinks(<resource>, id, field, json)
-
 	val special =
 		"""
+		|resource users
+		|  email string unique
+		|  createdTime timestamp
+		|  updatedTime timestamp
+		|  state integer
+		|  groups string array
+		|  password string secret
+		|
 		|route /meta
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|
-		|route <auth>
+		|route <base>
 		|  GET     /login                     login()
 		|  GET     /logout                    logout()
 		|  GET     /register                  register()

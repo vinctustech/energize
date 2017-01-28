@@ -41,22 +41,31 @@ object Energize {
 		configure( p.parseFromSource(src, p.source), connection, statement, database )
 	}
 
-	def configure( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
-		val json = DefaultJSONReader.fromString( src )
-		val ast =
-			SourceAST(
-				json.getList( "declarations" ) map {
-					case o: JSON =>
-						o getString "type" match {
-							case "resource" =>
-								TableDefinition( Protection(None), null, o getString "name", null, null, resource = true )
-						}
-				} )
+//	def configure( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
+//		val json = DefaultJSONReader.fromString( src )
+//		val ast =
+//			SourceAST(
+//				json.getList( "declarations" ) map {
+//					case o: JSON =>
+//						o getString "type" match {
+//							case "resource" =>
+//								TableDefinition( Protection(None), null, o getString "name", null, null, resource = true )
+//						}
+//				} )
+//
+//		configure( ast, connection, statement, database )
+//	}
 
-		configure( ast, connection, statement, database )
+	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Env =
+		configure( ast, connection, statement, db, false )
+
+	private def configure_( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
+		val p = new EnergizeParser
+
+		configure( p.parseFromSource( io.Source.fromString( src ), p.source ), connection, statement, database, true )
 	}
 
-	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Env = {
+	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, internal: Boolean ): Env = {
 		val tables = new HashMap[String, Table]
 		val routes = new ListBuffer[Route]
 		val defines = new HashMap[String, Any]
@@ -150,20 +159,18 @@ object Energize {
 						val mtm = cols.values exists (c => c.typ.isInstanceOf[ManyReferenceType])
 
 						if (bases isEmpty) {
-							routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<base>", "" ).
-								replaceAll( "<resource>", name ) ), null, null, db ).routes
+							routes ++= configure_( Builtins.routes.replaceAll( "<base>", "" ).replaceAll( "<resource>", name ), connection, statement, db ).routes
 
 							if (mtm)
-								routes ++= configure( io.Source.fromString( Builtins.mtmroutes.replaceAll( "<base>", "" ).
-									replaceAll( "<resource>", name ) ), null, null, db ).routes
+								routes ++= configure_( Builtins.mtmroutes.replaceAll( "<base>", "" ).replaceAll( "<resource>", name ), connection, statement, db ).routes
 						} else
 							for (URIPath( base ) <- bases) {
-								routes ++= configure( io.Source.fromString( Builtins.routes.replaceAll( "<resource>", name ).
-									replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null, db ).routes
+								routes ++= configure_( Builtins.routes.replaceAll( "<resource>", name ).
+									replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ), connection, statement, db ).routes
 
 								if (mtm)
-									routes ++= configure( io.Source.fromString( Builtins.mtmroutes.replaceAll( "<resource>", name ).
-										replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ) ), null, null, db ).routes
+									routes ++= configure_( Builtins.mtmroutes.replaceAll( "<resource>", name ).
+										replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ), connection, statement, db ).routes
 							}
 					}
 
@@ -216,8 +223,8 @@ object Energize {
 		
 		interpretExpressions( ast )
 
-//		if (src ne Builtins.special)
-//			routes ++= configure( Builtins.special, null, null ).routes
+		if (!internal)
+			routes ++= configure_( Builtins.special.replaceAll("<base>", AUTHORIZATION.getString("base")), connection, statement, db ).routes
 
 		env
 	}
