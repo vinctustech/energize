@@ -211,17 +211,6 @@ object Energize {
 //			println( db.create(sorted) )
 			statement.execute( db.create(sorted) )
 		}
-		
-		tables.values foreach {
-			case t@Table( name, cols, _, _, _, _ ) =>
-				val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name)
-				val columns = cnames1 mkString ","
-				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
-				
-				t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
-		}
-		
-		interpretExpressions( ast )
 
 		if (!internal) {
 			val e = configure_( Builtins.special.
@@ -230,8 +219,25 @@ object Energize {
 				replaceAll( "<password>", ADMIN.getString("password") ), connection, statement, db )
 
 			routes ++= e.routes
-			tables ++= e.tables
+
+			for ((k, v) <- e.tables)
+				tables get k match {
+					case Some( Table(name, columns, columnMap, _, mtm, _ )) =>
+						tables(k) = Table(name, v.columns ++ columns, v.columnMap ++ columnMap, v.resource, v.mtm || mtm, null )
+					case None => tables(k) = v
+				}
 		}
+
+		tables.values foreach {
+			case t@Table( name, cols, _, _, _, _ ) =>
+				val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name)
+				val columns = cnames1 mkString ","
+				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
+
+				t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
+		}
+
+		interpretExpressions( ast )
 
 		env
 	}
