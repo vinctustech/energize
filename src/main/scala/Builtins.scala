@@ -61,6 +61,7 @@ object Builtins {
 		|
 		|resource tokens						# should be a table not a resource
 		|  token string unique
+		|  created timestamp
 		|  user users
 		|
 		|route /meta
