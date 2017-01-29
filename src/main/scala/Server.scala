@@ -153,9 +153,29 @@ class Server( env: Env ) {
 									<body>
 										<h1>Index of {path}</h1>
 										<table>
-											<tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"/></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>
-											<tr><td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"/></td><td><a href={parent}>Parent Directory</a></td><td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>
-											{files map (f => <tr><td valign="top"><img src={f.getName} alt="[DIR]"/></td><td><a href={f.getName}>{f.getName}</a></td><td align="right">{MODIFIED.format( f.lastModified )}</td><td align="right">  - </td><td>&nbsp;</td></tr>)}
+											<tr>
+												<th valign="top"><img src="/icons/blank.gif" alt="[ICO]"/></th>
+												<th><a href="?C=N;O=D">Name</a></th>
+												<th><a href="?C=M;O=A">Last modified</a></th>
+												<th><a href="?C=S;O=A">Size</a></th>
+												<th><a href="?C=D;O=A">Description</a></th>
+											</tr>
+											<tr>
+												<td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"/></td>
+												<td><a href={parent}>Parent Directory</a></td><td>&nbsp;</td>
+												<td align="right">  - </td>
+												<td>&nbsp;</td>
+											</tr>
+											{
+												files map (f =>
+													<tr>
+														<td valign="top"><img src={f.getName} alt="[DIR]"/></td>
+														<td><a href={f.getName}>{f.getName}</a></td>
+														<td align="right">{MODIFIED.format( f.lastModified )}</td>
+														<td align="right">  - </td>
+														<td>&nbsp;</td>
+													</tr>)
+											}
 										</table>
 									</body>
 								</html>

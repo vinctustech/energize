@@ -204,4 +204,6 @@ object QueryFunctions {
 			None, None, None), None, None, None )
 
 	def findOne( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
+
+	def findOption( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).headOption
 }

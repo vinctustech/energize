@@ -25,6 +25,7 @@ object Builtins {
 		pairs( Native(CommandFunctions) ) ++
 		pairs( Native(ResultFunctions) ) ++
 		pairs( Native(SupportFunctions) ) ++
+		pairs( Native(AuthorizationFunctions) ) ++
 		constants toMap
 	
 	val routes =
@@ -58,12 +59,16 @@ object Builtins {
 		|  groups string array
 		|  password string secret
 		|
+		|resource tokens						# should be a table not a resource
+		|  token string unique
+		|  user users
+		|
 		|route /meta
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|
 		|route <base>
-		|  GET     /login                     login()
+		|  GET     /login                     login( json )
 		|  GET     /logout                    logout()
-		|  GET     /register                  register()
+		|  POST    /register                  Created( "registration", register(json) )
 		""".stripMargin
 }
