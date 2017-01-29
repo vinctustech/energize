@@ -58,8 +58,6 @@ object Builtins {
 		|  groups string array
 		|  password string secret
 		|
-		|insert( users, {email: "<email>", createdTime: now(), groups: ["admin"], password: "<password>"} )
-		|
 		|route /meta
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|

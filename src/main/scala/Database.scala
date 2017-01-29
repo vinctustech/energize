@@ -8,7 +8,7 @@ import java.time.{OffsetDateTime, Instant, ZoneOffset, ZoneId}
 object H2Database extends Database {
 	val caseSensitive = false
 	val publicSchema = "PUBLIC"
-	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss.SSS" )
 	val ZONEID = zoneId
 	val SYSTEM_ZONEID = ZoneId.systemDefault
 

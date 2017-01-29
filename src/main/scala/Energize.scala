@@ -1,11 +1,11 @@
 package xyz.hyperreal.energize
 
 import java.sql._
+import java.time.{Instant, ZoneOffset}
 
 import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
-
+import collection.JavaConverters._
 import xyz.hyperreal.json.{DefaultJSONReader, JSON}
-
 import org.h2.jdbcx.JdbcConnectionPool
 
 
@@ -21,7 +21,6 @@ object Energize {
 		dbconnect( name, driver, url, user, password )
 	}
 
-//DATABASE.getString("name")
 	def dbconnect( name: String, driver: String, url: String, user: String, password: String ) = {
     Class.forName( driver )
 		
@@ -193,25 +192,6 @@ object Energize {
 			
 		interpretDefinitions( ast )
 
-		tables.values foreach {
-			case Table( _, columns, _, _, _, _ ) =>
-				columns foreach {
-					case Column( _, t@SingleReferenceType(table, _), _, _, _, _ ) =>
-						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
-					case Column( _, t@ManyReferenceType(table, _), _, _, _, _ ) =>
-						t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
-					case _ =>
-				}
-		}
-
-		val sorted = TableSorter.sort( tables.values ) getOrElse sys.error( "resources cannot be topologically ordered" )
-
-		if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
-//			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
-//			println( db.create(sorted) )
-			statement.execute( db.create(sorted) )
-		}
-
 		if (!internal) {
 			val e = configure_( Builtins.special.
 				replaceAll( "<base>", AUTHORIZATION.getString("base") ).
@@ -226,15 +206,40 @@ object Energize {
 						tables(k) = Table(name, v.columns ++ columns, v.columnMap ++ columnMap, v.resource, v.mtm || mtm, null )
 					case None => tables(k) = v
 				}
-		}
 
-		tables.values foreach {
-			case t@Table( name, cols, _, _, _, _ ) =>
-				val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name)
-				val columns = cnames1 mkString ","
-				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
+			tables.values foreach {
+				case Table( _, columns, _, _, _, _ ) =>
+					columns foreach {
+						case Column( _, t@SingleReferenceType(table, _), _, _, _, _ ) =>
+							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
+						case Column( _, t@ManyReferenceType(table, _), _, _, _, _ ) =>
+							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
+						case _ =>
+					}
+			}
 
-				t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
+			val sorted = TableSorter.sort( tables.values ) getOrElse sys.error( "resources cannot be topologically ordered" )
+
+			if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
+				//			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
+				//			println( db.create(sorted) )
+				statement.execute( db.create(sorted) )
+			}
+
+			tables.values foreach {
+				case t@Table( name, cols, _, _, _, _ ) =>
+					val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name)
+					val columns = cnames1 mkString ","
+					val values = Seq.fill( cnames1.length )( "?" ) mkString ","
+
+					t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
+			}
+
+			val en = env
+			val admin = Map( ADMIN.entrySet.asScala.toList.map( e => (e.getKey, ADMIN.getString(e.getKey)) ) :+
+				"createdTime" -> SupportFunctions.now(en): _* )
+
+			CommandFunctions.insert( en, tables(db.desensitize("users")), admin )
 		}
 
 		interpretExpressions( ast )
@@ -242,3 +247,5 @@ object Energize {
 		env
 	}
 }
+
+//insert( users, {email: "<email>", createdTime: now(), groups: ["admin"], password: "<password>"} )
