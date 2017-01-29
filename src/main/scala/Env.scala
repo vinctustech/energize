@@ -130,6 +130,8 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					} catch {
 						case e: BadRequestException =>
 							ResultFunctions.BadRequest( this, e.getMessage )
+						case e: NotFoundException =>
+							ResultFunctions.NotFound( this, e.getMessage )
 						case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
 							ResultFunctions.Conflict( this, e.getMessage )
 					}
@@ -318,5 +320,7 @@ case class Table(name: String, columns: List[Column], columnMap: Map[String, Col
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )
 
 class Variable( var value: Any )
+
+class NotFoundException( error: String ) extends Exception( error )
 
 class BadRequestException( error: String ) extends Exception( error )

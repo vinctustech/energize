@@ -68,7 +68,7 @@ object Builtins {
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|
 		|route <base>
-		|  GET     /login                     login( json )
+		|  GET     /login                     Ok( "login", login(json) )
 		|  GET     /logout                    logout()
 		|  POST    /register                  Created( "registration", register(json) )
 		""".stripMargin

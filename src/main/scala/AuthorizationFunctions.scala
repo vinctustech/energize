@@ -30,6 +30,9 @@ object AuthorizationFunctions {
 		val required = users.names.toSet -- Set( "createdTime", "updatedTime", "state", "groups" )
 
 		if ((required -- json.keySet) nonEmpty)
+			throw new BadRequestException( "register: missing field(s): " + (required -- json.keySet).mkString(", ") )
+
+		if ((json.keySet -- required) nonEmpty)
 			throw new BadRequestException( "register: excess field(s): " + (required -- json.keySet).mkString(", ") )
 
 		val json1: OBJ =
@@ -41,7 +44,22 @@ object AuthorizationFunctions {
 		AuthorizationHelpersFunctions.performLogin( env, CommandFunctions.insert(env, users, json1) )
 	}
 
-//	def login( env: Env, json: OBJ ) = {
-//		AuthorizationHelpersFunctions.performLogin
-//	}
+	def login( env: Env, json: OBJ ) = {
+		val required = Set( "email", "password" )
+
+		if ((required -- json.keySet) nonEmpty)
+			throw new BadRequestException( "login: missing field(s): " + (required -- json.keySet).mkString(", ") )
+
+		if ((json.keySet -- required) nonEmpty)
+			throw new BadRequestException( "register: excess field(s): " + (required -- json.keySet).mkString(", ") )
+
+		val users = (env get "users" get).asInstanceOf[Table]
+		val email = json("email")
+
+		QueryFunctions.findOption( env, users, "email", email ) match {
+			case None => throw new NotFoundException( s"unknown user: $email" )
+			case Some( u ) =>
+				AuthorizationHelpersFunctions.performLogin( env, u("id").asInstanceOf[Long] )
+		}
+	}
 }
