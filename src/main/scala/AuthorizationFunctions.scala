@@ -1,9 +1,13 @@
 package xyz.hyperreal.energize
 
+import java.util.Base64
+
 import org.mindrot.jbcrypt.BCrypt
 
 
-object AuthorizationHelpersFunctions {
+object AuthorizationFunctionHelpers {
+	val CREDENTIALS = "(.*):(.*)"r
+
 	def performLogin( env: Env, user: Long ) = {
 		val tokens = (env get "tokens" get).asInstanceOf[Table]
 		val token = {
@@ -38,7 +42,7 @@ object AuthorizationFunctions {
 				case f => f
 			}) + ("groups" -> List("user"))
 
-		AuthorizationHelpersFunctions.performLogin( env, CommandFunctions.insert(env, users, json1) )
+		AuthorizationFunctionHelpers.performLogin( env, CommandFunctions.insert(env, users, json1) )
 	}
 
 	def login( env: Env, json: OBJ ) = {
@@ -59,7 +63,7 @@ object AuthorizationFunctions {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
-					AuthorizationHelpersFunctions.performLogin( env, u("id").asInstanceOf[Long] )
+					AuthorizationFunctionHelpers.performLogin( env, u("id").asInstanceOf[Long] )
 				else
 					denied
 		}
@@ -87,13 +91,18 @@ object AuthorizationFunctions {
 	def authorized( env: Env ) {
 		val basic = env.variables get "$Basic"
 
-		println( basic)
 		def barred = throw new UnauthorizedException( "sign-in required" )
 
 		if (basic isEmpty)
 			barred
 
-//		if (QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", token.get ) isEmpty)
-//			barred
+		val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode(basic.get.asInstanceOf[String]) )
+
+		QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email ) match {
+			case None => barred
+			case Some( u ) =>
+				if (!BCrypt.checkpw( password, u("password").asInstanceOf[String] ))
+					barred
+		}
 	}
 }
