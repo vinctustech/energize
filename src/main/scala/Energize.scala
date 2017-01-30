@@ -236,8 +236,13 @@ object Energize {
 			}
 
 			val en = env
-			val admin = Map( ADMIN.entrySet.asScala.toList.map( e => (e.getKey, ADMIN.getString(e.getKey)) ) :+
-				"createdTime" -> SupportFunctions.now(en): _* )
+			val admin =
+				Map( ADMIN.entrySet.asScala.toList.map( e =>
+					(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
+						case (k, o: java.util.List[_]) => (k, o.asScala)
+						case (k, o) => (k, o)
+					}
+				) :+ "createdTime" -> SupportFunctions.now(en): _* )
 
 			CommandFunctions.insert( en, tables(db.desensitize("users")), admin )
 		}
@@ -247,5 +252,3 @@ object Energize {
 		env
 	}
 }
-
-//insert( users, {email: "<email>", createdTime: now(), groups: ["admin"], password: "<password>"} )
