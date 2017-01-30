@@ -32,9 +32,6 @@ object AuthorizationFunctions {
 		if ((required -- json.keySet) nonEmpty)
 			throw new BadRequestException( "register: missing field(s): " + (required -- json.keySet).mkString(", ") )
 
-		if ((json.keySet -- required) nonEmpty)
-			throw new BadRequestException( "register: excess field(s): " + (required -- json.keySet).mkString(", ") )
-
 		val json1: OBJ =
 			(json map {
 				case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
@@ -56,10 +53,15 @@ object AuthorizationFunctions {
 		val users = (env get "users" get).asInstanceOf[Table]
 		val email = json("email")
 
+		def forbidden = throw new ForbiddenException( "email or password doesn't match" )
+
 		QueryFunctions.findOption( env, users, "email", email ) match {
-			case None => throw new NotFoundException( s"unknown user: $email" )
+			case None => forbidden
 			case Some( u ) =>
-				AuthorizationHelpersFunctions.performLogin( env, u("id").asInstanceOf[Long] )
+				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
+					AuthorizationHelpersFunctions.performLogin( env, u("id").asInstanceOf[Long] )
+				else
+					forbidden
 		}
 	}
 }

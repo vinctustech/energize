@@ -7,6 +7,7 @@ import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
 import collection.JavaConverters._
 import xyz.hyperreal.json.{DefaultJSONReader, JSON}
 import org.h2.jdbcx.JdbcConnectionPool
+import org.mindrot.jbcrypt.BCrypt
 
 
 object Energize {
@@ -240,6 +241,7 @@ object Energize {
 				Map( ADMIN.entrySet.asScala.toList.map( e =>
 					(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
 						case (k, o: java.util.List[_]) => (k, o.asScala)
+						case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
 						case (k, o) => (k, o)
 					}
 				) :+ "createdTime" -> SupportFunctions.now(en): _* )

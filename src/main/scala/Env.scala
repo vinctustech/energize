@@ -324,3 +324,5 @@ class Variable( var value: Any )
 class NotFoundException( error: String ) extends Exception( error )
 
 class BadRequestException( error: String ) extends Exception( error )
+
+class ForbiddenException( error: String ) extends Exception( error )
