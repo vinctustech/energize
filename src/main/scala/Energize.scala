@@ -1,12 +1,10 @@
 package xyz.hyperreal.energize
 
 import java.sql._
-import java.time.{Instant, ZoneOffset}
 
-import collection.mutable.{HashMap, LinkedHashMap, ListBuffer}
+import collection.mutable.{HashMap, LinkedHashMap, ArrayBuffer}
 import collection.JavaConverters._
-import xyz.hyperreal.json.{DefaultJSONReader, JSON}
-import org.h2.jdbcx.JdbcConnectionPool
+
 import org.mindrot.jbcrypt.BCrypt
 
 
@@ -67,7 +65,7 @@ object Energize {
 
 	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, internal: Boolean ): Env = {
 		val tables = new HashMap[String, Table]
-		val routes = new ListBuffer[Route]
+		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
 		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
@@ -173,12 +171,15 @@ object Energize {
 										replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ), connection, statement, db ).routes
 							}
 					}
-
 				case RoutesDefinition( URIPath(base), mappings ) =>
+					val block = new ArrayBuffer[Route]
+
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
-							routes += Route( method, base ++ path, action )
+							block += Route( method, base ++ path, action )
 					}
+
+					block ++=: routes
 				case _ =>
 			}
 		

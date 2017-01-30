@@ -201,7 +201,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			"""
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 			|
-			|route
+			|routes
 			|	GET   /f/a:integer/b:integer Ok( null, f(a, b) )
 			|	GET   /plus/a:/b:            Ok( null, a + b )
 			|	GET   /combine               Ok( null, {"a": 1} + json )

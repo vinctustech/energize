@@ -55,7 +55,13 @@ object CommandFunctions {
 	def command( env: Env, sql: String ) = env.statement.executeUpdate( sql )
 	
 	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
-	
+
+	def deleteValue( env: Env, resource: Table, field: String, value: Any ) =
+		value match {
+			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE $field = '$s';" )
+			case _ => command( env, s"DELETE FROM ${resource.name} WHERE $field = $value;" )
+		}
+
 	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
 		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
 			

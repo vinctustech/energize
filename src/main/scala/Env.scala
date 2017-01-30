@@ -8,7 +8,6 @@ import util.matching.Regex
 import collection.mutable.HashMap
 
 import org.apache.http.client.utils.URLEncodedUtils
-import org.apache.http.HttpStatus._
 
 import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
@@ -30,7 +29,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			case res => res
 		}
 	
-	def lookup( name: String ) = get( name ) getOrElse (sys.error( "variable not found: " + name ))
+	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
 	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String) = {
 		val uri = new URI( requri )
@@ -128,6 +127,10 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					try {
 						(this add reqvars).deref( expr ).asInstanceOf[(Int, OBJ)]
 					} catch {
+						case e: UnauthorizedException =>
+							ResultFunctions.Unauthorized( this, e.getMessage )
+						case e: ForbiddenException =>
+							ResultFunctions.Forbidden( this, e.getMessage )
 						case e: BadRequestException =>
 							ResultFunctions.BadRequest( this, e.getMessage )
 						case e: NotFoundException =>
@@ -136,7 +139,11 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 							ResultFunctions.Conflict( this, e.getMessage )
 					}
 
-				(sc, if (obj eq null) null else DefaultJSONWriter.toString( obj ))
+				obj match {
+					case null => (sc, null)
+					case o: OBJ => (sc, DefaultJSONWriter.toString( o ))
+					case s: String => (sc, s)
+				}
 		}
 	}
 
@@ -326,3 +333,5 @@ class NotFoundException( error: String ) extends Exception( error )
 class BadRequestException( error: String ) extends Exception( error )
 
 class ForbiddenException( error: String ) extends Exception( error )
+
+class UnauthorizedException( error: String ) extends Exception( error )

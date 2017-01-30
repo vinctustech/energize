@@ -63,7 +63,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val",
-				"table", "resource", "unique", "indexed", "required", "optional", "secret", "route",
+				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
 				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"realm", "protected"
@@ -172,7 +172,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
-		"route" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
+		"routes" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
 			case Some( base ) ~ mappings => 
 				List( RoutesDefinition( base, mappings ) )
 			case None ~ mappings =>
@@ -196,7 +196,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		ident ~ (":" ~> opt(segmentType)) ^^ {
 			case n ~ Some( t ) => ParameterURISegment( n, t )
 			case n ~ None => ParameterURISegment( n, "string" )} |
-		ident ^^ NameURISegment
+		nameSegment
 	
 	lazy val segmentType: PackratParser[String] =
 		"string" |

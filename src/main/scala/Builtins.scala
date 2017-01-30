@@ -30,7 +30,7 @@ object Builtins {
 	
 	val routes =
 		"""
-		|route <base>/<resource>
+		|routes <base>/<resource>
 		|  GET     /id:long                   OkSingleOrNotFound( "<resource>", findID(<resource>, id, ?fields, None, None, None), id )
 		|  GET     /                          Ok( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /                          Created( "<resource>", insert(<resource>, json) )
@@ -41,7 +41,7 @@ object Builtins {
 
 	val mtmroutes =
 		"""
-		|route <base>/<resource>
+		|routes <base>/<resource>
 		|  GET     /id:long/field:            OkSingleOrNotFound( "<resource>", findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
 		|  POST    /id:long/field:            Created( "<resource>", append(<resource>, id, field, json) )
 		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
@@ -64,12 +64,12 @@ object Builtins {
 		|  created timestamp
 		|  user users
 		|
-		|route /meta
+		|routes /meta
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|
-		|route <base>
+		|routes <base>
 		|  GET     /login                     Ok( "login", login(json) )
-		|  GET     /logout                    logout()
+		|  GET     /logout                    OkAtLeastOneOrNotFound( "logout", logout(?token) )
 		|  POST    /register                  Created( "registration", register(json) )
 		""".stripMargin
 }

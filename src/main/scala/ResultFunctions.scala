@@ -4,14 +4,18 @@ import org.apache.http.HttpStatus._
 
 
 object ResultFunctions {
-	def Ok( env: Env, typ: String, data: Any ) = (SC_OK, Map( "data" -> data ))
-	def Created( env: Env, typ: String, data: Any ) = (SC_CREATED, Map( "data" -> data ))
+	def Data( env: Env, typ: String, code: Int, data: Any ) = (code, Map( "data" -> data ))
+	def Ok( env: Env, typ: String, data: Any ) = Data( env, typ, SC_OK, data )
+	def Created( env: Env, typ: String, data: Any ) = Data( env, typ, SC_CREATED, data )
 	def NoContent( env: Env ) = (SC_NO_CONTENT, null)
 
-	def BadRequest( env: Env, error: String ) = (SC_BAD_REQUEST, Map( "error" -> error ))
-	def NotFound( env: Env, error: String ) = (SC_NOT_FOUND, Map( "error" -> error ))
-	def NotAcceptable( env: Env, error: String ) = (SC_NOT_ACCEPTABLE, Map( "error" -> error ))
-	def Conflict( env: Env, error: String ) = (SC_CONFLICT, Map( "error" -> error ))
+	def Error( env: Env, code: Int, error: String ) = (code, Map( "error" -> error ))
+	def BadRequest( env: Env, error: String ) = Error( env, SC_BAD_REQUEST, error )
+	def NotFound( env: Env, error: String ) = Error( env, SC_NOT_FOUND, error )
+	def NotAcceptable( env: Env, error: String ) = Error( env, SC_NOT_ACCEPTABLE, error )
+	def Conflict( env: Env, error: String ) = Error( env, SC_CONFLICT, error )
+	def Forbidden( env: Env, error: String ) = Error( env, SC_FORBIDDEN, error )
+	def Unauthorized( env: Env, realm: String ) = (SC_UNAUTHORIZED, realm)
 
 	def OkSingleOrNotFound( env: Env, typ: String, list: List[Any], id: Long ) =
 		list match {

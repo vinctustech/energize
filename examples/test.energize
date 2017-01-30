@@ -1,1 +1,5 @@
-print( now() )
+resource r
+	f integer
+
+routes
+	GET /r authorized(); print( "asdf" )
