@@ -33,7 +33,7 @@ object Energize {
 		(connection, connection.createStatement, Database( name ))
 	}
 
-	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database ): Env = {
+	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val p = new EnergizeParser
 
 		configure( p.parseFromSource(src, p.source), connection, statement, database )
@@ -54,21 +54,21 @@ object Energize {
 //		configure( ast, connection, statement, database )
 //	}
 
-	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Env =
+	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Environment =
 		configure( ast, connection, statement, db, false )
 
-	private def configure_( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
+	private def configure_( src: String, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val p = new EnergizeParser
 
 		configure( p.parseFromSource( io.Source.fromString( src ), p.source ), connection, statement, database, true )
 	}
 
-	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, internal: Boolean ): Env = {
+	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, internal: Boolean ): Environment = {
 		val tables = new HashMap[String, Table]
 		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
-		def env = Env( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
+		def env = Environment( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
@@ -245,7 +245,7 @@ object Energize {
 						case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
 						case (k, o) => (k, o)
 					}
-				) :+ "createdTime" -> SupportFunctions.now(en): _* )
+				) :+ "createdTime" -> UtilityFunctions.now(en): _* )
 
 			CommandFunctions.insert( en, tables(db.desensitize("users")), admin )
 		}

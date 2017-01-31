@@ -27,7 +27,7 @@ object REPLMain extends App {
 	""".trim.stripMargin.lines foreach println
 	println
 
-	var env: Env = _
+	var env: Environment = _
 	var connection: Connection = _
 	var statement: Statement = _
 	var db: Database = _
@@ -48,7 +48,7 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		env = Env( Map(), Nil, Builtins.map, connection, statement, db )
+		env = Environment( Map(), Nil, Builtins.map, connection, statement, db )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	}

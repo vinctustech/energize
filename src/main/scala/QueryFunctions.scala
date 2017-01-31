@@ -89,7 +89,7 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Env, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String] ): List[OBJ] = {
+	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String] ): List[OBJ] = {
 		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[OBJ]
 
@@ -149,11 +149,11 @@ object QueryFunctions {
 		list.toList
 	}
 	
-	def size( env: Env, resource: Table ) =
+	def size( env: Environment, resource: Table ) =
 		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}", None, None, None).head.values.head.asInstanceOf[Long] )
 
-	def list( env: Env, resource: Table,
-		fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
+	def list( env: Environment, resource: Table,
+						fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
 		val where =
 			if (filter.isEmpty)
 				""
@@ -191,19 +191,19 @@ object QueryFunctions {
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None )
 	}
 	
-	def findID( env: Env, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
+	def findID( env: Environment, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id",
 			page, start, limit), None, None, None )
 
-	def findIDMany( env: Env, resource: Table, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
+	def findIDMany( env: Environment, resource: Table, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.id = $id",
 			None, None, None), page, start, limit )
 
-	def findValue( env: Env, resource: Table, field: String, value: Any ) =
+	def findValue( env: Environment, resource: Table, field: String, value: Any ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.$field = '$value'",
 			None, None, None), None, None, None )
 
-	def findOne( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
+	def findOne( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
 
-	def findOption( env: Env, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).headOption
+	def findOption( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).headOption
 }

@@ -15,7 +15,7 @@ import org.apache.http.protocol.HttpContext
 import org.apache.http.HttpStatus._
 
 
-class Server( env: Env ) {
+class Server( env: Environment ) {
 	val origin = SERVER.getString( "origin" )
 	val config = IOReactorConfig.custom
 		.setSoTimeout( SERVER.getInt("timeout") )

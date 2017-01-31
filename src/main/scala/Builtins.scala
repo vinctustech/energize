@@ -24,7 +24,7 @@ object Builtins {
 		pairs( Native(QueryFunctions) ) ++
 		pairs( Native(CommandFunctions) ) ++
 		pairs( Native(ResultFunctions) ) ++
-		pairs( Native(SupportFunctions) ) ++
+		pairs( Native(UtilityFunctions) ) ++
 		pairs( Native(AuthorizationFunctions) ) ++
 		constants toMap
 	

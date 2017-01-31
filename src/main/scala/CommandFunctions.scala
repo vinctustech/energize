@@ -6,7 +6,7 @@ import collection.mutable.ListBuffer
 
 
 object CommandFunctionHelpers {
-	def insertCommand( env: Env, resource: Table, json: OBJ ) = {
+	def insertCommand( env: Environment, resource: Table, json: OBJ ) = {
 		val com = new StringBuilder( "INSERT INTO " )
 		val json1 = escapeQuotes( json )
 
@@ -52,17 +52,17 @@ object CommandFunctionHelpers {
 }
 
 object CommandFunctions {
-	def command( env: Env, sql: String ) = env.statement.executeUpdate( sql )
+	def command( env: Environment, sql: String ) = env.statement.executeUpdate( sql )
 	
-	def delete( env: Env, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
+	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
 
-	def deleteValue( env: Env, resource: Table, field: String, value: Any ) =
+	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
 			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE $field = '$s';" )
 			case _ => command( env, s"DELETE FROM ${resource.name} WHERE $field = $value;" )
 		}
 
-	def batchInsert( env: Env, resource: Table, rows: List[List[AnyRef]] ) {
+	def batchInsert( env: Environment, resource: Table, rows: List[List[AnyRef]] ) {
 		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
 			
 		for (r <- rows) {
@@ -82,7 +82,7 @@ object CommandFunctions {
 		resource.preparedInsert.clearParameters
 	}
 	
-	def insert( env: Env, resource: Table, json: OBJ ) = {
+	def insert( env: Environment, resource: Table, json: OBJ ) = {
 // 		if (json.keySet == resource.names.toSet) {
 // 			
 // 			for ((n, i) <- resource.names zipWithIndex)
@@ -145,7 +145,7 @@ object CommandFunctions {
 		id
 	}
 	
-	def update( env: Env, resource: Table, id: Long, json: OBJ, all: Boolean ) =
+	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) =
 		if (all && json.keySet != (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet))
 			if ((resource.columns.toSet -- json.keySet) nonEmpty)
 				throw new BadRequestException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
@@ -181,7 +181,7 @@ object CommandFunctions {
 			env.statement.executeUpdate( com.toString )
 		}
 
-	def insertLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
+	def insertLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
 			case None => throw new BadRequestException( s"insertLinks: field not found: $field" )
 			case Some( vs ) =>
@@ -193,7 +193,7 @@ object CommandFunctions {
 				}
 		}
 
-	def append( env: Env, resource: Table, id: Long, field: String, json: OBJ ) = {
+	def append( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) = {
 		resource.columnMap.get( env.db.desensitize(field) ) match {
 			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
 				val tid = insert( env, ref, json )
@@ -205,7 +205,7 @@ object CommandFunctions {
 		}
 	}
 
-	def appendIDs( env: Env, src: Table, sid: Long, field: String, tid: Long ) =
+	def appendIDs( env: Environment, src: Table, sid: Long, field: String, tid: Long ) =
 		src.columnMap.get( env.db.desensitize(field) ) match {
 			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
 				associateIDs( env, src, sid, ref, tid )
@@ -213,7 +213,7 @@ object CommandFunctions {
 			case None => throw new BadRequestException( s"appendIDs: field not found: $field" )
 		}
 
-	def deleteLinks( env: Env, resource: Table, id: Long, field: String, json: OBJ ) =
+	def deleteLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
 			case None => throw new BadRequestException( s"append: field not found: $field" )
 			case Some( vs ) =>
@@ -225,31 +225,31 @@ object CommandFunctions {
 				}
 		}
 
-	def deleteLinksID( env: Env, resource: Table, id: Long, field: String, tid: Long ) =
+	def deleteLinksID( env: Environment, resource: Table, id: Long, field: String, tid: Long ) =
 		resource.columnMap( env.db.desensitize(field) ).typ match {
 			case ManyReferenceType( _, ref ) => deleteLinkIDs( env, resource, id, ref, tid )
 			case _ => throw new BadRequestException( s"append: field not many-to-many: $field" )
 		}
 
-	def deleteLinkID( env: Env, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
+	def deleteLinkID( env: Environment, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
 		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
 
 		deleteLinkIDs( env, src, id, dst, did )
 	}
 
-	def deleteLinkIDs( env: Env, src: Table, sid: Long, dst: Table, did: Long ) =
+	def deleteLinkIDs( env: Environment, src: Table, sid: Long, dst: Table, did: Long ) =
 		command( env, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
 
-	def associateID( env: Env, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
+	def associateID( env: Environment, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
 		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
 
 		associateIDs( env, src, id, dst, did )
 	}
 
-	def associateIDs( env: Env, src: Table, sid: Long, dst: Table, did: Long ) =
+	def associateIDs( env: Environment, src: Table, sid: Long, dst: Table, did: Long ) =
 		command( env, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($sid, $did)" )
 
-	def associate( env: Env, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) = {
+	def associate( env: Environment, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) = {
 		val sobj = QueryFunctions.findOne( env, src, sfield, svalue )( "id" ).asInstanceOf[Long]
 
 		associateID( env, src, sobj, dst, dfield, dvalue )

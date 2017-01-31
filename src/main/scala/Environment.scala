@@ -13,15 +13,15 @@ import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
-case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement, db: Database ) {
+case class Environment( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement, db: Database ) {
 
 	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 	
-	def add( kv: (String, Any) ) = Env( tables, routes, variables + kv, connection, statement, db )
+	def add( kv: (String, Any) ) = Environment( tables, routes, variables + kv, connection, statement, db )
 	
-	def add( m: Map[String, Any] ) = Env( tables, routes, variables ++ m, connection, statement, db )
+	def add( m: collection.Map[String, Any] ) = Environment( tables, routes, variables ++ m, connection, statement, db )
 	
 	def get( name: String ) =
 		variables get name match {
@@ -32,9 +32,15 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
 	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String) = {
+		def notfound = {
+			val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
+
+			(sc, DefaultJSONWriter.toString( obj ))
+		}
+
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
-		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)) toMap
+		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue))
 		
 //			val map1 = new HashMap[String, Set[String]] with MultiMap[String, String]
 		
@@ -54,18 +60,17 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 		
 //		val reqfrag = uri.getFragment
 		
-		def find( method: String, path: String, routes: List[Route] ): Option[(Map[String, Any], ExpressionAST)] = {
 			if (routes eq null)
 				sys.error( "no routes loaded" )
 				
 			val segments = {
-				val trimed = path.trim
+				val trimed = reqpath.trim
 				val l = trimed split "/" toList
 				
 				if (l == List( "" ))
-					return None
+					return notfound
 				else if (l.nonEmpty && l.head != "")
-					return None
+					return notfound
 				else
 					if (l == List())
 						l
@@ -85,7 +90,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 			for (Route( rmethod, uri, action) <- routes) {
 				urivars.clear
 				
-				if (len == uri.length && method.toUpperCase == rmethod && uri.zip( segments ).forall {
+				if (len == uri.length && reqmethod.toUpperCase == rmethod && uri.zip( segments ).forall {
 					case (NameURISegment( route ), segment) => route == segment
 					case (ParameterURISegment( name, "string" ), segment) =>
 						urivars(name) = segment
@@ -105,46 +110,38 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 							case _ => false
 						}
 					case _ => false
-				})
-					return Some( (urivars.toMap, action) )
-			}
-			
-			None
-		}
-		
-		find( reqmethod, reqpath, routes ) match {
-			case None =>
-				val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
+				}) {
+					val reqvars =
+						(if (reqbody eq null)
+							urivars
+						else
+							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
+						try {
+							val (sc, obj) =
+							(this add reqvars).deref( action ).asInstanceOf[(Int, Any)]
 
-				(sc, DefaultJSONWriter.toString( obj ))
-			case Some( (urivars, expr) ) =>
-				val reqvars =
-					(if (reqbody eq null)
-						urivars
-					else
-						urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
-				val (sc, obj) =
-					try {
-						(this add reqvars).deref( expr ).asInstanceOf[(Int, OBJ)]
-					} catch {
-						case e: UnauthorizedException =>
-							ResultFunctions.Unauthorized( this, e.getMessage )
-						case e: ForbiddenException =>
-							ResultFunctions.Forbidden( this, e.getMessage )
-						case e: BadRequestException =>
-							ResultFunctions.BadRequest( this, e.getMessage )
-						case e: NotFoundException =>
-							ResultFunctions.NotFound( this, e.getMessage )
-						case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
-							ResultFunctions.Conflict( this, e.getMessage )
-					}
-
-				obj match {
-					case null => (sc, null)
-					case o: OBJ => (sc, DefaultJSONWriter.toString( o ))
-					case s: String => (sc, s)
+							return obj match {
+								case null => (sc, null)
+								case o: Map[_, _] => (sc, DefaultJSONWriter.toString( o.asInstanceOf[OBJ] ))
+								case s: String => (sc, s)
+							}
+						} catch {
+							case e: UnauthorizedException =>
+								ResultFunctions.Unauthorized( this, e.getMessage )
+							case e: ForbiddenException =>
+								ResultFunctions.Forbidden( this, e.getMessage )
+							case e: BadRequestException =>
+								ResultFunctions.BadRequest( this, e.getMessage )
+							case e: NotFoundException =>
+								ResultFunctions.NotFound( this, e.getMessage )
+							case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
+								ResultFunctions.Conflict( this, e.getMessage )
+							case _: RejectRouteThrowable =>
+						}
 				}
-		}
+			}
+
+			notfound
 	}
 
 	def evaluate( expr: String ): Any = {
@@ -246,7 +243,7 @@ case class Env( tables: Map[String, Table], routes: List[Route], variables: Map[
 					
 				condition( cond )
 			case ForExpression( gen, body, e ) =>
-				def forloop( env: Env, gs: List[GeneratorAST] ) {
+				def forloop( env: Environment, gs: List[GeneratorAST] ) {
 					gs match {
 						case List( g ) =>
 							val GeneratorAST( pattern, traversable, filter ) = g
@@ -335,3 +332,5 @@ class BadRequestException( error: String ) extends Exception( error )
 class ForbiddenException( error: String ) extends Exception( error )
 
 class UnauthorizedException( error: String ) extends Exception( error )
+
+class RejectRouteThrowable extends Throwable

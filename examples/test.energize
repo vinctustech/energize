@@ -2,4 +2,4 @@ resource r
 	f integer
 
 routes
-	GET  /r  authorized(); Ok( "r", list(r, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+	GET  /r  authorize( "user" ); reject()
