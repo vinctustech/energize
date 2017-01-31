@@ -40,7 +40,7 @@ libraryDependencies ++= Seq(
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
 	"org.mindrot" % "jbcrypt" % "0.3m"
-//	"de.svenkubiak" % "jBCrypt" % "0.4.1"
+//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
 )
 
 libraryDependencies ++= Seq(

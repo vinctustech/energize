@@ -36,6 +36,12 @@ object AuthorizationFunctions {
 		if ((required -- json.keySet) nonEmpty)
 			throw new BadRequestException( "register: missing field(s): " + (required -- json.keySet).mkString(", ") )
 
+		(json("email"), json("password")) match {
+			case (null|"", _) => throw new BadRequestException( "email may not be null or empty" )
+			case (_, null|"") => throw new BadRequestException( "password may not be null or empty" )
+			case _ =>
+		}
+
 		val json1: OBJ =
 			(json map {
 				case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
