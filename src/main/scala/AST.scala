@@ -34,6 +34,7 @@ case object DatetimeType extends PrimitiveColumnType
 case object TimeType extends PrimitiveColumnType
 case object TimestampType extends PrimitiveColumnType
 case object TimestamptzType extends PrimitiveColumnType
+case object BinaryType extends PrimitiveColumnType
 case class ArrayType( parm: PrimitiveColumnType, dpos: Position, dim: String, var dimint: Int ) extends ColumnType
 case class SingleReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 case class ManyReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType

@@ -116,28 +116,31 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 							urivars
 						else
 							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
-						try {
-							val (sc, obj) =
-							(this add reqvars).deref( action ).asInstanceOf[(Int, Any)]
-
-							return obj match {
-								case null => (sc, null)
-								case o: Map[_, _] => (sc, DefaultJSONWriter.toString( o.asInstanceOf[OBJ] ))
-								case s: String => (sc, s)
+					try {
+						val (sc, obj) =
+							try {
+								(this add reqvars).deref( action ).asInstanceOf[(Int, OBJ)]
+							} catch {
+								case e: UnauthorizedException =>
+									ResultFunctions.Unauthorized( this, e.getMessage )
+								case e: ForbiddenException =>
+									ResultFunctions.Forbidden( this, e.getMessage )
+								case e: BadRequestException =>
+									ResultFunctions.BadRequest( this, e.getMessage )
+								case e: NotFoundException =>
+									ResultFunctions.NotFound( this, e.getMessage )
+								case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
+									ResultFunctions.Conflict( this, e.getMessage )
 							}
-						} catch {
-							case e: UnauthorizedException =>
-								ResultFunctions.Unauthorized( this, e.getMessage )
-							case e: ForbiddenException =>
-								ResultFunctions.Forbidden( this, e.getMessage )
-							case e: BadRequestException =>
-								ResultFunctions.BadRequest( this, e.getMessage )
-							case e: NotFoundException =>
-								ResultFunctions.NotFound( this, e.getMessage )
-							case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
-								ResultFunctions.Conflict( this, e.getMessage )
-							case _: RejectRouteThrowable =>
-						}
+
+						return (sc, obj match {
+								case null => null
+								case o: Map[_, _] => DefaultJSONWriter.toString( o.asInstanceOf[OBJ] )
+								case s: String => s
+							})
+					} catch {
+						case _: RejectRouteThrowable =>
+					}
 				}
 			}
 

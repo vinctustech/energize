@@ -5,7 +5,8 @@
 */
 
 resource r
-	f integer
+	a integer
+	b binary
 
 routes
 	GET  /r  authorize( "user" ); reject()  # add protection to "GET /r" route associated to resource "r"

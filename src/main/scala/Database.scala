@@ -56,6 +56,7 @@ object H2Database extends Database {
 								case TimeType => "TIME"
 								case TimestampType => "TIMESTAMP"
 								case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
+								case BinaryType => "BINARY"
 								case SingleReferenceType( _, _ ) => "BIGINT"
 								case ArrayType( _, _, _, _ ) => "ARRAY"
 							})
