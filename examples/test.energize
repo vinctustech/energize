@@ -6,7 +6,7 @@
 
 resource r
 	a integer
-	b binary
+	b decimal( 10.1, 2 )
 
 routes
 	GET  /r  authorize( "user" ); reject()  # add protection to "GET /r" route associated to resource "r"

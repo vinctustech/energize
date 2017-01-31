@@ -57,6 +57,7 @@ object H2Database extends Database {
 								case TimestampType => "TIMESTAMP"
 								case TimestamptzType => "TIMESTAMP WITH TIMEZONE"
 								case BinaryType => "BINARY"
+								case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
 								case SingleReferenceType( _, _ ) => "BIGINT"
 								case ArrayType( _, _, _, _ ) => "ARRAY"
 							})
