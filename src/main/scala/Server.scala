@@ -82,7 +82,7 @@ class Server( env: Environment ) {
 
 			if (method1 == "OPTIONS") {
 				response.setHeader( "Access-Control-Allow-Origin", origin )
-				response.setHeader( "Access-Control-Allow-Headers", "Accept,Content-Type,Origin")
+				response.setHeader( "Access-Control-Allow-Headers", "Accept,Content-Type,Origin,Authorization")
 				response.setHeader( "Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS")
 				response.setStatusCode( SC_OK )
 				response.setEntity(
