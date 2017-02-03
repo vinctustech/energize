@@ -46,7 +46,7 @@ object AuthorizationFunctions {
 			(json map {
 				case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
 				case f => f
-			}) + ("groups" -> List("user"))
+			}) + ("groups" -> List("user")) + ("createdTime" -> UtilityFunctions.now( env ))
 
 		AuthorizationFunctionHelpers.performLogin( env, CommandFunctions.insert(env, users, json1) )
 	}
