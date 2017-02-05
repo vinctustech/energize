@@ -28,7 +28,5 @@ object UtilityFunctions {
 
 	def now( env: Environment ) = Instant.now.atOffset( ZoneOffset.UTC )
 
-	def reject( env: Environment ): Unit = {
-		throw new RejectRouteThrowable
-	}
+	def reject( env: Environment ) = throw new RejectRouteThrowable
 }

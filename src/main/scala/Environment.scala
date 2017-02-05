@@ -22,7 +22,9 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 	def add( kv: (String, Any) ) = Environment( tables, routes, variables + kv, connection, statement, db )
 	
 	def add( m: collection.Map[String, Any] ) = Environment( tables, routes, variables ++ m, connection, statement, db )
-	
+
+	def remove( n: String ) = Environment( tables, routes, variables - n, connection, statement, db )
+
 	def get( name: String ) =
 		variables get name match {
 			case None => tables get db.desensitize( name )
@@ -31,7 +33,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 	
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
-	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String) = {
+	def process( reqmethod: String, requri: String, reqbody: String ): (Int, AnyRef) = {
 		def notfound = {
 			val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
 
@@ -122,7 +124,10 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 								(this add reqvars).deref( action ).asInstanceOf[(Int, OBJ)]
 							} catch {
 								case e: UnauthorizedException =>
-									ResultFunctions.Unauthorized( this, e.getMessage )
+									ResultFunctions.Unauthorized( this, "realm" -> e.getMessage )
+								case e: ExpiredException =>
+									ResultFunctions.Unauthorized( this, "realm" -> e.getMessage,
+										"error" -> "invalid_token", "error_description" -> "The access token expired")
 								case e: ForbiddenException =>
 									ResultFunctions.Forbidden( this, e.getMessage )
 								case e: BadRequestException =>
@@ -136,7 +141,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						return (sc, obj match {
 								case null => null
 								case o: Map[_, _] => DefaultJSONWriter.toString( o.asInstanceOf[OBJ] )
-								case s: String => s
+								case _ => obj
 							})
 					} catch {
 						case _: RejectRouteThrowable =>
@@ -334,6 +339,8 @@ class BadRequestException( error: String ) extends Exception( error )
 
 class ForbiddenException( error: String ) extends Exception( error )
 
-class UnauthorizedException( error: String ) extends Exception( error )
+class UnauthorizedException( realm: String ) extends Exception( realm )
+
+class ExpiredException( realm: String ) extends Exception( realm )
 
 class RejectRouteThrowable extends Throwable

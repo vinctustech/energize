@@ -15,7 +15,7 @@ object ResultFunctions {
 	def NotAcceptable( env: Environment, error: String ) = Error( env, SC_NOT_ACCEPTABLE, error )
 	def Conflict( env: Environment, error: String ) = Error( env, SC_CONFLICT, error )
 	def Forbidden( env: Environment, error: String ) = Error( env, SC_FORBIDDEN, error )
-	def Unauthorized( env: Environment, realm: String ) = (SC_UNAUTHORIZED, realm)
+	def Unauthorized( env: Environment, attributes: (String, String)* ) = (SC_UNAUTHORIZED, attributes)
 
 	def OkSingleOrNotFound( env: Environment, typ: String, list: List[Any], id: Long ) =
 		list match {

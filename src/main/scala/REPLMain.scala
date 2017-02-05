@@ -3,6 +3,7 @@ package xyz.hyperreal.energize
 import java.sql._
 import java.io.PrintWriter
 
+import collection.mutable.HashMap
 import jline.console.ConsoleReader
 
 import xyz.hyperreal.table.TextTable
@@ -27,6 +28,7 @@ object REPLMain extends App {
 	""".trim.stripMargin.lines foreach println
 	println
 
+	val vars = new HashMap[String, AnyRef]
 	var env: Environment = _
 	var connection: Connection = _
 	var statement: Statement = _
@@ -48,7 +50,7 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		env = Environment( Map(), Nil, Builtins.map, connection, statement, db )
+		env = Environment( Map(), Nil, Builtins.map ++ vars, connection, statement, db )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	}
@@ -100,13 +102,16 @@ object REPLMain extends App {
 					|routes (r)                           print all routes showing absolute paths
 					|stack (s) on/off                     turn exception stack trace on or off
 					|user (u) <user>                      set database <user>
+					|variable (v) <name> <value>          set variable <name> to <value> (added to environment)
+					|variable (v) <name>                  delete variable <name> (removed from environment)
+					|variable (v)                         show current REPL variables (not all environment variables)
 					|GET/POST/PUT/DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                           execute SQL query
 					|<SQL>                                execute <SQL> non-query command
 					|?<expression>                        evaluate an ENERGIZE action script expression
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l", config ) =>
-					env = Energize.configure( io.Source.fromFile(config + ".energize"), connection, statement, db )
+					env = Energize.configure( io.Source.fromFile(config + ".energize"), connection, statement, db ) add vars
 //				case List( "wipe"|"w" ) =>
 //					connection.close
 //					new File( sys.props("user.home"), db + ".mv.db" ).delete
@@ -139,8 +144,14 @@ object REPLMain extends App {
 					}
 				case List( "stack"|"s", "on" ) => stacktrace = true
 				case List( "stack"|"s", "off" ) => stacktrace = false
-				case List( "user"|"u", u ) =>
-					user = u
+				case List( "user"|"u", u ) => user = u
+				case List( "variable"|"v" ) => println( vars )
+				case List( "variable"|"v", n ) =>
+					vars -= n
+					env = env remove n
+				case List( "variable"|"v", n, v ) =>
+					vars(n) = v
+					env = env add n -> v
 				case Nil|List( "" ) =>
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )

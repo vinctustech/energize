@@ -96,7 +96,8 @@ class Server( env: Environment ) {
 							case null => env
 							case h =>
 								h.getValue match {
-									case v if v startsWith "Basic " => env add "$Basic" -> v.substring( 6 )
+									case v if v startsWith "Basic " => env add "$basic" -> v.substring( 6 )
+									case v if v startsWith "Bearer " => env add "$bearer" -> v.substring( 7 )
 									case _ => env
 								}
 						}
@@ -246,9 +247,10 @@ class Server( env: Environment ) {
 						response.setStatusCode( status )
 
 						if (status == SC_UNAUTHORIZED)
-							response.setHeader( "WWW-Authenticate", s"""Basic realm="$contents"""" )
+							response.setHeader( "WWW-Authenticate", "Basic " + contents.asInstanceOf[Seq[(String, String)]].
+								map {case (k, v) => (k, '"' + v + '"')} mkString "=" )
 						else if (contents ne null) {
-							val entity = new NStringEntity( contents, ContentType.APPLICATION_JSON )
+							val entity = new NStringEntity( contents.asInstanceOf[String], ContentType.APPLICATION_JSON )
 
 							if (method == "HEAD") {
 								response.setEntity( empty(entity.getContentLength) )
@@ -261,7 +263,7 @@ class Server( env: Environment ) {
 						e.printStackTrace( Console.err )
 						response.setStatusCode( SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
-							new NStringEntity( s"""{"error": "${e.getMessage}"}"""", ContentType.APPLICATION_JSON ) )
+							new NStringEntity( s"""{"error": "${e.getMessage}"}""", ContentType.APPLICATION_JSON ) )
 				}
 			}
 		}

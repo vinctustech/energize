@@ -1,5 +1,7 @@
 package xyz.hyperreal.energize
 
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, OffsetDateTime}
 import java.util.Base64
 
 import org.mindrot.jbcrypt.BCrypt
@@ -7,6 +9,16 @@ import org.mindrot.jbcrypt.BCrypt
 
 object AuthorizationFunctionHelpers {
 	val CREDENTIALS = "(.*):(.*)"r
+	lazy val SCHEME = AUTHORIZATION.getString( "scheme" )
+	lazy val EXPIRATION = if (AUTHORIZATION.getIsNull( "expiration" )) Int.MaxValue else AUTHORIZATION.getInt( "expiration" )
+
+	SCHEME match {
+		case "Basic"|"Bearer" =>
+		case _ => sys.error( """authorization scheme must be "Basic" or "Bearer" """ )
+	}
+
+	if (EXPIRATION <= 0)
+		sys.error( "authorization expiration value must be positive" )
 
 	def performLogin( env: Environment, user: Long ) = {
 		val tokens = (env get "tokens" get).asInstanceOf[Table]
@@ -82,33 +94,31 @@ object AuthorizationFunctions {
 			CommandFunctions.deleteValue( env, (env get "tokens" get).asInstanceOf[Table], "token", token.get )
 	}
 
-//	def authorize( env: Env, group: String ) {
-//		val token = env.variables get "$token"
-//
-//		def barred = throw new UnauthorizedException( "sign-in required" )
-//
-//		if (token isEmpty)
-//			barred
-//
-//		if (QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", token.get ) isEmpty)
-//			barred
-//	}
-
 	def authorize( env: Environment, group: String ) {
-		val basic = env.variables get "$Basic"
+		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
 
-		def barred = throw new UnauthorizedException( "sign-in required" )
+		def barred = throw new UnauthorizedException( "Protected" )
 
-		if (basic isEmpty)
+		if (access isEmpty)
 			barred
 
-		val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode(basic.get.asInstanceOf[String]) )
+		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
+			val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
 
-		QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email ) match {
-			case None => barred
-			case Some( u ) =>
-				if (!BCrypt.checkpw( password, u("password").asInstanceOf[String] ) || !u("groups").asInstanceOf[List[String]].contains( group ))
-					barred
+			QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email ) match {
+				case None => barred
+				case Some( u ) =>
+					if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ) || !u( "groups" ).asInstanceOf[List[String]].contains( group ))
+						barred
+			}
+		} else {
+			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get ) match {
+				case None => barred
+				case Some( t ) =>
+					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
+						AuthorizationFunctionHelpers.EXPIRATION)
+						throw new ExpiredException( "Protected" )
+			}
 		}
 	}
 }
