@@ -129,24 +129,21 @@ class Server( env: Environment ) {
 						}
 
 						if (!file.exists) {
-							response.setStatusCode(SC_NOT_FOUND)
+							response.setStatusCode( SC_NOT_FOUND )
 
 							val entity = new NStringEntity(
-								"<html><body><h1>File " + file.getPath +
-									" not found</h1></body></html>",
+								s"<html><body><h1>$target not found</h1></body></html>",
 								ContentType.create("text/html", "UTF-8"))
 
-							response.setEntity(entity)
-							println("File " + file.getPath + " not found")
+							response.setEntity( entity )
 						} else if (!file.canRead) {
-							response.setStatusCode(SC_FORBIDDEN)
+							response.setStatusCode( SC_FORBIDDEN )
 
 							val entity = new NStringEntity(
 								"<html><body><h1>Access denied</h1></body></html>",
 								ContentType.create("text/html", "UTF-8"))
 
-							response.setEntity(entity)
-							println("Cannot read file " + file.getPath)
+							response.setEntity( entity )
 						} else if (file.isDirectory) {
 							val path =
 								file.getAbsolutePath match {
@@ -230,8 +227,8 @@ class Server( env: Environment ) {
 							val EXTENSION(ext) = file.getName.toLowerCase
 							val contentType =
 								ext match {
-									case "html" | "htm" => ContentType.create("text/html")
-									case "jpeg" | "jpg" => ContentType.create("image/jpeg")
+									case "html"|"htm" => ContentType.create("text/html")
+									case "jpeg"|"jpg" => ContentType.create("image/jpeg")
 									case "css" => ContentType.create("text/css")
 									case "js" => ContentType.create("application/javascript")
 									case "json" => ContentType.create("application/json")
@@ -246,9 +243,9 @@ class Server( env: Environment ) {
 					} else {
 						response.setStatusCode( status )
 
-						if (status == SC_UNAUTHORIZED)
-							response.setHeader( "WWW-Authenticate", "Basic " + contents.asInstanceOf[Seq[(String, String)]].
-								map {case (k, v) => (k, '"' + v + '"')} mkString "=" )
+						if (status == SC_UNAUTHORIZED) {
+							response.setHeader( "WWW-Authenticate", "Basic " + (contents.asInstanceOf[Seq[(String, String)]]
+								map {case (k, v) => s"""$k="$v""""} mkString ",") )}
 						else if (contents ne null) {
 							val entity = new NStringEntity( contents.asInstanceOf[String], ContentType.APPLICATION_JSON )
 
