@@ -87,11 +87,13 @@ object AuthorizationFunctions {
 		}
 	}
 
-	def logout( env: Environment, token: Option[String] ) = {
-		if (token.isEmpty)
+	def logout( env: Environment ) = {
+		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+
+		if (access.isEmpty)
 			0
 		else
-			CommandFunctions.deleteValue( env, (env get "tokens" get).asInstanceOf[Table], "token", token.get )
+			CommandFunctions.deleteValue( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get )
 	}
 
 	def authorize( env: Environment, group: String ) {

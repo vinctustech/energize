@@ -24,9 +24,11 @@ object ResultFunctions {
 			case _ => NotAcceptable( env, "more than one item in result list" )
 		}
 
-	def OkAtLeastOneOrNotFound( env: Environment, typ: String, count: Int, id: Long ) =
+	def OkAtLeastOneOrNotFoundId( env: Environment, count: Int, id: Long ) = OkAtLeastOneOrNotFound( env, count, s"id $id not found" )
+
+	def OkAtLeastOneOrNotFound( env: Environment, count: Int, error: String ) =
 		count match {
-			case 0 => NotFound( env, s"id $id not found" )
+			case 0 => NotFound( env, error )
 			case _ => NoContent( env )
 		}
 

@@ -34,9 +34,9 @@ object Builtins {
 		|  GET     /id:long                   OkSingleOrNotFound( "<resource>", findID(<resource>, id, ?fields, None, None, None), id )
 		|  GET     /                          Ok( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /                          Created( "<resource>", insert(<resource>, json) )
-		|  PATCH   /id:long                   OkAtLeastOneOrNotFound( "<resource>", update(<resource>, id, json, false), id )
-		|  PUT     /id:long                   OkAtLeastOneOrNotFound( "<resource>", update(<resource>, id, json, true), id )
-		|  DELETE  /id:long                   OkAtLeastOneOrNotFound( "<resource>", delete(<resource>, id), id )
+		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, false), id )
+		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, true), id )
+		|  DELETE  /id:long                   OkAtLeastOneOrNotFoundId( delete(<resource>, id), id )
 		""".stripMargin
 
 	val mtmroutes =
@@ -46,7 +46,7 @@ object Builtins {
 		|  POST    /id:long/field:            Created( "<resource>", append(<resource>, id, field, json) )
 		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
 		|  DELETE  /id:long/field:            deleteLinks( <resource>, id, field, json ); NoContent()
-		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFound( "<resource>", deleteLinksID(<resource>, id, field, tid), id )
+		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, id, field, tid), id )
 		""".stripMargin
 
 	val special =
@@ -69,7 +69,7 @@ object Builtins {
 		|
 		|routes <base>
 		|  POST    /login                     Ok( "login", login(json) )
-		|  GET     /logout                    OkAtLeastOneOrNotFound( "logout", logout(?token) )
+		|  GET     /logout                    OkAtLeastOneOrNotFound( logout(), "token not found" )
 		|  POST    /register                  Created( "registration", register(json) )
 		""".stripMargin
 }
