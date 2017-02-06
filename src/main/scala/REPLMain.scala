@@ -155,7 +155,7 @@ object REPLMain extends App {
 				case Nil|List( "" ) =>
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )
-				case (method@("GET"|"get"|"POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: _ =>
+				case (method@("GET"|"get"|"POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: a if a != Nil =>
 					result( method, path, line1.split("\\s+", 3)(2) )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )

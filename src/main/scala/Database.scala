@@ -28,6 +28,8 @@ object H2Database extends Database {
 
 	def desensitize( name: String ) = name.toUpperCase
 
+	def conflict( error: String ) = error startsWith "Unique index or primary key violation"
+
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
@@ -135,6 +137,8 @@ object PostgresDatabase extends Database {
 
 	def desensitize( name: String ) = name.toLowerCase
 
+	def conflict( error: String ) = sys.error( "not done yet" )
+
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
 
@@ -229,6 +233,8 @@ object MySQLDatabase extends Database {
 		}
 
 	def desensitize( name: String ) = name
+
+	def conflict( error: String ) = sys.error( "not done yet" )
 
 	def create( tables: List[Table] ) = {
 		val buf = new StringBuilder
@@ -330,6 +336,8 @@ abstract class Database {
 	def readTimestamp( d: String ): String
 
 	def writeTimestamp( o: Any ): String
+
+	def conflict( error: String ): Boolean
 
 	def create( tables: List[Table] ): String
 }

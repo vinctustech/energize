@@ -134,7 +134,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 									ResultFunctions.BadRequest( this, e.getMessage )
 								case e: NotFoundException =>
 									ResultFunctions.NotFound( this, e.getMessage )
-								case e: org.h2.jdbc.JdbcSQLException if e.getMessage startsWith "Unique index or primary key violation" =>
+								case e: SQLException if db.conflict( e.getMessage )  =>
 									ResultFunctions.Conflict( this, e.getMessage )
 							}
 
