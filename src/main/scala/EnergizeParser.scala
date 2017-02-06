@@ -137,11 +137,11 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		("table" | "resource") ~ pos ~ ident ~ protection ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+		("table" | "resource") ~ pos ~ ident ~ opt(protection) ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
 			case k ~ p ~ name ~ pro ~ bases ~ columns => List( TableDefinition( pro, p.pos, name, bases, columns, k == "resource" ) )}
 
-	lazy val protection: PackratParser[Protection] =
-		opt("protected" ~> opt("(" ~> ident <~ ")")) ^^ Protection
+	lazy val protection: PackratParser[Option[String]] =
+		"protected" ~> opt("(" ~> ident <~ ")")
 
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
@@ -183,11 +183,15 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			case None ~ mappings =>
 				List( RoutesDefinition( URIPath(Nil), mappings ) )
 		}
-		
+
+	def authorize( group: Option[String] ) = CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(group))), ApplyExpression(VariableExpression("reject"), null, Nil))
+
 	lazy val uriMapping: PackratParser[URIMapping] =
 		httpMethod ~ "/" ~ actionExpression <~ nl ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
-		httpMethod ~ uriPath ~ actionExpression <~ nl ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )}
-		
+		httpMethod ~ uriPath ~ actionExpression <~ nl ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )} |
+		httpMethod ~ "/" ~ protection <~ nl ^^ {case method ~ _ ~ group => URIMapping( method, URIPath(Nil), authorize(group) )} |
+		httpMethod ~ uriPath ~ protection <~ nl ^^ {case method ~ uri ~ group => URIMapping( method, uri, authorize(group) )}
+
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ HTTPMethod
 		
