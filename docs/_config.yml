@@ -17,6 +17,7 @@ timezone: America/Montreal
 markdown: kramdown
 theme: jekyll-theme-cayman
 gems:
+  - jekyll-redirect-from
 exclude:
   - Gemfile
   - Gemfile.lock
