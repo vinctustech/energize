@@ -30,7 +30,7 @@ object Builtins {
 	
 	val routes =
 		"""
-		|routes <base>/<resource>
+		|routes <base>/<resource> <authorize>
 		|  GET     /id:long                   OkSingleOrNotFound( "<resource>", findID(<resource>, id, ?fields, None, None, None), id )
 		|  GET     /                          Ok( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  POST    /                          Created( "<resource>", insert(<resource>, json) )
@@ -41,7 +41,7 @@ object Builtins {
 
 	val mtmroutes =
 		"""
-		|routes <base>/<resource>
+		|routes <base>/<resource> <authorize>
 		|  GET     /id:long/field:            OkSingleOrNotFound( "<resource>", findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
 		|  POST    /id:long/field:            Created( "<resource>", append(<resource>, id, field, json) )
 		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
@@ -51,7 +51,7 @@ object Builtins {
 
 	val special =
 		"""
-		|resource users protected (admin)
+		|resource users #protected (admin)
 		|  email string unique
 		|  createdTime timestamp
 		|  updatedTime timestamp
