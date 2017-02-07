@@ -90,7 +90,7 @@ object Energize {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
-				case TableDefinition( _, pos, name, bases, columns, resource ) =>
+				case TableDefinition( protection, pos, name, bases, columns, resource ) =>
 					var mtm = false
 
 					if (tables contains db.desensitize( name ))
@@ -155,20 +155,30 @@ object Energize {
 
 					if (resource) {
 						val mtm = cols.values exists (c => c.typ.isInstanceOf[ManyReferenceType])
+						val authorize =
+							protection match {
+								case None => ""
+								case Some( None ) => "protected"
+								case Some( Some(g) ) => s"protected ($g)"
+							}
 
 						if (bases isEmpty) {
-							routes ++= configure_( Builtins.routes.replaceAll( "<base>", "" ).replaceAll( "<resource>", name ), connection, statement, db ).routes
+							routes ++= configure_( Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
+								connection, statement, db ).routes
 
 							if (mtm)
-								routes ++= configure_( Builtins.mtmroutes.replaceAll( "<base>", "" ).replaceAll( "<resource>", name ), connection, statement, db ).routes
+								routes ++= configure_( Builtins.mtmroutes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
+									connection, statement, db ).routes
 						} else
 							for (URIPath( base ) <- bases) {
 								routes ++= configure_( Builtins.routes.replaceAll( "<resource>", name ).
-									replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ), connection, statement, db ).routes
+									replaceAll( "<base>", base map {case NameURISegment( segment ) => segment} mkString("/", "/", "") ).replaceAll("<authorize>", authorize),
+									connection, statement, db ).routes
 
 								if (mtm)
 									routes ++= configure_( Builtins.mtmroutes.replaceAll( "<resource>", name ).
-										replaceAll( "<base>", base map { case NameURISegment( segment ) => segment } mkString("/", "/", "") ), connection, statement, db ).routes
+										replaceAll( "<base>", base map {case NameURISegment( segment ) => segment} mkString("/", "/", "") ).replaceAll("<authorize>", authorize),
+										connection, statement, db ).routes
 							}
 					}
 				case RoutesDefinition( URIPath(base), mappings ) =>
