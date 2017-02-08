@@ -51,7 +51,7 @@ object Builtins {
 
 	val special =
 		"""
-		|resource users #protected (admin)
+		|resource users protected (admin)
 		|  email string unique
 		|  createdTime timestamp
 		|  updatedTime timestamp

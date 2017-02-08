@@ -43,7 +43,7 @@ case class ColumnTypeModifier( modifier: String ) extends Positional
 
 case class RealmDefinition( pos: Position, realm: String ) extends StatementAST
 
-case class RoutesDefinition( base: URIPath, mappings: List[URIMapping] ) extends StatementAST
+case class RoutesDefinition( base: URIPath, mappings: List[URIMapping], protection: Option[Option[String]] ) extends StatementAST
 	
 case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 

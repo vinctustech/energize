@@ -177,11 +177,11 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
-		"routes" ~> opt(basePath) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
-			case Some( base ) ~ mappings => 
-				List( RoutesDefinition( base, mappings ) )
-			case None ~ mappings =>
-				List( RoutesDefinition( URIPath(Nil), mappings ) )
+		"routes" ~> opt(basePath) ~ opt(protection) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
+			case Some( base ) ~ pro ~ mappings =>
+				List( RoutesDefinition( base, mappings, pro ) )
+			case None ~ pro ~ mappings =>
+				List( RoutesDefinition( URIPath(Nil), mappings, pro ) )
 		}
 
 	def authorize( group: Option[String] ) = CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(group))), ApplyExpression(VariableExpression("reject"), null, Nil))

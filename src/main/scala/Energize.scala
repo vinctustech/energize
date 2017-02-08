@@ -181,12 +181,16 @@ object Energize {
 										connection, statement, db ).routes
 							}
 					}
-				case RoutesDefinition( URIPath(base), mappings ) =>
+				case RoutesDefinition( URIPath(base), mappings, protection ) =>
 					val block = new ArrayBuffer[Route]
 
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
 							block += Route( method, base ++ path, action )
+
+							if (protection nonEmpty)
+								for ((Route( method, path, action), i) <- block zipWithIndex)
+									block(i) = Route( method, path, CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get))), action) )
 					}
 
 					block ++=: routes
