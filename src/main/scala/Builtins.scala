@@ -59,6 +59,9 @@ object Builtins {
 		|  groups string array
 		|  password string secret
 		|
+		|routes protected
+		|  GET     /users/me                  Ok( "<resource>", me() )
+		|
 		|resource tokens						# should be a table not a resource
 		|  token string unique
 		|  created timestamp

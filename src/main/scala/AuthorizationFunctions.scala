@@ -96,6 +96,38 @@ object AuthorizationFunctions {
 			CommandFunctions.deleteValue( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get )
 	}
 
+	def me( env: Environment ) = {
+		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+
+		def barred = throw new UnauthorizedException( "Protected" )
+
+		if (access isEmpty)
+			barred
+
+		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
+			val AuthorizationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
+
+			QueryFunctions.findOption(env, (env get "users" get).asInstanceOf[Table], "email", email) match {
+				case None => barred
+				case Some(u) =>
+					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
+						barred
+
+					u
+			}
+		} else {
+			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get ) match {
+				case None => barred
+				case Some( t ) =>
+					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
+						AuthorizationFunctionHelpers.EXPIRATION)
+						throw new ExpiredException( "Protected" )
+
+					t("user").asInstanceOf[OBJ]
+			}
+		}
+	}
+
 	def authorize( env: Environment, group: Option[String] ) {
 		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
 
