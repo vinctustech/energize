@@ -1,6 +1,5 @@
 package xyz.hyperreal.energize
 
-import java.time.temporal.ChronoUnit
 import java.time.{Instant, OffsetDateTime}
 import java.util.Base64
 
@@ -26,7 +25,7 @@ object AuthorizationFunctionHelpers {
 			def gentoken: String = {
 				val tok = UtilityFunctions.rndAlpha( env, 15 )
 
-				QueryFunctions.findOption( env, tokens, "token", tok ) match {
+				QueryFunctions.findOption( env, tokens, "token", tok, false ) match {
 					case None => tok
 					case Some( _ ) => gentoken
 				}
@@ -77,7 +76,7 @@ object AuthorizationFunctions {
 
 		def denied = throw new UnauthorizedException( "email or password doesn't match" )
 
-		QueryFunctions.findOption( env, users, "email", email ) match {
+		QueryFunctions.findOption( env, users, "email", email, true ) match {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
@@ -107,7 +106,7 @@ object AuthorizationFunctions {
 		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
 			val AuthorizationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
 
-			QueryFunctions.findOption(env, (env get "users" get).asInstanceOf[Table], "email", email) match {
+			QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email, true ) match {
 				case None => barred
 				case Some(u) =>
 					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
@@ -116,7 +115,7 @@ object AuthorizationFunctions {
 					u
 			}
 		} else {
-			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get ) match {
+			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get, false ) match {
 				case None => barred
 				case Some( t ) =>
 					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
@@ -139,7 +138,7 @@ object AuthorizationFunctions {
 		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
 			val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
 
-			QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email ) match {
+			QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email, true ) match {
 				case None => barred
 				case Some( u ) =>
 					if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))
@@ -149,7 +148,7 @@ object AuthorizationFunctions {
 						barred
 			}
 		} else {
-			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get ) match {
+			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get, false ) match {
 				case None => barred
 				case Some( t ) =>
 					if (group.nonEmpty && !t("user").asInstanceOf[OBJ]( "groups" ).asInstanceOf[List[String]].contains( group.get ))

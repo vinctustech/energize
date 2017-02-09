@@ -89,7 +89,7 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String] ): List[OBJ] = {
+	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String], allowsecret: Boolean ): List[OBJ] = {
 		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[OBJ]
 
@@ -108,7 +108,7 @@ object QueryFunctions {
 							attr += (cname -> query( env, reft,
 								s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
 									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" +
-									QueryFunctionHelpers.pageStartLimit(page, start, limit), page, start, limit ))
+									QueryFunctionHelpers.pageStartLimit(page, start, limit), page, start, limit, allowsecret ))
 						case Some( c ) => sys.error( s"data not from a table: matching column: ${c.name}" )
 					}
 				else
@@ -134,6 +134,9 @@ object QueryFunctions {
 //									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj ))
+								case Some( Column(cname, _, true, _, _, _) ) =>
+									if (allowsecret)
+										attr += (cname -> obj)
 								case Some( c ) => attr += (c.name -> obj)
 							}
 						case _ =>
@@ -150,7 +153,7 @@ object QueryFunctions {
 	}
 	
 	def size( env: Environment, resource: Table ) =
-		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}", None, None, None).head.values.head.asInstanceOf[Long] )
+		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}", None, None, None, false).head.values.head.asInstanceOf[Long] )
 
 	def list( env: Environment, resource: Table,
 						fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
@@ -188,22 +191,22 @@ object QueryFunctions {
 					} mkString ", ")
 			}
 
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None )
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None, false )
 	}
 	
 	def findID( env: Environment, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id",
-			page, start, limit), None, None, None )
+			page, start, limit), None, None, None, false )
 
 	def findIDMany( env: Environment, resource: Table, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.id = $id",
-			None, None, None), page, start, limit )
+			None, None, None), page, start, limit, false )
 
-	def findValue( env: Environment, resource: Table, field: String, value: Any ) =
+	def findValue( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.$field = '$value'",
-			None, None, None), None, None, None )
+			None, None, None), None, None, None, allowsecret )
 
-	def findOne( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).head
+	def findOne( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value, false ).head
 
-	def findOption( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value ).headOption
+	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) = findValue( env, resource, field, value, allowsecret ).headOption
 }
