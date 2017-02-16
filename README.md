@@ -1,4 +1,4 @@
-energize [![Build Status](https://travis-ci.org/edadma/energize.svg?branch=0.6)](https://travis-ci.org/edadma/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+energize [![CircleCI](https://circleci.com/bb/vinctus/energize.svg?style=shield&circle-token=8d36e9c65cfc8f8b3ca6d14af06301d7eb5512db)](https://circleci.com/bb/vinctus/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ====
 
 Configurable ReST API Server
