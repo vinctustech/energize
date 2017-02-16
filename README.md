@@ -20,8 +20,8 @@ Documentation
 -------------
 
 - [Programmer's Reference](http://vinctustech.github.io/energize)
-- [Scaladoc](http://edadma.github.io/energize/api)
-- [Example inside this README](http://github.com/edadma/energize#example)
+- [Scaladoc](http://vinctustech.github.io/energize/api)
+- [Example inside this README](http://github.com/vinctustech/energize#example)
 - Type `java -jar energize-0.6.jar --help` for executable options
 - Type `help` inside the REPL for commands
 
@@ -67,7 +67,7 @@ Building
 
 ### Clone and Run the SBT (Simple Build Tool)
 
-	git clone git://github.com/edadma/energize.git
+	git clone git://github.com/vinctustech/energize.git
 	cd energize
 	sbt
 	
