@@ -27,7 +27,7 @@ sbt sbt-version
 The fastest way to get started is to clone the repository and run Energize with SBT.
 
 ```
-git clone git://github.com/edadma/energize.git
+git clone git://github.com/vinctustech/energize.git
 cd energize
 sbt
 ```
