@@ -10,7 +10,4 @@ next: action-script.html
 
 Before we get into the more advanced features of Energize, let's start off with the classic `Hello World` example. Energize allows you to define routes.
 
-```
-routes
-	GET /helloWorld Ok("Hello World!")
-```
+TO-DO
