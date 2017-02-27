@@ -1,2 +1,0 @@
-resource messages
-  text string indexed
