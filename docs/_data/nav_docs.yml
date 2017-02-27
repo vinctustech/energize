@@ -22,12 +22,12 @@
     - id: relationships
       title: Relationships
       subitems:
-        - id: one-to-one
-          title: One-to-one
         - id: one-to-many
           title: One-to-many
         - id: many-to-many
           title: Many-to-many
+        - id: tables
+          title: Tables
     - id: access-control
       title: Access Control
 - title: Advanced Guides

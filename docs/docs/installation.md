@@ -13,13 +13,13 @@ next: hello-world.html
 To run Energize, you'll need Java 1.8 and SBT v0.13.13+. To check that you have the latest JDK, you can run:
 
 ```
-java -version
+$ java -version
 ```
 
 To check that you have the latest version of SBT, you can run:
 
 ```
-sbt sbt-version
+$ sbt sbt-version
 ```
 
 ### Clone and run with SBT
@@ -27,9 +27,9 @@ sbt sbt-version
 The fastest way to get started is to clone the repository and run Energize with SBT.
 
 ```
-git clone git://github.com/vinctustech/energize.git
-cd energize
-sbt
+$ git clone git://github.com/vinctustech/energize.git
+$ cd energize
+$ sbt
 ```
 
 Once the SBT prompt appears, you can then use the following commands:

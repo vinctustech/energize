@@ -31,7 +31,7 @@ The messages `resource` has one field called `text`, and this field has a data t
 string, integer, uuid, date, long, datetime, time, timestamp
 ```
 
-If we wanted the `text` field to be indexed, we can add the `indexed` modifier.
+If we want the `text` field to be indexed, we can add the `indexed` modifier.
 
 ```
 resource messages
@@ -44,7 +44,7 @@ resource messages
 indexed, unique, required, optional, secret
 ```
 
-In the root directory `energize`, run the project with `sbt`.
+In the root directory of `energize`, run the project with `sbt`.
 
 ```
 $ sbt

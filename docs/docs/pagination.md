@@ -34,4 +34,16 @@ Sometimes we may only need certain fields of documents. To save bandwidth, we ca
 GET http://localhost:8080/messages?page=2&limit=5&fields=text
 ```
 
-This will retrieve 5 documents on the second page of results, and only provide the `text` field as `JSON` in the body.
+This will retrieve 5 documents on the second page of results, and only return the `text` field as `JSON` in the body.
+
+### Sorting
+
+To sort a list of results, use the `sort` with the `order` query parameters. The `order` query parameter can take either `asc` or `desc`.
+
+```
+GET http://localhost:8080/messages?sort=text&order=asc
+```
+
+This will sort the result list by the `text` field in ascending order.
+
+> Note: If you only pass the `sort` query parameter, `order` will be set to ascending by default.
