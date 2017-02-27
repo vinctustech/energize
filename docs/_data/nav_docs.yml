@@ -4,6 +4,32 @@
       title: Installation
     - id: hello-world
       title: Hello World
+    - id: default-routes
+      title: Default Routes
+      subitems:
+        - id: create-a-document
+          title: Create a document
+        - id: retrieve-a-document
+          title: Retrieve a document
+        - id: update-a-document
+          title: Update a document
+        - id: delete-a-document
+          title: Delete a document
+        - id: list-all-documents
+          title: List all documents
+    - id: pagination
+      title: Pagination
+    - id: relationships
+      title: Relationships
+      subitems:
+        - id: one-to-one
+          title: One-to-one
+        - id: one-to-many
+          title: One-to-many
+        - id: many-to-many
+          title: Many-to-many
+    - id: access-control
+      title: Access Control
 - title: Advanced Guides
   items:
     - id: action-script

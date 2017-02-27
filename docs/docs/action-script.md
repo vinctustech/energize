@@ -2,7 +2,7 @@
 id: action-script
 title: Action Script
 permalink: docs/action-script.html
-prev: hello-world.html
+prev: access-control.html
 ---
 
 ## Action Script
