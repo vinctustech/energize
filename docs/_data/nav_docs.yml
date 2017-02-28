@@ -30,6 +30,11 @@
           title: Tables
     - id: access-control
       title: Access Control
+      subitems:
+        - id: user-onboarding
+          title: User onboarding
+        - id: protecting-resources
+          title: Protecting resources
 - title: Advanced Guides
   items:
     - id: action-script
