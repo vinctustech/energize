@@ -32,7 +32,7 @@ resource users
 
 ### User onboarding
 
-To handle registration, use the default registration route.
+To handle registration, use the following default registration route.
 
 ```
 POST http://localhost:8080/auth/register HTTP/1.1
@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 ```
 
-To handle login, use the default login route.
+To handle login, use the following default login route.
 
 ```
 POST http://localhost:8080/auth/login HTTP/1.1
@@ -80,7 +80,7 @@ Authorization: Bearer arjcyaiprkealtj
 
 ### Protecting resources
 
-To protect a resource you can used the `protected` resource modifier, followed by the groups that are allowed access on that resource. The two default groups are `users`, and `admin`. Those who have created an account with the `users` resource have the `users` group by default.
+To protect a resource you can use the `protected` resource modifier, followed by the groups that are allowed access on that resource. The two default groups are `users`, and `admin`. Those who have created an account with the `users` resource have the `users` group by default.
 
 > Note: You can edit the default groups in the `src/main/resources/reference.conf` file.
 

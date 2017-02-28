@@ -16,7 +16,7 @@ resource messages
   createdAt datetime required
 ```
 
-There are default query parameters that can be used on the resources default routes. To paginate over a list of documents for example, use the `page` and `limit` query parameters.
+There are default query parameters that can be used on the resources default routes. For example, to paginate over a list of documents use the `page` and `limit` query parameters.
 
 ```
 GET http://localhost:8080/messages?page=2&limit=5

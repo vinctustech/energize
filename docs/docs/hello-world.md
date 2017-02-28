@@ -50,7 +50,7 @@ In the root directory of `energize`, run the project with `sbt`.
 $ sbt
 ```
 
-After the SBT prompt appears, you can start the server using the `messenger.energize` file:
+After the SBT prompt appears, start the server using the `messenger.energize` file:
 
 ```
 $ re-start messenger

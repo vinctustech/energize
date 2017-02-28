@@ -32,8 +32,10 @@ $ cd energize
 $ sbt
 ```
 
-Once the SBT prompt appears, you can then use the following commands:
+Once the SBT prompt appears you can then use the following commands:
 
 - `test` builds and executes tests
-- `re-start <config>` starts the server where *config* is the name of the `.energize` file that defines your API. You can press `ENTER` once the server has started to get the SBT prompt in order to enter more SBT commands while the server is running.
+- `re-start <config>` starts the server where *config* is the name of the `.energize` file that defines your API.
 - `re-stop` stops the server.
+
+> Note: You can press `ENTER` once the server has started to get the SBT prompt in order to enter more SBT commands while the server is running.

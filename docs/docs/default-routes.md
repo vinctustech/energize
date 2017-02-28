@@ -91,7 +91,7 @@ If successful, you will receive a `204 No Content`, meaning it has successfully 
 
 ### List all documents
 
-Assuming you have created many `messages` documents, and you want to list all of them. To achieve this, make a `GET` request at the resource end-point.
+To list all `messages` documents, make a `GET` request at the resource end-point.
 
 ```
 GET http://localhost:8080/messages HTTP/1.1
