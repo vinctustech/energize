@@ -3,7 +3,7 @@ package xyz.hyperreal.energize
 
 object Main extends App {
 
- 	val (c, s, d) = Test.dbconnect
+ 	val (c, s, d) = Test.dbconnect//Energize.dbconnect
 
 // 	val env = Energize.configure( io.Source.fromFile("books.energize"), c, s )
 

@@ -33,9 +33,13 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 	
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
+	def native( name: String, args: Any* ) = variables( name ).asInstanceOf[Native]( this, args.toList )
+
+	def result( name: String, args: Any* ) = native( name, args: _* ).asInstanceOf[(Int, OBJ)]
+
 	def process( reqmethod: String, requri: String, reqbody: String ): (Int, AnyRef) = {
 		def notfound = {
-			val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
+			val (sc, obj) = result( "NotFound", "route not found" )
 
 			(sc, DefaultJSONWriter.toString( obj ))
 		}
@@ -124,24 +128,24 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 								(this add reqvars).deref( action ).asInstanceOf[(Int, OBJ)]
 							} catch {
 								case e: UnauthorizedException =>
-									ResultFunctions.Unauthorized( this, "realm" -> e.getMessage )
+									result( "Unauthorized", "realm" -> e.getMessage )
 								case e: ExpiredException =>
-									ResultFunctions.Unauthorized( this, "realm" -> e.getMessage,
-										"error" -> "invalid_token", "error_description" -> "The access token expired")
+									result( "Unauthorized", "realm" -> e.getMessage,
+										"error" -> "invalid_token", "error_description" -> "The access token expired" )
 								case e: ForbiddenException =>
-									ResultFunctions.Forbidden( this, e.getMessage )
+									result( "Forbidden", e.getMessage )
 								case e: BadRequestException =>
-									ResultFunctions.BadRequest( this, e.getMessage )
+									result( "BadRequest", e.getMessage )
 								case e: NotFoundException =>
-									ResultFunctions.NotFound( this, e.getMessage )
+									result( "NotFound", e.getMessage )
 								case e: SQLException if db.conflict( e.getMessage )  =>
-									ResultFunctions.Conflict( this, e.getMessage )
+									result( "Conflict", e.getMessage )
 							}
 
 						return (sc, obj match {
 								case null => null
 								case o: Map[_, _] => DefaultJSONWriter.toString( o.asInstanceOf[OBJ] )
-								case _ => obj
+//								case _ => obj
 							})
 					} catch {
 						case _: RejectRouteThrowable =>
@@ -214,7 +218,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						val list = args map (a => deref( a ))
 						
 						if (f.applicable( list ))
-							f( list, this )
+							f( this, list )
 						else
 							problem( pos, "wrong number or type of arguments for native function: " + f )
 					case f: FunctionExpression =>

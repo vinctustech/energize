@@ -31,9 +31,9 @@ object Builtins {
 	val routes =
 		"""
 		|routes <base>/<resource> <authorize>
-		|  GET     /id:long                   OkSingleOrNotFound( "<resource>", findID(<resource>, id, ?fields, None, None, None), id )
-		|  GET     /                          Ok( "<resource>", list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
-		|  POST    /                          Created( "<resource>", insert(<resource>, json) )
+		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, id, ?fields, None, None, None), id )
+		|  GET     /                          Ok( list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+		|  POST    /                          Created( insert(<resource>, json) )
 		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, false), id )
 		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, true), id )
 		|  DELETE  /id:long                   OkAtLeastOneOrNotFoundId( delete(<resource>, id), id )
@@ -42,8 +42,8 @@ object Builtins {
 	val mtmroutes =
 		"""
 		|routes <base>/<resource> <authorize>
-		|  GET     /id:long/field:            OkSingleOrNotFound( "<resource>", findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
-		|  POST    /id:long/field:            Created( "<resource>", append(<resource>, id, field, json) )
+		|  GET     /id:long/field:            OkSingleOrNotFound( findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
+		|  POST    /id:long/field:            Created( append(<resource>, id, field, json) )
 		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
 		|  DELETE  /id:long/field:            deleteLinks( <resource>, id, field, json ); NoContent()
 		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, id, field, tid), id )
@@ -60,7 +60,7 @@ object Builtins {
 		|  password string secret
 		|
 		|routes protected
-		|  GET     /users/me                  Ok( "<resource>", me() )
+		|  GET     /users/me                  Ok( me() )
 		|
 		|resource tokens						# should be a table not a resource
 		|  token string unique
@@ -71,8 +71,8 @@ object Builtins {
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|
 		|routes <base>
-		|  POST    /login                     Ok( "login", login(json) )
+		|  POST    /login                     Ok( login(json) )
 		|  GET     /logout                    OkAtLeastOneOrNotFound( logout(), "token not found" )
-		|  POST    /register                  Created( "registration", register(json) )
+		|  POST    /register                  Created( register(json) )
 		""".stripMargin
 }

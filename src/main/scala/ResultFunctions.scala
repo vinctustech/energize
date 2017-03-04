@@ -4,9 +4,9 @@ import org.apache.http.HttpStatus._
 
 
 object ResultFunctions {
-	def Data( env: Environment, typ: String, code: Int, data: Any ) = (code, Map( "data" -> data ))
-	def Ok( env: Environment, typ: String, data: Any ) = Data( env, typ, SC_OK, data )
-	def Created( env: Environment, typ: String, data: Any ) = Data( env, typ, SC_CREATED, data )
+	def Data( env: Environment, code: Int, data: Any ) = (code, Map( "data" -> data ))
+	def Ok( env: Environment, data: Any ) = Data( env, SC_OK, data )
+	def Created( env: Environment, data: Any ) = Data( env, SC_CREATED, data )
 	def NoContent( env: Environment ) = (SC_NO_CONTENT, null)
 
 	def Error( env: Environment, code: Int, error: String ) = (code, Map( "error" -> error ))
@@ -17,10 +17,10 @@ object ResultFunctions {
 	def Forbidden( env: Environment, error: String ) = Error( env, SC_FORBIDDEN, error )
 	def Unauthorized( env: Environment, attributes: (String, String)* ) = (SC_UNAUTHORIZED, attributes)
 
-	def OkSingleOrNotFound( env: Environment, typ: String, list: List[Any], id: Long ) =
+	def OkSingleOrNotFound( env: Environment, list: List[Any], id: Long ) =
 		list match {
 			case Nil => NotFound( env, s"id $id not found" )
-			case List( h ) => Ok( env, typ, h )
+			case List( h ) => Ok( env, h )
 			case _ => NotAcceptable( env, "more than one item in result list" )
 		}
 
