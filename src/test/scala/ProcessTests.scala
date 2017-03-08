@@ -35,6 +35,19 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "data": []
 					|}
 				""".trim.stripMargin )
+		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
+			(SC_OK, """
+								|{
+								|  "data": 0
+								|}
+							""".trim.stripMargin )
+		env.process( "GET", "/api/v1/test/size", null ) shouldBe
+			(SC_OK,
+				"""
+					|{
+					|  "data": 0
+					|}
+				""".trim.stripMargin )
  		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
 			(SC_NOT_FOUND,
 				"""
@@ -156,6 +169,12 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
+		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
+			(SC_OK, """
+								|{
+								|  "data": 1
+								|}
+							""".trim.stripMargin )
 		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe (SC_NO_CONTENT, null)
  		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
 			(SC_NOT_FOUND,
@@ -184,6 +203,13 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
+		env.process( "GET", "/api/v1/test/size", null ) shouldBe
+			(SC_OK,
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
 		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe (SC_NO_CONTENT, null)
  		env.process( "GET", "/api/v1/test/1", null ) shouldBe
 			(SC_NOT_FOUND,
