@@ -33,6 +33,7 @@ object Builtins {
 		|routes <base>/<resource> <authorize>
 		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, id, ?fields, None, None, None), id )
 		|  GET     /                          Ok( list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+		|  GET     /size                      Ok( size(<resource>) )
 		|  POST    /                          Created( insert(<resource>, json) )
 		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, false), id )
 		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, true), id )

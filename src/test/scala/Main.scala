@@ -21,7 +21,8 @@ object Main extends App {
 //
 //	println( env.process("GET", "/data/20?fields=id,first_name", null) )
 //  println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
-	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
+//	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
+	println( env.process("GET", "/data/size", null) )
 
 //	val env = Energize.configure( io.Source.fromFile("examples/t1.energize"), c, s )
 
