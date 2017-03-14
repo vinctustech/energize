@@ -1,7 +1,7 @@
 	resource students
 		name string unique
 		classrooms classrooms array
-	
+
 	resource classrooms
 		number string unique
 
