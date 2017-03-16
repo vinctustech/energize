@@ -45,7 +45,7 @@ object QueryFunctionHelpers {
 				(cs map {
 						case Column(f, ManyReferenceType(_, _), _, _, _, _) => s"null as $f"
 						case Column(f, _, _, _, _, _) => f
-					}) :+ "id" mkString ","
+					}) :+ s"${resource.name}.id" mkString ","
 			} else if (fs == Nil)
 				"*"
 			else
