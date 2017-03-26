@@ -5,7 +5,7 @@ import java.net.URI
 
 import collection.JavaConverters._
 import util.matching.Regex
-import collection.mutable.HashMap
+import collection.mutable.{ArrayBuffer, HashMap}
 
 import org.apache.http.client.utils.URLEncodedUtils
 
@@ -13,17 +13,22 @@ import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
-case class Environment( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement, db: Database ) {
+class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any], val connection: Connection,
+									 val statement: Statement, val db: Database ) {
 
+	private val routeTable = ArrayBuffer( croutes: _* )
+	private var routeList = routeTable.toList
 	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
-	
-	def add( kv: (String, Any) ) = Environment( tables, routes, variables + kv, connection, statement, db )
-	
-	def add( m: collection.Map[String, Any] ) = Environment( tables, routes, variables ++ m, connection, statement, db )
 
-	def remove( n: String ) = Environment( tables, routes, variables - n, connection, statement, db )
+	def routes = routeList
+
+	def add( kv: (String, Any) ) = new Environment( tables, routes, variables + kv, connection, statement, db )
+	
+	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, variables ++ m, connection, statement, db )
+
+	def remove( n: String ) = new Environment( tables, routes, variables - n, connection, statement, db )
 
 	def get( name: String ) =
 		variables get name match {
@@ -36,6 +41,18 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 	def native( name: String, args: Any* ) = variables( name ).asInstanceOf[Native]( this, args.toList )
 
 	def result( name: String, args: Any* ) = native( name, args: _* ).asInstanceOf[(Int, String, OBJ)]
+
+	def add( route: Route ) = routeTable += route
+
+	def remove( method: String, path: List[URISegment] ): Unit = {
+		for (i <- 0 until routeTable.length)
+			if (routeTable(i).method == method && routeTable(i).path == path) {
+				routeTable.remove( i )
+				return
+			}
+
+		sys.error( s"route not found: $method $path" )
+	}
 
 	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String, AnyRef) = {
 		def notfound = {
@@ -329,7 +346,8 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 
 case class Route( method: String, path: List[URISegment], action: ExpressionAST )
 
-case class Table(name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean, var preparedInsert: PreparedStatement ) {
+case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean,
+									var preparedInsert: PreparedStatement ) {
 	def names = columns map (c => c.name)
 }
 
