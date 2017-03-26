@@ -35,13 +35,13 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 
 	def native( name: String, args: Any* ) = variables( name ).asInstanceOf[Native]( this, args.toList )
 
-	def result( name: String, args: Any* ) = native( name, args: _* ).asInstanceOf[(Int, OBJ)]
+	def result( name: String, args: Any* ) = native( name, args: _* ).asInstanceOf[(Int, String, OBJ)]
 
-	def process( reqmethod: String, requri: String, reqbody: String ): (Int, AnyRef) = {
+	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String, AnyRef) = {
 		def notfound = {
-			val (sc, obj) = result( "NotFound", "route not found" )
+			val (sc, ctype, obj) = result( "NotFound", "route not found" )
 
-			(sc, DefaultJSONWriter.toString( obj ))
+			(sc, ctype, DefaultJSONWriter.toString( obj ))
 		}
 
 		val uri = new URI( requri )
@@ -123,9 +123,9 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						else
 							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
 					try {
-						val (sc, obj) =
+						val (sc, ctype, obj) =
 							try {
-								(this add reqvars).deref( action ).asInstanceOf[(Int, OBJ)]
+								(this add reqvars).deref( action ).asInstanceOf[(Int, String, OBJ)]
 							} catch {
 								case e: UnauthorizedException =>
 									result( "Unauthorized", "realm" -> e.getMessage )
@@ -142,7 +142,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 									result( "Conflict", e.getMessage )
 							}
 
-						return (sc, obj match {
+						return (sc, ctype, obj match {
 								case null => null
 								case o: Map[_, _] => DefaultJSONWriter.toString( o.asInstanceOf[OBJ] )
 //								case _ => obj
@@ -174,10 +174,10 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
-			case AssignmentExpression( v, expr ) =>
+			case AssignmentExpression( v, e ) =>
 				variables get v match {
 					case None => sys.error( s"variable '$v' not found" )
-					case Some( h: Variable ) => h.value = deref( expr )
+					case Some( h: Variable ) => h.value = deref( e )
 					case _ => sys.error( s"'$v' is not a variable" )
 				}
 			case RangeExpression( start, end ) => evalbi( start ) to evalbi( end )
@@ -244,7 +244,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						case Nil =>
 							no match {
 								case None => null
-								case Some( expr ) => eval( expr )
+								case Some( e ) => eval( e )
 							}
 						case (ifexpr, thenexpr) :: tail =>
 							if (evalb( ifexpr ))
