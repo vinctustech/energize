@@ -64,7 +64,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone",
+				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"realm", "protected", "binary", "float", "decimal"
 				)
@@ -170,8 +170,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"binary" ^^^ BinaryType |
 		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
-			case p ~ s => DecimalType( p.toInt, s.toInt )
-		}
+			case p ~ s => DecimalType( p.toInt, s.toInt )} |
+		"media" ~> opt("(" ~> (stringLit ~ opt("," ~> numericLit)) <~ ")") ^^ {
+			case Some( t ~ l ) => MediaType( Some(t), l, None )
+			case None => MediaType( None, None, None )}
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
