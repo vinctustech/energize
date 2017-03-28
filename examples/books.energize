@@ -1,14 +1,15 @@
 resource books
-	title string
+	title string required
 	author authors
 	publisher publishers
 
 resource authors
-	name string unique
+	name string unique required
 
 resource publishers
-	name string unique
+	name string unique required
 
+/*
 if size( books ) == 0
 	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]] )
 
@@ -19,3 +20,4 @@ if size( books ) == 0
 	insert( books, {title: "The Brothers Karamazov", author: "Fyodor Dostoyevsky", publisher: "North Point Press"} )
 	insert( books, {title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", publisher: "Enhanced Media"} )
 	insert( books, {title: "The Adventures of Huckleberry Finn", author: "Mark Twain", publisher: "Amazon Classics"} )
+*/
