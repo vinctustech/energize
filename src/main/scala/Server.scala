@@ -38,7 +38,7 @@ class Server( env: Environment ) {
 	val MODIFIED = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
 
 	private def mktype( typ: String ) =
-		if (typ.startsWith( "text/" ) || typ.startsWith( "application/" ))
+		if (typ.startsWith( "text/" ))
 			ContentType.create( typ, charset )
 		else
 			ContentType.create( typ )
