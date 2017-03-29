@@ -407,27 +407,22 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-//		env.process( "PUT", "/products/1", """{"code": "123456", "type": "special"}""" ) shouldBe
-//			(SC_CREATED, "application/json",  """
-//																					|{
-//																					|  "data": 1
-//																					|}
-//																				""".trim.stripMargin )
-//		env.process( "GET", "/products", null ) shouldBe
-//			(SC_OK, "application/json", """
-//																		|{
-//																		|  "data": [
-//																		|    {
-//																		|      "id": 1,
-//																		|      "code": "123456",
-//																		|      "type": {
-//																		|        "id": 1,
-//																		|        "name": "special"
-//																		|      }
-//																		|    }
-//																		|  ]
-//																		|}
-//																	""".trim.stripMargin )
+		env.process( "PUT", "/products/1", """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/products", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": [
+																		|    {
+																		|      "id": 1,
+																		|      "code": "123456",
+																		|      "type": {
+																		|        "id": 3,
+																		|        "name": "special"
+																		|      }
+																		|    }
+																		|  ]
+																		|}
+																	""".trim.stripMargin )
 		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
  		env.process( "GET", "/products/1", null ) shouldBe
 			(SC_NOT_FOUND, "application/json",

@@ -173,7 +173,7 @@ object CommandFunctions {
 									val reft = t.asInstanceOf[SingleReferenceType].ref
 									val refc = CommandFunctionHelpers.uniqueColumn( reft )
 
-									s"$k = (SELECT id FROM $reft WHERE $refc = '$v')"
+									s"$k = (SELECT id FROM ${reft.name} WHERE $refc = '$v')"
 								}
 							case _ => k + " = " + String.valueOf( v )
 						}
