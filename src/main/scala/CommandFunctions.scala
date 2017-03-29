@@ -145,23 +145,25 @@ object CommandFunctions {
 		id
 	}
 	
-	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) =
-		if (all && json.keySet != (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet))
-			if ((resource.columns.toSet -- json.keySet) nonEmpty)
-				throw new BadRequestException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
+	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) = {
+		val fields = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet
+
+		if (all && json.keySet != fields)
+			if ((fields -- json.keySet) nonEmpty)
+				throw new BadRequestException( "update: missing field(s): " + (fields -- json.keySet).mkString( ", " ) )
 			else
-				throw new BadRequestException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
+				throw new BadRequestException( "update: excess field(s): " + (json.keySet -- fields).mkString( ", " ) )
 		else {
 			val com = new StringBuilder( "UPDATE " )
-//			var typ: ColumnType = null
-			
+			//			var typ: ColumnType = null
+
 			com ++= resource.name
 			com ++= " SET "
 			com ++=
 				(for ((k, v) <- escapeQuotes( json ).toList)
 					yield {
-						resource.columnMap(env.db.desensitize( k )).typ match {
-							case DatetimeType|TimestampType if v ne null => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
+						resource.columnMap( env.db.desensitize( k ) ).typ match {
+							case DatetimeType | TimestampType if v ne null => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
 							case StringType if v ne null => s"$k = '$v'"
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 							case t: SingleReferenceType if v ne null =>
@@ -180,6 +182,7 @@ object CommandFunctions {
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
 		}
+	}
 
 	def insertLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
