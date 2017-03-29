@@ -168,7 +168,20 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-
+		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1}""" ) shouldBe
+			(SC_BAD_REQUEST, "application/json",
+				"""
+					|{
+					|  "error": "update: missing field(s): description"
+					|}
+				""".trim.stripMargin)
+		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1, description: null, extra: null}""" ) shouldBe
+			(SC_BAD_REQUEST, "application/json",
+				"""
+					|{
+					|  "error": "update: excess field(s): extra"
+					|}
+				""".trim.stripMargin)
 		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1, description: null}""" ) shouldBe
 			(SC_NO_CONTENT, null, null)
 		env.process( "PUT", "/api/v1/test/1", """{"asdf": 1234}""" ) shouldBe
@@ -348,7 +361,18 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-
+		env.process( "POST", "/types", """{"name": "normal"}""" ) shouldBe
+			(SC_CONFLICT, "application/json", """
+																				 |{
+																				 |  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(NAME) VALUES ('normal', 1)\"; SQL statement:\nINSERT INTO types (name) VALUES ('normal') [23505-194]"
+																				 |}
+																			 """.trim.stripMargin )
+		env.process( "POST", "/types", """{"name": "special"}""" ) shouldBe
+			(SC_CREATED, "application/json", """
+																				 |{
+																				 |  "data": 3
+																				 |}
+																			 """.trim.stripMargin )
 		env.process( "POST", "/products", """{"code": "12345", "type": "normal"}""" ) shouldBe
 			(SC_CREATED, "application/json",  """
 			|{
@@ -383,7 +407,27 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-
+//		env.process( "PUT", "/products/1", """{"code": "123456", "type": "special"}""" ) shouldBe
+//			(SC_CREATED, "application/json",  """
+//																					|{
+//																					|  "data": 1
+//																					|}
+//																				""".trim.stripMargin )
+//		env.process( "GET", "/products", null ) shouldBe
+//			(SC_OK, "application/json", """
+//																		|{
+//																		|  "data": [
+//																		|    {
+//																		|      "id": 1,
+//																		|      "code": "123456",
+//																		|      "type": {
+//																		|        "id": 1,
+//																		|        "name": "special"
+//																		|      }
+//																		|    }
+//																		|  ]
+//																		|}
+//																	""".trim.stripMargin )
 		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
  		env.process( "GET", "/products/1", null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
@@ -399,6 +443,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|    {
 			|      "id": 1,
 			|      "name": "normal"
+			|    },
+			|    {
+			|      "id": 3,
+			|      "name": "special"
 			|    }
 			|  ]
 			|}
