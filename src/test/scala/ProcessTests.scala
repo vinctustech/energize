@@ -118,7 +118,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 	
-	"post/get/delete" in {
+	"post/put/get/delete" in {
 		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
@@ -138,7 +138,6 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-
 		env.process( "POST", "/api/v1/test", """{"asdf": 123}""" ) shouldBe
 			(SC_CREATED, "application/json", """
 			|{
@@ -169,6 +168,35 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
+
+		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1, description: null}""" ) shouldBe
+			(SC_NO_CONTENT, null, null)
+		env.process( "PUT", "/api/v1/test/1", """{"asdf": 1234}""" ) shouldBe
+			(SC_NO_CONTENT, null, null)
+		env.process( "GET", "/api/v1/todo", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": [
+																		|    {
+																		|      "id": 1,
+																		|      "name": "do something else",
+																		|      "description": null,
+																		|      "status": 1
+																		|    }
+																		|  ]
+																		|}
+																	""".trim.stripMargin )
+		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": {
+																		|    "id": 1,
+																		|    "name": "do something else",
+																		|    "description": null,
+																		|    "status": 1
+																		|  }
+																		|}
+																	""".trim.stripMargin )
 		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
 			(SC_OK, "application/json", """
 								|{
@@ -189,7 +217,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": [
 			|    {
 			|      "id": 1,
-			|      "asdf": 123
+			|      "asdf": 1234
 			|    }
 			|  ]
 			|}
@@ -199,7 +227,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|{
 			|  "data": {
 			|    "id": 1,
-			|    "asdf": 123
+			|    "asdf": 1234
 			|  }
 			|}
 			""".trim.stripMargin )
