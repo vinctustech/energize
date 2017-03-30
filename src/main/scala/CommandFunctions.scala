@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.Statement
+import java.sql.{Statement, Types}
 
 import collection.mutable.ListBuffer
 
@@ -72,8 +72,8 @@ object CommandFunctions {
 		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
 			
 		for (r <- rows) {
-			for (((i, t), c) <- types zip r) {
-				(t, c) match {
+			for (((i, t), v) <- types zip r) {
+				(t, v) match {
 					case (StringType, a: String) => resource.preparedInsert.setString( i, a )
 					case (IntegerType, a: java.lang.Integer) => resource.preparedInsert.setInt( i, a )
 					case (LongType, a: java.lang.Long) => resource.preparedInsert.setLong( i, a )
@@ -89,28 +89,48 @@ object CommandFunctions {
 	}
 	
 	def insert( env: Environment, resource: Table, json: OBJ ) = {
-// 		if (json.keySet == resource.names.toSet) {
-// 			
-// 			for ((n, i) <- resource.names zipWithIndex)
-// 				json(n) match {
-// 					case a: Integer => resource.preparedInsert.setInt( i + 1, a )
-// 					case a: String => resource.preparedInsert.setString( i + 1, a )
-// 				}
-// 				
-// 			resource.preparedInsert.executeUpdate
-// 			resource.preparedInsert.clearParameters
-// 			
-// 			val g = resource.preparedInsert.getGeneratedKeys
-// 			
-// 			g.next
-// 			g.getLong(1)
-// 		} else {
+		val json1 = escapeQuotes( json )
 		val diff = json.keySet -- (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet)
 
 		if (diff nonEmpty)
 			throw new BadRequestException( "insert: excess field(s): " + diff.mkString(", ") )
 
-		val com = CommandFunctionHelpers.insertCommand( env, resource, json )
+		val cols = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType])
+
+		for ((c, i) <- cols zipWithIndex)
+			json1 get c.name match {
+				case None =>
+					val t =
+						c.typ match {
+							case StringType => Types.VARCHAR
+						}
+
+					resource.preparedInsert.setNull( i + 1, t )
+				case Some( v ) =>
+					c.typ match {
+//						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+//							values += s"(SELECT id FROM $tname WHERE " +
+//								(tref.columns.find(c => c.unique ) match {
+//									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
+//									case Some( uc ) => uc.name
+//								}) + " = '" + String.valueOf( v ) + "')"
+						case ManyReferenceType( _, _ ) =>
+							if (v eq null)
+								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
+						case BinaryType|StringType if v ne null => values += '\'' + v.toString + '\''
+						case DatetimeType|TimestampType if v ne null => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
+						case ArrayType( StringType, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[String]] map (e => s"'$e'") mkString ( "(", ", ", ")" )
+						case ArrayType( _, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+						case BLOBType( rep ) =>
+							rep match {
+								case 'base64 => values += v.toString
+								case 'hex => values += '\'' + v.toString + '\''
+								case 'array => values += v.asInstanceOf[Seq[Int]].mkString( "(", ", ", ")" )
+							}
+						case _ => values += String.valueOf( v )
+					}
+			}
+
 		val id =
 			if (env.db == PostgresDatabase) {
 				val res = env.statement.executeQuery( com + "RETURNING id" )
