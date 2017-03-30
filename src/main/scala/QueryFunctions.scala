@@ -129,9 +129,11 @@ object QueryFunctions {
 								case None => sys.error( s"data from an unknown column: $dbcol" )
 								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
 									attr += (cname -> mkOBJ( reft ))
-								case Some( Column(cname, ArrayType(typ, p, _, d), _, _, _, _) ) if obj ne null =>
+								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _) ) if obj ne null =>
 									attr += (cname -> obj.asInstanceOf[Array[AnyRef]].toList)
 //									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
+								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj ne null =>
+									attr += (cname -> obj.asInstanceOf[Array[Byte]].map( b => "%02x".format(b) ).mkString)
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj ))
 								case Some( Column(cname, _, true, _, _, _) ) =>

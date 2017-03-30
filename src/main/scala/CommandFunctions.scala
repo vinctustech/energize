@@ -31,10 +31,16 @@ object CommandFunctionHelpers {
 						case ManyReferenceType( _, _ ) =>
 							if (v eq null)
 								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
-						case StringType if v ne null => values += '\'' + v.toString + '\''
+						case BinaryType|StringType if v ne null => values += '\'' + v.toString + '\''
 						case DatetimeType|TimestampType if v ne null => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
 						case ArrayType( StringType, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[String]] map (e => s"'$e'") mkString ( "(", ", ", ")" )
 						case ArrayType( _, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+						case BLOBType( rep ) =>
+							rep match {
+								case 'base64 => values += v.toString
+								case 'hex => values += '\'' + v.toString + '\''
+								case 'array => values += v.asInstanceOf[Seq[Int]].mkString( "(", ", ", ")" )
+							}
 						case _ => values += String.valueOf( v )
 					}
 			}

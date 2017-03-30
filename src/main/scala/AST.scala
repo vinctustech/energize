@@ -33,6 +33,7 @@ case object TimeType extends PrimitiveColumnType
 case object TimestampType extends PrimitiveColumnType
 case object TimestamptzType extends PrimitiveColumnType
 case object BinaryType extends PrimitiveColumnType
+case class BLOBType( rep: Symbol ) extends PrimitiveColumnType
 case object FloatType extends PrimitiveColumnType
 case class DecimalType( prec: Int, scale: Int ) extends PrimitiveColumnType
 case class MediaType( typ: Option[String], limit0: Option[String], var limit: Option[Int] ) extends PrimitiveColumnType

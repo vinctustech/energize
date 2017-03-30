@@ -168,6 +168,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"timestamp" ^^^ TimestampType |
 		"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType |
 		"binary" ^^^ BinaryType |
+		"blob" ~> opt("(" ~> stringLit <~ ")") ^^ {
+			case None => BLOBType( 'base64 )
+			case Some( r ) => BLOBType( Symbol(r) )} |
 		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
