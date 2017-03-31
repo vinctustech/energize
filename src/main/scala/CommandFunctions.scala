@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Statement, Types}
+import java.sql.{Statement, Types, Timestamp}
 import javax.sql.rowset.serial.SerialBlob
 
 import collection.mutable.ListBuffer
@@ -107,6 +107,7 @@ object CommandFunctions {
 						case IntegerType => Types.INTEGER
 						case LongType => Types.BIGINT
 						case BLOBType( _ ) => Types.BLOB
+						case TimestampType => Types.TIMESTAMP
 					}
 
 				resource.preparedInsert.setNull( i + 1, t )
@@ -127,12 +128,11 @@ object CommandFunctions {
 						//						case ManyReferenceType( _, _ ) =>
 						//							if (v eq null)
 						//								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
-						case BinaryType => sys.error( "not done yet" )
+						case BinaryType => resource.preparedInsert.setString( i + 1, v.toString )
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
 						case StringType => resource.preparedInsert.setString( i + 1, v.toString )
-//						case DatetimeType | TimestampType => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
-//						case ArrayType( StringType, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[String]] map (e => s"'$e'") mkString("(", ", ", ")")
-//						case ArrayType( _, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
+						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
 							rep match {
 //								case 'base64 => values += v.toString
