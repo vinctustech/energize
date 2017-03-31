@@ -364,7 +364,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		env.process( "POST", "/types", """{"name": "normal"}""" ) shouldBe
 			(SC_CONFLICT, "application/json", """
 																				 |{
-																				 |  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(NAME) VALUES ('normal', 1)\"; SQL statement:\nINSERT INTO types (name) VALUES ('normal') [23505-194]"
+																				 |  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(NAME) VALUES ('normal', 1)\"; SQL statement:\nINSERT INTO types (name) VALUES (?) [23505-194]"
 																				 |}
 																			 """.trim.stripMargin )
 		env.process( "POST", "/types", """{"name": "special"}""" ) shouldBe
