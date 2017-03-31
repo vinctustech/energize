@@ -209,19 +209,19 @@ object Energize {
 		interpretDefinitions( ast )
 
 		if (!internal) {
-			val e = configure_( Builtins.special.
-				replaceAll( "<base>", AUTHORIZATION.getString("base") ).
-				replaceAll( "<email>", ADMIN.getString("email") ).
-				replaceAll( "<password>", ADMIN.getString("password") ), connection, statement, db )
-
-			routes ++= e.routes
-
-			for ((k, v) <- e.tables)
-				tables get k match {
-					case Some( Table(name, columns, columnMap, _, mtm, _ )) =>
-						tables(k) = Table(name, v.columns ++ columns, v.columnMap ++ columnMap, v.resource, v.mtm || mtm, null )
-					case None => tables(k) = v
-				}
+//			val e = configure_( Builtins.special.
+//				replaceAll( "<base>", AUTHORIZATION.getString("base") ).
+//				replaceAll( "<email>", ADMIN.getString("email") ).
+//				replaceAll( "<password>", ADMIN.getString("password") ), connection, statement, db )
+//
+//			routes ++= e.routes
+//
+//			for ((k, v) <- e.tables)
+//				tables get k match {
+//					case Some( Table(name, columns, columnMap, _, mtm, _ )) =>
+//						tables(k) = Table(name, v.columns ++ columns, v.columnMap ++ columnMap, v.resource, v.mtm || mtm, null )
+//					case None => tables(k) = v
+//				}
 
 			tables.values foreach {
 				case Table( _, columns, _, _, _, _ ) =>
@@ -251,17 +251,17 @@ object Energize {
 					t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
 			}
 
-			val en = env
-			val admin =
-				Map( ADMIN.entrySet.asScala.toList.map( e =>
-					(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
-						case (k, o: java.util.List[_]) => (k, o.asScala)
-						case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
-						case (k, o) => (k, o)
-					}
-				) :+ "createdTime" -> UtilityFunctions.now(en): _* )
-
-			CommandFunctions.insert( en, tables(db.desensitize("users")), admin )
+//			val en = env
+//			val admin =
+//				Map( ADMIN.entrySet.asScala.toList.map( e =>
+//					(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
+//						case (k, o: java.util.List[_]) => (k, o.asScala)
+//						case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
+//						case (k, o) => (k, o)
+//					}
+//				) :+ "createdTime" -> UtilityFunctions.now(en): _* )
+//
+//			CommandFunctions.insert( en, tables(db.desensitize("users")), admin )
 		}
 
 		interpretExpressions( ast )
