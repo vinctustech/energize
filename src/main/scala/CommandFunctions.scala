@@ -118,19 +118,20 @@ object CommandFunctions {
 				case Some( null ) => setNull
 				case Some( v ) =>
 					c.typ match {
-						//						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-						//							values += s"(SELECT id FROM $tname WHERE " +
-						//								(tref.columns.find(c => c.unique ) match {
-						//									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
-						//									case Some( uc ) => uc.name
-						//								}) + " = '" + String.valueOf( v ) + "')"
+						case SingleReferenceType( _, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("id") )
 
-						//						case ManyReferenceType( _, _ ) =>
-						//							if (v eq null)
-						//								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
-						case BinaryType => resource.preparedInsert.setString( i + 1, v.toString )
+//								s"SELECT id FROM $tname WHERE " +
+//								(tref.columns.find(c => c.unique ) match {
+//									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
+//									case Some( uc ) => uc.name
+//								}) + " = '" + String.valueOf( v )
+
+//						case ManyReferenceType( _, _ ) =>
+//							if (v eq null)
+//								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
-						case StringType => resource.preparedInsert.setString( i + 1, v.toString )
+						case BinaryType|StringType => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
 						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
