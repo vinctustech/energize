@@ -138,8 +138,9 @@ object QueryFunctions {
 									attr += (cname -> obj.asInstanceOf[Array[Byte]].map( b => "%02x".format(b) ).mkString)
 								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj ne null =>
 									val blob = obj.asInstanceOf[Blob]
+									val array = blob.getBytes( 0L, blob.length.toInt )
 
-									attr += (cname -> blob.getBytes(0L, blob.length.toInt).toList)
+									attr += (cname -> array.toList)
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj ))
 								case Some( Column(cname, _, true, _, _, _) ) =>

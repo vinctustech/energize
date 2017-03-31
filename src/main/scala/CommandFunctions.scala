@@ -134,14 +134,15 @@ object CommandFunctions {
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
 						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
-							rep match {
-//								case 'base64 => values += v.toString
-//								case 'hex => values += '\'' + v.toString + '\''
-								case 'array =>
-									val blob = new SerialBlob( Array(v.asInstanceOf[Seq[Int]].map(a => a.toByte): _*) )
+							val array =
+								rep match {
+	//								case 'base64 => values += v.toString
+									case 'hex => v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray
+									case 'array => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
+								}
 
-									resource.preparedInsert.setBinaryStream( i + 1, blob.getBinaryStream )
-							}
+							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
+
 						//						case _ => values += String.valueOf( v )
 					}
 			}
