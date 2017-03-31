@@ -65,8 +65,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"def", "var", "val",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
 				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
+				"blob", "binary",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "binary", "float", "decimal"
+				"realm", "protected", "float", "decimal"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",

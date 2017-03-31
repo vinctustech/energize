@@ -63,6 +63,7 @@ object H2Database extends Database {
 								case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
 								case SingleReferenceType( _, _ ) => "BIGINT"
 								case ArrayType( _, _, _, _ ) => "ARRAY"
+								case BLOBType( _ ) => "BLOB"
 							})
 
 						if (required)
