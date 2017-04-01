@@ -142,7 +142,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 					try {
 						val (sc, ctype, obj) =
 							try {
-								(this add reqvars).deref( action ).asInstanceOf[(Int, String, OBJ)]
+								(this add reqvars).deref( action ).asInstanceOf[(Int, String, Any)]
 							} catch {
 								case e: UnauthorizedException =>
 									result( "Unauthorized", "realm" -> e.getMessage )
@@ -161,6 +161,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 
 						return (sc, ctype, obj match {
 								case null => null
+								case s: String => s
 								case o: Map[_, _] => DefaultJSONWriter.toString( o.asInstanceOf[OBJ] )
 //								case _ => obj
 							})

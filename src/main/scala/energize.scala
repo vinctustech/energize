@@ -1,5 +1,7 @@
 package xyz.hyperreal
 
+import java.util.Base64
+
 import com.typesafe.config.ConfigFactory
 
 import util.parsing.input.Position
@@ -16,6 +18,8 @@ package object energize {
 	lazy val AUTHORIZATION = CONFIG.getConfig( "authorization" )
 	lazy val DATETIME = CONFIG.getConfig( "datetime" )
 	lazy val ADMIN = CONFIG.getConfig( "admin" )
+
+	private val hex = "0123456789ABCDEF"
 
 	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
@@ -34,4 +38,15 @@ package object energize {
 
 		p.parseFromString( code, p.statements )
 	}
+
+	def byte2hex( b: Byte ) = new String( Array(hex charAt (b >> 4), hex charAt (b&0x0F)) )
+
+	def bytes2base64( data: Array[Byte] ) = new String( Base64.getMimeEncoder.encode(data) )
+
+	def base642bytes( data: String ) = Base64.getMimeDecoder.decode( data.getBytes )
+
+//		byte[] encodedBytes = Base64.getEncoder().encode("Test".getBytes());
+//	System.out.println("encodedBytes " + new String(encodedBytes));
+//	byte[] decodedBytes = Base64.getDecoder().decode(encodedBytes);
+//	System.out.println("decodedBytes " + new String(decodedBytes));
 }

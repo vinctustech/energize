@@ -70,7 +70,8 @@ abstract class Native( val name: String, val classes: List[Class[_]] ) extends (
 
 	def applicable( args: List[Any] ) =
 		if (args.length == argc - 1)
-			args zip classes.drop(1) forall {case (arg, cla) => arg == null || cla.isInstance( arg )}
+			args zip classes.drop(1) forall {case (arg, cla) => arg == null || cla.isInstance( arg ) ||
+				cla == classOf[java.lang.Long] && arg.isInstanceOf[java.lang.Integer]}
 		else
 			false
 			

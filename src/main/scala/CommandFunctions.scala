@@ -137,7 +137,7 @@ object CommandFunctions {
 						case BLOBType( rep ) =>
 							val array =
 								rep match {
-	//								case 'base64 => values += v.toString
+									case 'base64 => base642bytes( v.toString )
 									case 'hex => v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray
 									case 'array => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
 								}

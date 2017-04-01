@@ -26,6 +26,7 @@ object Builtins {
 		pairs( Native(ResultFunctions) ) ++
 		pairs( Native(UtilityFunctions) ) ++
 		pairs( Native(AuthorizationFunctions) ) ++
+		pairs( Native(FileFunctions) ) ++
 		constants toMap
 	
 	val routes =

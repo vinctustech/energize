@@ -91,7 +91,8 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String], allowsecret: Boolean ): List[OBJ] = {
+	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String],
+						 allowsecret: Boolean ): List[OBJ] = {
 		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[OBJ]
 
@@ -135,12 +136,16 @@ object QueryFunctions {
 									attr += (cname -> obj.asInstanceOf[Array[AnyRef]].toList)
 //									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
 								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj ne null =>
-									attr += (cname -> obj.asInstanceOf[Array[Byte]].map( b => "%02x".format(b) ).mkString)
+									attr += (cname -> obj.asInstanceOf[Array[Byte]].map( byte2hex ).mkString)
 								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj ne null =>
 									val blob = obj.asInstanceOf[Blob]
 									val array = blob.getBytes( 0L, blob.length.toInt )
 
-									attr += (cname -> array.toList)
+									rep match {
+										case 'base64 => attr += (cname -> bytes2base64( array ))
+										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
+										case 'array => attr += (cname -> array.toList)
+									}
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj ))
 								case Some( Column(cname, _, true, _, _, _) ) =>
@@ -217,5 +222,10 @@ object QueryFunctions {
 
 	def findOne( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value, false ).head
 
-	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) = findValue( env, resource, field, value, allowsecret ).headOption
+	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
+		findValue( env, resource, field, value, allowsecret ).headOption
+
+	def findBase64( env: Environment, resource: String, id: Long, field: String ) = {
+		query( env, env.tables( env.db.desensitize(resource) ), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
+	}
 }

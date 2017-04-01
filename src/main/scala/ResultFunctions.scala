@@ -5,7 +5,11 @@ import org.apache.http.HttpStatus._
 
 object ResultFunctions {
 	def Data( env: Environment, code: Int, data: Any ) = (code, "application/json", Map( "data" -> data ))
-	def Ok( env: Environment, data: Any ) = Data( env, SC_OK, data )
+	def Ok( env: Environment, data: Any ) =
+		data match {
+			case (mime, data) => (SC_OK, mime, data)
+			case _ => Data( env, SC_OK, data )
+		}
 	def Created( env: Environment, data: Any ) = Data( env, SC_CREATED, data )
 	def NoContent( env: Environment ) = (SC_NO_CONTENT, null, null)
 
