@@ -225,7 +225,16 @@ object QueryFunctions {
 	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
 		findValue( env, resource, field, value, allowsecret ).headOption
 
-	def findBase64( env: Environment, resource: String, id: Long, field: String ) = {
-		query( env, env.tables( env.db.desensitize(resource) ), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
+	def findField( env: Environment, resource: String, id: Long, field: String ) =
+		query( env, env.tables(env.db.desensitize(resource)), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
+
+	def readBlob( env: Environment, resource: String, id: Long, field: String ) = {
+		val res = env.statement.executeQuery( s"SELECT $field FROM $resource WHERE id = $id" )
+
+		res.next
+
+		val blob = res.getBlob( 1 )
+
+		blob.getBytes( 0, blob.length.toInt )
 	}
 }

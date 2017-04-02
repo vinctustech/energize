@@ -3,7 +3,6 @@ resource r
 	img blob ("base64")
 
 routes
-	GET /res:/id:long/field:/image			Ok( ("image/jpeg;base64", findBase64(res, id, field)) )
+	GET /res:/id:long/field:/image			Ok( ("image/jpeg", readBlob(res, id, field)) )
 
-insert( r, {img: readFileBase64("/home/ed/Pictures/Peach_flowers.jpg")} ) #readFileBase64("Peach_flowers.jpg")
-#print( findBase64(r, 1, "img") )
+insert( r, {img: readFileBase64("examples/media/Peach_flowers.jpg")} )

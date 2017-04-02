@@ -255,7 +255,11 @@ class Server( env: Environment ) {
 							response.setHeader( "WWW-Authenticate", "Basic " + (contents.asInstanceOf[Seq[(String, String)]]
 								map {case (k, v) => s"""$k="$v""""} mkString ",") )
 						} else if (contents ne null) {
-							val entity = new NStringEntity( contents.asInstanceOf[String], mktype(ctype) )
+							val entity =
+								contents match {
+									case s: String => new NStringEntity( s, mktype(ctype) )
+									case a: Array[Byte] => new NByteArrayEntity( a, mktype(ctype) )
+								}
 
 							if (method == "HEAD") {
 								response.setEntity( empty(entity.getContentLength, ctype) )
