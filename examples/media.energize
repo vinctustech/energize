@@ -1,8 +1,4 @@
 resource r
-#	name string
-	img blob ("base64")
+	f media
 
-routes
-	GET /res:/id:long/field:/image			Ok( ("image/jpeg", readBlob(res, id, field)) )
-
-insert( r, {img: readFileBase64("examples/media/Peach_flowers.jpg")} )
+insert( r, {f: {type: "image/jpeg", data: readFileBase64("examples/media/Peach_flowers.jpg")}} )

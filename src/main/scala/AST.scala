@@ -36,7 +36,7 @@ case object BinaryType extends PrimitiveColumnType
 case class BLOBType( rep: Symbol ) extends PrimitiveColumnType
 case object FloatType extends PrimitiveColumnType
 case class DecimalType( prec: Int, scale: Int ) extends PrimitiveColumnType
-case class MediaType( typ: Option[String], limit0: Option[String], var limit: Option[Int] ) extends PrimitiveColumnType
+case class MediaType( typ: Option[String], limit0: Option[String], var limit: Int ) extends PrimitiveColumnType
 case class ArrayType( parm: PrimitiveColumnType, dpos: Position, dim: String, var dimint: Int ) extends ColumnType
 case class SingleReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 case class ManyReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType

@@ -76,5 +76,12 @@ object Builtins {
 		|  POST    /login                     Ok( login(json) )
 		|  GET     /logout                    OkAtLeastOneOrNotFound( logout(), "token not found" )
 		|  POST    /register                  Created( register(json) )
+		|
+		|table _media_
+		|	type string
+		|	data blob
+		|
+		|routes
+		|	GET /"media"/id:long                Ok( readMedia(id) )
 		""".stripMargin
 }

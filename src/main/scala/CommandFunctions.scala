@@ -89,7 +89,7 @@ object CommandFunctions {
 		resource.preparedInsert.clearParameters
 	}
 	
-	def insert( env: Environment, resource: Table, json: OBJ ) = {
+	def insert( env: Environment, resource: Table, json: OBJ ): Long = {
 		val json1 = escapeQuotes( json )
 		val diff = json.keySet -- (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet)
 
@@ -131,6 +131,7 @@ object CommandFunctions {
 //							if (v eq null)
 //								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
+						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
 						case BinaryType|StringType => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
 						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
@@ -143,6 +144,10 @@ object CommandFunctions {
 								}
 
 							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
+						case MediaType( _, _, _ ) =>
+							val id = insert( env, env.media, v.asInstanceOf[OBJ] )
+
+							resource.preparedInsert.setLong( i + 1, id )
 
 						//						case _ => values += String.valueOf( v )
 					}

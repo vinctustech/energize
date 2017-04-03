@@ -64,6 +64,7 @@ object H2Database extends Database {
 								case SingleReferenceType( _, _ ) => "BIGINT"
 								case ArrayType( _, _, _, _ ) => "ARRAY"
 								case BLOBType( _ ) => "BLOB"
+								case MediaType( _, _, _ ) => "BIGINT"
 							})
 
 						if (required)
@@ -80,7 +81,11 @@ object H2Database extends Database {
 						buf ++= fk
 						buf ++= ") REFERENCES "
 						buf ++= ref
-						buf ++= "(id)"
+						buf ++= " (id)"
+					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
+						buf ++= ", FOREIGN KEY ("
+						buf ++= fk
+						buf ++= ") REFERENCES _media_ (id)"
 					case _ =>
 				}
 

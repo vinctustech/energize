@@ -146,6 +146,8 @@ object QueryFunctions {
 										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
 										case 'array => attr += (cname -> array.toList)
 									}
+								case Some( Column(cname, MediaType( _, _, _ ), _, _, _, _) ) if obj ne null =>
+									attr += (cname -> s"/media/$obj")
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj ))
 								case Some( Column(cname, _, true, _, _, _) ) =>
@@ -236,5 +238,19 @@ object QueryFunctions {
 		val blob = res.getBlob( 1 )
 
 		blob.getBytes( 0, blob.length.toInt )
+	}
+
+	def readMedia( env: Environment, id: Long ) = {
+		val res = env.statement.executeQuery( s"SELECT * FROM _media_ WHERE id = $id" )
+
+		res.next
+
+		val typ = res.getString( 2 )
+		val blob = res.getBlob( 3 )
+
+		(typ, blob.getBytes( 0, blob.length.toInt ))
+//		Map(
+//			"type" -> typ,
+//			"data" -> blob.getBytes( 0, blob.length.toInt ))
 	}
 }

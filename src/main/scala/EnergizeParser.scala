@@ -113,9 +113,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"realm" ~> pos ~ stringLit ^^ {case p ~ r => List( RealmDefinition(p.pos, r) )}
 
 	lazy val functionsDefinition: PackratParser[List[FunctionDefinition]] =
-		"def" ~> functionDefinition ^^ {f => List( f )} |
-		"def" ~> (Indent ~> rep1(functionDefinition <~ nl) <~ Dedent)
-		
+		"def" ~> (Indent ~> rep1(functionDefinition <~ nl) <~ Dedent) |
+		"def" ~> functionDefinition ^^ {f => List( f )}
+
 	lazy val functionDefinition: PackratParser[FunctionDefinition] =
 // 		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
 		positioned( ident ~ parenparameters ~ ("=" ~> expression) ^^ {
@@ -169,15 +169,15 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"timestamp" ^^^ TimestampType |
 		"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType |
 		"binary" ^^^ BinaryType |
-		"blob" ~> opt("(" ~> stringLit <~ ")") ^^ {
+		"blob" ~> opt("(" ~> ident <~ ")") ^^ {
 			case None => BLOBType( 'base64 )
 			case Some( r ) => BLOBType( Symbol(r) )} |
 		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
 		"media" ~> opt("(" ~> (stringLit ~ opt("," ~> numericLit)) <~ ")") ^^ {
-			case Some( t ~ l ) => MediaType( Some(t), l, None )
-			case None => MediaType( None, None, None )}
+			case Some( t ~ l ) => MediaType( Some(t), l, Int.MaxValue )
+			case None => MediaType( None, None, Int.MaxValue )}
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
@@ -219,7 +219,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"long"
 		
 	lazy val nameSegment: PackratParser[NameURISegment] =
-		ident ^^ NameURISegment
+		ident ^^ NameURISegment |
+		stringLit ^^ NameURISegment
 		
 	lazy val mathSymbols = Set( '+, '-, '*, '/, '//, Symbol("\\"), Symbol("\\%"), '^, '%, 'mod, '|, '/|, '==, '!=, '<, '>, '<=, '>= )
 	

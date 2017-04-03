@@ -16,6 +16,8 @@ import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any], val connection: Connection,
 									 val statement: Statement, val db: Database ) {
 
+	val media = tables getOrElse( db.desensitize("_media_"), null )
+
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
 	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
