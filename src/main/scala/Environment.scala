@@ -149,7 +149,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 								Environment.entityVariable.value = if (reqbody eq null) null else DefaultJSONReader.fromString( reqbody )
 								Environment.pathMap = urivars.toMap
 								Environment.queryMap = reqquery
-								eval( action ).asInstanceOf[(Int, String, AnyRef)]
+								deref( action ).asInstanceOf[(Int, String, AnyRef)]
 							} catch {
 								case e: UnauthorizedException =>
 									result( "Unauthorized", "realm" -> e.getMessage )
