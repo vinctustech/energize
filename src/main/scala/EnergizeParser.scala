@@ -71,7 +71,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
-				":", "->", ".", ";", "?", "<-", ".."
+				":", "->", ".", ";", "?", "<-", "..", "$"
 				)
 		}
 
@@ -334,7 +334,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
 		
-	lazy val variableExpression = ident ^^ VariableExpression
+	lazy val variableExpression = ident ^^ {n => VariableExpression( n , None )}
 	
 	lazy val optVariableExpression = "?" ~> ident ^^ OptVariableExpression
 	

@@ -13,14 +13,17 @@ import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
-class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any], val connection: Connection,
-									 val statement: Statement, val db: Database ) {
+object Environment {
+	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
+}
+
+class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any],
+									 val connection: Connection, val statement: Statement, val db: Database ) {
 
 	val media = tables getOrElse( db.desensitize("_media_"), null )
 
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
-	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 
@@ -247,14 +250,19 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 							
 						(this add (f.params zip (args map (a => deref( a )))).toMap).deref( f.expr )
 					case m: Map[_, _] =>
-						if (args.tail != Nil)
+						if (args == Nil || args.tail != Nil)
 							problem( pos, "can only apply a map to one argument" )
 
 						m.asInstanceOf[Map[String, Any]]( evals(args.head) )
 				}
-			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer )
+			case LiteralExpression( s: String ) => Environment.varRegex.replaceAllIn( s, replacer )
 			case LiteralExpression( v ) => v
-			case VariableExpression( n ) => lookup( n )
+			case VariableExpression( _, Some(v) ) => v
+			case v@VariableExpression( n, None ) =>
+				val o = lookup( n )
+
+				v.value = Some( o )
+				o
 			case OptVariableExpression( n ) => variables get n
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v))}: _* )
