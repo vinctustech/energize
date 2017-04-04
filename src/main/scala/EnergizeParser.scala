@@ -16,7 +16,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		{
 			override def token: Parser[Token] = decimalParser | super.token
 
-			override def identChar = letter | elem('_') | elem('$')
+			override def identChar = letter | elem('_')// | elem('$')
 			
 			override def whitespace: Parser[Any] = rep[Any](
 				whitespaceChar
@@ -323,7 +323,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			} |
 		functionLiteral |
 		variableExpression |
-		optVariableExpression |
+		queryParameterExpression |
+		pathParameterExpression |
+		systemValueExpression |
 		stringLit ^^ LiteralExpression |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
 		"null" ^^^ LiteralExpression( null ) |
@@ -336,8 +338,12 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val variableExpression = ident ^^ {n => VariableExpression( n , None )}
 	
-	lazy val optVariableExpression = "?" ~> ident ^^ OptVariableExpression
-	
+	lazy val queryParameterExpression = "?" ~> ident ^^ QueryParameterExpression
+
+	lazy val pathParameterExpression = "/" ~> ident ^^ PathParameterExpression
+
+	lazy val systemValueExpression = "$" ~> ident ^^ (n => SystemValueExpression( n ))
+
 	lazy val functionLiteral =
 		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionExpression( p, e )}
 		
@@ -377,7 +383,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
 		variableExpression |
-		optVariableExpression |
+		queryParameterExpression |
+		pathParameterExpression |
+		systemValueExpression |
 		"null" ^^^ LiteralExpression( null ) |
 		"{" ~> repsep(pair, ",") <~ "}" ^^ ObjectExpression
 

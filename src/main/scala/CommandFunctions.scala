@@ -145,7 +145,7 @@ object CommandFunctions {
 
 							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
 						case MediaType( _, _, _ ) =>
-							val id = insert( env, env.media, v.asInstanceOf[OBJ] )
+							val id = insert( env, env table "_media_", v.asInstanceOf[OBJ] )
 
 							resource.preparedInsert.setLong( i + 1, id )
 

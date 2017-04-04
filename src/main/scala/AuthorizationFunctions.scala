@@ -41,7 +41,7 @@ object AuthorizationFunctionHelpers {
 
 object AuthorizationFunctions {
 	def register( env: Environment, json: OBJ ) = {
-		val users = (env get "users" get).asInstanceOf[Table]
+		val users = env table "users"
 		val required = users.names.toSet -- Set( "createdTime", "updatedTime", "state", "groups" )
 
 		if ((required -- json.keySet) nonEmpty)
@@ -71,7 +71,7 @@ object AuthorizationFunctions {
 		if ((json.keySet -- required) nonEmpty)
 			throw new BadRequestException( "register: excess field(s): " + (required -- json.keySet).mkString(", ") )
 
-		val users = (env get "users" get).asInstanceOf[Table]
+		val users = env table "users"
 		val email = json("email")
 
 		def denied = throw new UnauthorizedException( "email or password doesn't match" )
@@ -106,7 +106,7 @@ object AuthorizationFunctions {
 		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
 			val AuthorizationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
 
-			QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email, true ) match {
+			QueryFunctions.findOption( env, env table "users", "email", email, true ) match {
 				case None => barred
 				case Some(u) =>
 					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
@@ -138,7 +138,7 @@ object AuthorizationFunctions {
 		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
 			val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
 
-			QueryFunctions.findOption( env, (env get "users" get).asInstanceOf[Table], "email", email, true ) match {
+			QueryFunctions.findOption( env, env table "users", "email", email, true ) match {
 				case None => barred
 				case Some( u ) =>
 					if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))

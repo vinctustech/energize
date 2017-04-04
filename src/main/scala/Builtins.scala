@@ -28,27 +28,33 @@ object Builtins {
 		pairs( Native(AuthorizationFunctions) ) ++
 		pairs( Native(FileFunctions) ) ++
 		constants toMap
-	
+
+	val system =
+		Map(
+			"version" -> new SystemConstant( VERSION ),
+			"entity" -> Environment.entityVariable
+		)
+
 	val routes =
 		"""
 		|routes <base>/<resource> <authorize>
-		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, id, ?fields, None, None, None), id )
+		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, /id, ?fields, None, None, None), /id )
 		|  GET     /                          Ok( list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
 		|  GET     /size                      Ok( size(<resource>) )
-		|  POST    /                          Created( insert(<resource>, json) )
-		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, false), id )
-		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, id, json, true), id )
-		|  DELETE  /id:long                   OkAtLeastOneOrNotFoundId( delete(<resource>, id), id )
+		|  POST    /                          Created( insert(<resource>, $entity) )
+		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, false), /id )
+		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, true), /id )
+		|  DELETE  /id:long                   OkAtLeastOneOrNotFoundId( delete(<resource>, /id), /id )
 		""".stripMargin
 
 	val mtmroutes =
 		"""
 		|routes <base>/<resource> <authorize>
-		|  GET     /id:long/field:            OkSingleOrNotFound( findIDMany(<resource>, id, field, ?page, ?start, ?limit), id )
-		|  POST    /id:long/field:            Created( append(<resource>, id, field, json) )
-		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, sid, field, tid ); NoContent()
-		|  DELETE  /id:long/field:            deleteLinks( <resource>, id, field, json ); NoContent()
-		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, id, field, tid), id )
+		|  GET     /id:long/field:            OkSingleOrNotFound( findIDMany(<resource>, /id, /field, ?page, ?start, ?limit), /id )
+		|  POST    /id:long/field:            Created( append(<resource>, /id, /field, $entity) )
+		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, /sid, /field, /tid ); NoContent()
+		|  DELETE  /id:long/field:            deleteLinks( <resource>, /id, /field, $entity ); NoContent()
+		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, /id, /field, /tid), /id )
 		""".stripMargin
 
 	val special =
@@ -73,15 +79,15 @@ object Builtins {
 		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
 		|
 		|routes <base>
-		|  POST    /login                     Ok( login(json) )
+		|  POST    /login                     Ok( login($entity) )
 		|  GET     /logout                    OkAtLeastOneOrNotFound( logout(), "token not found" )
-		|  POST    /register                  Created( register(json) )
+		|  POST    /register                  Created( register($entity) )
 		|
 		|table _media_
 		|	type string
 		|	data blob
 		|
 		|routes
-		|	GET /"media"/id:long                Ok( readMedia(id) )
+		|	GET /"media"/id:long                Ok( readMedia(/id) )
 		""".stripMargin
 }

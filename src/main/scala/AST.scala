@@ -58,10 +58,11 @@ case class NameURISegment( segment: String ) extends URISegment
 case class ParameterURISegment( name: String, typ: String ) extends URISegment
 
 trait ExpressionAST extends AST
-case class SystemValueExpression( name: String, value: Option[SystemValue] )
+case class SystemValueExpression( name: String, var value: Option[SystemValue] = None ) extends ExpressionAST
 case class ApplyExpression( function: ExpressionAST, pos: Position, args: List[ExpressionAST] ) extends ExpressionAST
 case class VariableExpression( name: String, var value: Option[Any] = None ) extends ExpressionAST
-case class OptVariableExpression( name: String ) extends ExpressionAST
+case class QueryParameterExpression( name: String ) extends ExpressionAST
+case class PathParameterExpression( name: String ) extends ExpressionAST
 case class LiteralExpression( value: Any ) extends ExpressionAST
 case class ObjectExpression( pairs: List[(String, ExpressionAST)] ) extends ExpressionAST
 case class ListExpression( exprs: List[ExpressionAST] ) extends ExpressionAST

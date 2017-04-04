@@ -14,13 +14,15 @@ import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
 object Environment {
-	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
+	val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
+	val entityVariable = new SystemVariable
+	var pathMap = Map[String, Any]()
+	var queryMap = Map[String, Any]()
 }
 
+// add RouteTable class to speed up adding variables
 class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any],
 									 val connection: Connection, val statement: Statement, val db: Database ) {
-
-	val media = tables getOrElse( db.desensitize("_media_"), null )
 
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
@@ -30,7 +32,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 	def routes = routeList
 
 	def add( kv: (String, Any) ) = new Environment( tables, routes, variables + kv, connection, statement, db )
-	
+
 	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, variables ++ m, connection, statement, db )
 
 	def remove( n: String ) = new Environment( tables, routes, variables - n, connection, statement, db )
@@ -40,7 +42,9 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 			case None => tables get db.desensitize( name )
 			case res => res
 		}
-	
+
+	def table( name: String ) = tables(db.desensitize(name)).asInstanceOf[Table]
+
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
 	def native( name: String, args: Any* ) = variables( name ).asInstanceOf[Native]( this, args.toList )
@@ -68,14 +72,14 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
-		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue))
-		
+		val reqquery = Map( URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)): _* )
+
 //			val map1 = new HashMap[String, Set[String]] with MultiMap[String, String]
-		
+
 //			URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => map1.addBinding( p.getName, p.getValue ))
 
 		// 	var map = Map[String, Any]()
-			
+
 		// 	URLEncodedUtils.parse( uri, "UTF-8" ).asScala foreach (
 		// 		p =>
 		// 			map get p.getName match {
@@ -85,16 +89,16 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 		// 			})
 		// 	map
 		// }
-		
+
 //		val reqfrag = uri.getFragment
-		
+
 			if (routes eq null)
 				sys.error( "no routes loaded" )
-				
+
 			val segments = {
 				val trimed = reqpath.trim
 				val l = trimed split "/" toList
-				
+
 				if (l == List( "" ))
 					return notfound
 				else if (l.nonEmpty && l.head != "")
@@ -107,17 +111,17 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 				}
 			val len = segments.length
 			val urivars = new HashMap[String, Any]
-			
+
 			def integer( s: String ) = {
 				if (s forall (c => c.isDigit))
 					Some( BigInt(s) )
 				else
 					None
 			}
-			
+
 			for (Route( rmethod, uri, action) <- routes) {
 				urivars.clear
-				
+
 				if (len == uri.length && reqmethod.toUpperCase == rmethod && uri.zip( segments ).forall {
 					case (NameURISegment( route ), segment) => route == segment
 					case (ParameterURISegment( name, "string" ), segment) =>
@@ -139,15 +143,13 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 						}
 					case _ => false
 				}) {
-					val reqvars =
-						(if (reqbody eq null)
-							urivars
-						else
-							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
 					try {
 						val (sc, ctype, obj) =
 							try {
-								(this add reqvars).deref( action ).asInstanceOf[(Int, String, AnyRef)]
+								Environment.entityVariable.value = if (reqbody eq null) null else DefaultJSONReader.fromString( reqbody )
+								Environment.pathMap = urivars.toMap
+								Environment.queryMap = reqquery
+								eval( action ).asInstanceOf[(Int, String, AnyRef)]
 							} catch {
 								case e: UnauthorizedException =>
 									result( "Unauthorized", "realm" -> e.getMessage )
@@ -263,7 +265,14 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 
 				v.value = Some( o )
 				o
-			case OptVariableExpression( n ) => variables get n
+			case PathParameterExpression( n ) => Environment.pathMap( n )
+			case QueryParameterExpression( n ) => Environment.queryMap get n
+			case SystemValueExpression( _, Some(s) ) => s.value
+			case s@SystemValueExpression( n, None ) =>
+				val v = Builtins.system( n )
+
+				s.value = Some( v )
+				v.value
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v))}: _* )
 			case ConditionalExpression( cond, no ) =>

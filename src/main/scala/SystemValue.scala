@@ -2,19 +2,13 @@ package xyz.hyperreal.energize
 
 
 abstract class SystemValue {
-	def value: Option[Any]
+	def value: Any
 }
 
 class SystemVariable extends SystemValue {
-	var value: Option[Any] = None
+	var value: Any = null
 }
 
 class SystemConstant( const: Any ) extends SystemValue {
-	private val _value = Some( const )
-
-	def value = _value
-}
-
-object SystemValues extends Map[String, SystemValue] {
-
+	def value = const
 }

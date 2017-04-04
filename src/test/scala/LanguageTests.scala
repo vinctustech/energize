@@ -11,10 +11,10 @@ class LanguageTests extends FreeSpec with PropertyChecks with Matchers {
 			"""
 			|var a = 123
 			|
-			|a = a + 456
+			|a = a + 456/2
 			|print( a )
 			""".trim.stripMargin
-		Test.capture( code ) shouldBe "579"
+		Test.capture( code ) shouldBe "351"
 	}
 	
 	"while" in {

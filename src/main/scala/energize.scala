@@ -44,10 +44,4 @@ package object energize {
 	def bytes2base64( data: Array[Byte] ) = new String( Base64.getMimeEncoder.encode(data) )
 
 	def base642bytes( data: String ) = Base64.getMimeDecoder.decode( data.getBytes )
-
-	val system =
-		Map[String, SystemValue] (
-			"version" -> new SystemConstant( VERSION ),
-			"json" -> new SystemVariable
-		)
 }
