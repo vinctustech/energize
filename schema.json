@@ -54,6 +54,11 @@
                 }
               }
             }
+          },
+          "groups": {
+            "description": "Access control groups",
+            "type": "array",
+            "items": "string"
           }
         }
       }
