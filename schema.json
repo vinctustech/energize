@@ -3,7 +3,7 @@
   "description": "Energize ReST Definition",
   "type": "object",
   "properties": {
-    "resources": {
+    "tables": {
       "title": "Resource set",
       "type": "array",
       "items": {
@@ -11,6 +11,10 @@
           "name": {
             "description": "The name of the resource",
             "type": "string"
+          },
+          "resource": {
+            "description": "True if this defines a resource; false if it defines a table",
+            "type": "boolean"
           },
           "fields": {
             "title": "Field set",
