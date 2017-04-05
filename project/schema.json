@@ -1,0 +1,62 @@
+{
+  "title": "Energize",
+  "description": "Energize ReST Definition",
+  "type": "object",
+  "properties": {
+    "resources": {
+      "title": "Resource set",
+      "type": "array",
+      "items": {
+        "properties": {
+          "name": {
+            "description": "The name of the resource",
+            "type": "string"
+          },
+          "fields": {
+            "title": "Field set",
+            "type": "array",
+            "items": {
+              "properties": {
+                "name": {
+                  "description": "The name of the field",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The data type of the field",
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "description": "Category of type",
+                      "type": "string",
+                      "enum": [
+                        "primitive",
+                        "array",
+                        "one-to-many",
+                        "many-to-many"
+                      ]
+                    },
+                    "type": {
+                      "description": "Primitive type or type parameter",
+                      "type": "string"
+                    }
+                  }
+                },
+                "modifiers": {
+                  "description": "Modifier set",
+                  "type": "array",
+                  "items": "string",
+                  "enum": [
+                    "required",
+                    "optional",
+                    "unique",
+                    "indexed"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
