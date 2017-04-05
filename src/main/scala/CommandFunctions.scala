@@ -1,48 +1,55 @@
 package xyz.hyperreal.energize
 
-import java.sql.Statement
+import java.sql.{Statement, Types, Timestamp}
+import javax.sql.rowset.serial.SerialBlob
 
 import collection.mutable.ListBuffer
 
 
 object CommandFunctionHelpers {
-	def insertCommand( env: Environment, resource: Table, json: OBJ ) = {
-		val com = new StringBuilder( "INSERT INTO " )
-		val json1 = escapeQuotes( json )
-
-		com ++= resource.name
-		com ++= resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) mkString (" (", ", ", ") ")
-		com ++= "VALUES ("
-
-		val values = new ListBuffer[String]
-
-		for (c <- resource.columns)
-			json1 get c.name match {
-				case None if c.typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
-				case None => values += "NULL"
-				case Some( v ) =>
-					c.typ match {
-						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-							values += s"(SELECT id FROM $tname WHERE " +
-								(tref.columns.find(c => c.unique ) match {
-									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
-									case Some( uc ) => uc.name
-								}) + " = '" + String.valueOf( v ) + "')"
-						case ManyReferenceType( _, _ ) =>
-							if (v eq null)
-								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
-						case StringType if v ne null => values += '\'' + v.toString + '\''
-						case DatetimeType|TimestampType if v ne null => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
-						case ArrayType( StringType, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[String]] map (e => s"'$e'") mkString ( "(", ", ", ")" )
-						case ArrayType( _, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
-						case _ => values += String.valueOf( v )
-					}
-			}
-
-		com ++= values mkString ", "
-		com += ')'
-		com.toString
-	}
+//	def insertCommand( env: Environment, resource: Table, json: OBJ ) = {
+//		val com = new StringBuilder( "INSERT INTO " )
+//		val json1 = escapeQuotes( json )
+//
+//		com ++= resource.name
+//		com ++= resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) mkString (" (", ", ", ") ")
+//		com ++= "VALUES ("
+//
+//		val values = new ListBuffer[String]
+//
+//		for (c <- resource.columns)
+//			json1 get c.name match {
+//				case None if c.typ.isInstanceOf[ManyReferenceType] =>	// quietly ignored - not considered an error
+//				case None => values += "NULL"
+//				case Some( v ) =>
+//					c.typ match {
+//						case SingleReferenceType( tname, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+//							values += s"(SELECT id FROM $tname WHERE " +
+//								(tref.columns.find(c => c.unique ) match {
+//									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
+//									case Some( uc ) => uc.name
+//								}) + " = '" + String.valueOf( v ) + "')"
+//						case ManyReferenceType( _, _ ) =>
+//							if (v eq null)
+//								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
+//						case BinaryType|StringType if v ne null => values += '\'' + v.toString + '\''
+//						case DatetimeType|TimestampType if v ne null => values += '\'' + env.db.readTimestamp( v.toString ) + '\''
+//						case ArrayType( StringType, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[String]] map (e => s"'$e'") mkString ( "(", ", ", ")" )
+//						case ArrayType( _, dpos, dim, dimint ) => values += v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+//						case BLOBType( rep ) =>
+//							rep match {
+//								case 'base64 => values += v.toString
+//								case 'hex => values += '\'' + v.toString + '\''
+//								case 'array => values += v.asInstanceOf[Seq[Int]].mkString( "(", ", ", ")" )
+//							}
+//						case _ => values += String.valueOf( v )
+//					}
+//			}
+//
+//		com ++= values mkString ", "
+//		com += ')'
+//		com.toString
+//	}
 
 	def uniqueColumn( resource: Table ) =
 		resource.columns.find(c => c.unique ) match {
@@ -66,8 +73,8 @@ object CommandFunctions {
 		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
 			
 		for (r <- rows) {
-			for (((i, t), c) <- types zip r) {
-				(t, c) match {
+			for (((i, t), v) <- types zip r) {
+				(t, v) match {
 					case (StringType, a: String) => resource.preparedInsert.setString( i, a )
 					case (IntegerType, a: java.lang.Integer) => resource.preparedInsert.setInt( i, a )
 					case (LongType, a: java.lang.Long) => resource.preparedInsert.setLong( i, a )
@@ -82,42 +89,89 @@ object CommandFunctions {
 		resource.preparedInsert.clearParameters
 	}
 	
-	def insert( env: Environment, resource: Table, json: OBJ ) = {
-// 		if (json.keySet == resource.names.toSet) {
-// 			
-// 			for ((n, i) <- resource.names zipWithIndex)
-// 				json(n) match {
-// 					case a: Integer => resource.preparedInsert.setInt( i + 1, a )
-// 					case a: String => resource.preparedInsert.setString( i + 1, a )
-// 				}
-// 				
-// 			resource.preparedInsert.executeUpdate
-// 			resource.preparedInsert.clearParameters
-// 			
-// 			val g = resource.preparedInsert.getGeneratedKeys
-// 			
-// 			g.next
-// 			g.getLong(1)
-// 		} else {
+	def insert( env: Environment, resource: Table, json: OBJ ): Long = {
+		val json1 = escapeQuotes( json )
 		val diff = json.keySet -- (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet)
 
 		if (diff nonEmpty)
 			throw new BadRequestException( "insert: excess field(s): " + diff.mkString(", ") )
 
-		val com = CommandFunctionHelpers.insertCommand( env, resource, json )
+		val cols = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType])
+		val mtms = resource.columns filter (c => c.typ.isInstanceOf[ManyReferenceType])	// mtm fields cannot be null; still needs to be checked
+
+		for ((c, i) <- cols zipWithIndex) {
+			def setNull: Unit = {
+				val t =
+					c.typ match {
+						case StringType => Types.VARCHAR
+						case IntegerType => Types.INTEGER
+						case LongType => Types.BIGINT
+						case BLOBType( _ ) => Types.BLOB
+						case TimestampType => Types.TIMESTAMP
+					}
+
+				resource.preparedInsert.setNull( i + 1, t )
+			}
+
+			json1 get c.name match {
+				case None => setNull
+				case Some( null ) => setNull
+				case Some( v ) =>
+					c.typ match {
+						case SingleReferenceType( _, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
+							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("id") )
+
+//								s"SELECT id FROM $tname WHERE " +
+//								(tref.columns.find(c => c.unique ) match {
+//									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
+//									case Some( uc ) => uc.name
+//								}) + " = '" + String.valueOf( v )
+
+//						case ManyReferenceType( _, _ ) =>
+//							if (v eq null)
+//								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
+						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
+						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
+						case BinaryType|StringType => resource.preparedInsert.setString( i + 1, v.toString )
+						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
+						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
+						case BLOBType( rep ) =>
+							val array =
+								rep match {
+									case 'base64 => base642bytes( v.toString )
+									case 'hex => v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray
+									case 'array => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
+								}
+
+							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
+						case MediaType( _, _, _ ) =>
+							val id = insert( env, env table "_media_", v.asInstanceOf[OBJ] )
+
+							resource.preparedInsert.setLong( i + 1, id )
+
+						//						case _ => values += String.valueOf( v )
+					}
+			}
+		}
+
 		val id =
-			if (env.db == PostgresDatabase) {
-				val res = env.statement.executeQuery( com + "RETURNING id" )
-
-				res.next
-				res.getLong( 1 )
-			} else {
-				env.statement.executeUpdate( com, Statement.RETURN_GENERATED_KEYS )
-
-				val g = env.statement.getGeneratedKeys
+//			if (env.db == PostgresDatabase) {
+//				val res = env.statement.executeQuery( com + "RETURNING id" )
+//
+//				res.next
+//				res.getLong( 1 )
+//			} else {
+			{
+				resource.preparedInsert.executeUpdate
+//( Statement.RETURN_GENERATED_KEYS )
+				val g = resource.preparedInsert.getGeneratedKeys
 
 				g.next
-				g.getLong( 1 )
+
+				val res = g.getLong( 1 )
+
+				resource.preparedInsert.clearParameters
+				res
 			}
 
 		val values = new ListBuffer[(String, String)]
@@ -145,23 +199,25 @@ object CommandFunctions {
 		id
 	}
 	
-	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) =
-		if (all && json.keySet != (resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet))
-			if ((resource.columns.toSet -- json.keySet) nonEmpty)
-				throw new BadRequestException( "update: missing field(s): " + (resource.names.toSet -- json.keySet).mkString(", ") )
+	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) = {
+		val fields = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet
+
+		if (all && json.keySet != fields)
+			if ((fields -- json.keySet) nonEmpty)
+				throw new BadRequestException( "update: missing field(s): " + (fields -- json.keySet).mkString( ", " ) )
 			else
-				throw new BadRequestException( "update: excess field(s): " + (json.keySet -- resource.names.toSet).mkString(", ") )
+				throw new BadRequestException( "update: excess field(s): " + (json.keySet -- fields).mkString( ", " ) )
 		else {
 			val com = new StringBuilder( "UPDATE " )
-//			var typ: ColumnType = null
-			
+			//			var typ: ColumnType = null
+
 			com ++= resource.name
 			com ++= " SET "
 			com ++=
 				(for ((k, v) <- escapeQuotes( json ).toList)
 					yield {
-						resource.columnMap(env.db.desensitize( k )).typ match {
-							case DatetimeType|TimestampType if v ne null => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
+						resource.columnMap( env.db.desensitize( k ) ).typ match {
+							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
 							case StringType if v ne null => s"$k = '$v'"
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 							case t: SingleReferenceType if v ne null =>
@@ -171,7 +227,7 @@ object CommandFunctions {
 									val reft = t.asInstanceOf[SingleReferenceType].ref
 									val refc = CommandFunctionHelpers.uniqueColumn( reft )
 
-									s"$k = (SELECT id FROM $reft WHERE $refc = '$v')"
+									s"$k = (SELECT id FROM ${reft.name} WHERE $refc = '$v')"
 								}
 							case _ => k + " = " + String.valueOf( v )
 						}
@@ -180,6 +236,7 @@ object CommandFunctions {
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
 		}
+	}
 
 	def insertLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {

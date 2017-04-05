@@ -38,7 +38,7 @@ object REPLMain extends App {
 	var url = "jdbc:h2:mem:"
 	var user = "sa"
 	var password = ""
-
+	var config: String = _
 		
 	sys.addShutdownHook {
 		connection.close
@@ -50,9 +50,20 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		env = Environment( Map(), Nil, Builtins.map ++ vars, connection, statement, db )
+		env = new Environment( Map(), Nil, Builtins.map ++ vars, connection, statement, db )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
+	}
+
+	def reconnect = {
+		if (connection ne null)
+			connection.close
+
+		connect
+	}
+
+	def load( conf: String ) = {
+		env = Energize.configure( io.Source.fromFile(conf + ".energize"), connection, statement, db ) add vars
 	}
 
 	connect
@@ -74,10 +85,7 @@ object REPLMain extends App {
 					user = DATABASE.getString( "user" )
 					password = DATABASE.getString( "password" )
 				case List( "connect"|"c" ) =>
-					if (connection ne null)
-						connection.close
-
-					connect
+					reconnect
 				case List( "connect"|"c", u ) =>
 					if (connection ne null)
 						connection.close
@@ -95,6 +103,7 @@ object REPLMain extends App {
 					|connect (c) <url>                    connect to database using <url> clearing in-memory table and routing information
 					|db                                   show current database parameters
 					|driver (d) <driver>                  set database <driver>
+					|load (l)                             reload previously loaded configuration
 					|load (l) <config>                    load a <config> (".energize" file) creating all tables and routes as specified
 					|help (h)                             print this summary
 					|password (p) <password>              set database <password>
@@ -110,8 +119,15 @@ object REPLMain extends App {
 					|<SQL>                                execute <SQL> non-query command
 					|?<expression>                        evaluate an ENERGIZE action script expression
 					""".trim.stripMargin.lines foreach out.println
-				case List( "load"|"l", config ) =>
-					env = Energize.configure( io.Source.fromFile(config + ".energize"), connection, statement, db ) add vars
+				case List( "load"|"l" ) =>
+					if (config eq null)
+						println( "no configuration has been loaded" )
+
+					reconnect
+					load( config )
+				case List( "load"|"l", conf ) =>
+					config = conf
+					load( conf )
 //				case List( "wipe"|"w" ) =>
 //					connection.close
 //					new File( sys.props("user.home"), db + ".mv.db" ).delete

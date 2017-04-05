@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit
 import java.io.{ByteArrayOutputStream, File}
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
+import java.nio.charset.Charset
 
 import org.apache.http.{HttpRequest, ExceptionLogger, HttpResponse, HttpEntityEnclosingRequest}
 import org.apache.http.entity.ContentType
@@ -17,6 +18,10 @@ import org.apache.http.HttpStatus._
 
 class Server( env: Environment ) {
 	val origin = SERVER.getString( "origin" )
+	val docroot = SERVER.getString( "docroot" )
+	val charset = Charset forName SERVER.getString( "charset" )
+	val `text/html` = mktype( "text/html" )
+	val `application/json` = mktype( "application/json" )
 	val config = IOReactorConfig.custom
 		.setSoTimeout( SERVER.getInt("timeout") )
 		.setTcpNoDelay(true)
@@ -29,9 +34,14 @@ class Server( env: Environment ) {
 		.setExceptionLogger(ExceptionLogger.STD_ERR)
 		.registerHandler("*", new RequestHandler)
 		.create
-	val docroot = SERVER.getString( "docroot" )
 	val EXTENSION = ".*\\.(.*)"r
 	val MODIFIED = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
+
+	private def mktype( typ: String ) =
+		if (typ.startsWith( "text/" ))
+			ContentType.create( typ, charset )
+		else
+			ContentType.create( typ )
 
 	def start {
 		server.start
@@ -62,8 +72,8 @@ class Server( env: Environment ) {
 			httpexchange.submitResponse( new BasicAsyncResponseProducer(response) )
 		}
 
-		private def empty( length: Long ) =
-			new NByteArrayEntity( new Array[Byte]( 0 ), 0, 0, ContentType.APPLICATION_JSON ) {
+		private def empty( length: Long, typ: String ) =
+			new NByteArrayEntity( new Array[Byte]( 0 ), 0, 0, mktype(typ) ) {
 				override def getContentLength = length
 			}
 
@@ -86,7 +96,7 @@ class Server( env: Environment ) {
 				response.setHeader( "Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,PATCH,DELETE,OPTIONS")
 				response.setStatusCode( SC_OK )
 				response.setEntity(
-					new NStringEntity( s"<html><body><p>Supported methods: HEAD, GET, PUT, POST, PATCH, DELETE, OPTIONS</p></body></html>", ContentType.TEXT_HTML ) )
+					new NStringEntity( s"<html><body><p>Supported methods: HEAD, GET, PUT, POST, PATCH, DELETE, OPTIONS</p></body></html>", `text/html` ) )
 			} else {
 				response.setHeader( "Access-Control-Allow-Origin", origin )
 
@@ -101,7 +111,7 @@ class Server( env: Environment ) {
 									case _ => env
 								}
 						}
-					val (status, contents) =
+					val (status, ctype, contents) =
 						request match {
 							case withEntity: HttpEntityEnclosingRequest =>
 								val buf = new ByteArrayOutputStream
@@ -132,16 +142,14 @@ class Server( env: Environment ) {
 							response.setStatusCode( SC_NOT_FOUND )
 
 							val entity = new NStringEntity(
-								s"<html><body><h1>$target not found</h1></body></html>",
-								ContentType.create("text/html", "UTF-8"))
+								s"<html><body><h1>$target not found</h1></body></html>", `text/html`)
 
 							response.setEntity( entity )
 						} else if (!file.canRead) {
 							response.setStatusCode( SC_FORBIDDEN )
 
 							val entity = new NStringEntity(
-								"<html><body><h1>Access denied</h1></body></html>",
-								ContentType.create("text/html", "UTF-8"))
+								"<html><body><h1>Access denied</h1></body></html>", `text/html`)
 
 							response.setEntity( entity )
 						} else if (file.isDirectory) {
@@ -219,7 +227,7 @@ class Server( env: Environment ) {
 										</table>
 									</body>
 								</html>
-							val entity = new NStringEntity("<!DOCTYPE html>\n" + index, ContentType.create("text/html", "UTF-8"))
+							val entity = new NStringEntity("<!DOCTYPE html>\n" + index, `text/html`)
 
 							response.setStatusCode(SC_OK)
 							response.setEntity(entity)
@@ -227,11 +235,11 @@ class Server( env: Environment ) {
 							val EXTENSION(ext) = file.getName.toLowerCase
 							val contentType =
 								ext match {
-									case "html"|"htm" => ContentType.create("text/html")
+									case "html"|"htm" => `text/html`
 									case "jpeg"|"jpg" => ContentType.create("image/jpeg")
 									case "css" => ContentType.create("text/css")
 									case "js" => ContentType.create("application/javascript")
-									case "json" => ContentType.create("application/json")
+									case "json" => `application/json`
 								}
 
 							response.setStatusCode(SC_OK)
@@ -245,12 +253,16 @@ class Server( env: Environment ) {
 
 						if (status == SC_UNAUTHORIZED) {
 							response.setHeader( "WWW-Authenticate", "Basic " + (contents.asInstanceOf[Seq[(String, String)]]
-								map {case (k, v) => s"""$k="$v""""} mkString ",") )}
-						else if (contents ne null) {
-							val entity = new NStringEntity( contents.asInstanceOf[String], ContentType.APPLICATION_JSON )
+								map {case (k, v) => s"""$k="$v""""} mkString ",") )
+						} else if (contents ne null) {
+							val entity =
+								contents match {
+									case s: String => new NStringEntity( s, mktype(ctype) )
+									case a: Array[Byte] => new NByteArrayEntity( a, mktype(ctype) )
+								}
 
 							if (method == "HEAD") {
-								response.setEntity( empty(entity.getContentLength) )
+								response.setEntity( empty(entity.getContentLength, ctype) )
 							} else
 								response.setEntity( entity )
 						}
@@ -260,7 +272,7 @@ class Server( env: Environment ) {
 						e.printStackTrace( Console.err )
 						response.setStatusCode( SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
-							new NStringEntity( s"""{"error": "${e.getMessage}"}""", ContentType.APPLICATION_JSON ) )
+							new NStringEntity( s"""{"error": "${e.getMessage}"}""", `application/json` ) )
 				}
 			}
 		}

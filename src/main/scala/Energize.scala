@@ -68,7 +68,7 @@ object Energize {
 		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
-		def env = Environment( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
+		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
@@ -190,7 +190,8 @@ object Energize {
 
 							if (protection nonEmpty)
 								for ((Route( method, path, action), i) <- block zipWithIndex)
-									block(i) = Route( method, path, CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get))), action) )
+									block(i) = Route( method, path,
+										CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get))), action) )
 					}
 
 					block ++=: routes
@@ -238,7 +239,7 @@ object Energize {
 
 			if (tables.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, tables.head._1, null ).next) {
 				//			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
-				//			println( db.create(sorted) )
+//				println( db.create(sorted) )
 				statement.execute( db.create(sorted) )
 			}
 

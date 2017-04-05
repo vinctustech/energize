@@ -1,0 +1,10 @@
+resource books
+	title string
+	authors authors array
+	publisher publishers
+
+resource authors
+	name string unique
+
+resource publishers
+	name string unique

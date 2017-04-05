@@ -12,11 +12,12 @@ object H2Database extends Database {
 	val ZONEID = zoneId
 	val SYSTEM_ZONEID = ZoneId.systemDefault
 
-	def readTimestamp( d: String ) = {
+	def readTimestamp( d: String ): Timestamp = {
 		val t = OffsetDateTime.parse( d )
 		val u = t.toInstant.atZone( SYSTEM_ZONEID ).toLocalDateTime//atOffset( ZoneOffset.UTC )
 
-		u.format( TIMESTAMP_FORMAT )
+//		u.format( TIMESTAMP_FORMAT )
+		Timestamp.valueOf( u )
 	}
 
 	def writeTimestamp( o: Any ) = {
@@ -62,6 +63,8 @@ object H2Database extends Database {
 								case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
 								case SingleReferenceType( _, _ ) => "BIGINT"
 								case ArrayType( _, _, _, _ ) => "ARRAY"
+								case BLOBType( _ ) => "BLOB"
+								case MediaType( _, _, _ ) => "BIGINT"
 							})
 
 						if (required)
@@ -78,7 +81,11 @@ object H2Database extends Database {
 						buf ++= fk
 						buf ++= ") REFERENCES "
 						buf ++= ref
-						buf ++= "(id)"
+						buf ++= " (id)"
+					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
+						buf ++= ", FOREIGN KEY ("
+						buf ++= fk
+						buf ++= ") REFERENCES _media_ (id)"
 					case _ =>
 				}
 
@@ -112,7 +119,8 @@ object PostgresDatabase extends Database {
 		val t = OffsetDateTime.parse( d )
 		val u = t.toInstant.atOffset( ZoneOffset.UTC ).toLocalDateTime
 
-		u.format( TIMESTAMP_FORMAT )
+//		u.format( TIMESTAMP_FORMAT )
+		Timestamp.valueOf( u )
 	}
 
 	def writeTimestamp( o: Any ) = {
@@ -209,7 +217,8 @@ object MySQLDatabase extends Database {
 		val t = OffsetDateTime.parse( d )
 		val u = t.toInstant.atOffset( ZoneOffset.UTC ).toLocalDateTime
 
-		u.format( TIMESTAMP_FORMAT )
+//		u.format( TIMESTAMP_FORMAT )
+		Timestamp.valueOf( u )
 	}
 
 	def writeTimestamp( o: Any ) = {
@@ -333,7 +342,7 @@ abstract class Database {
 			case _ =>
 		}
 
-	def readTimestamp( d: String ): String
+	def readTimestamp( d: String ): Timestamp
 
 	def writeTimestamp( o: Any ): String
 

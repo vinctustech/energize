@@ -47,3 +47,13 @@ GET http://localhost:8080/messages?sort=text&order=asc
 This will sort the result list by the `text` field in ascending order.
 
 > Note: If you only pass the `sort` query parameter, `order` will be set to ascending by default.
+
+### Size
+
+To return the total number of documents of a resource, use the `count` path parameter on the resource end-point.
+
+```
+GET http://localhost:8080/messages/count
+```
+
+This will return the total number of documents of the specified resource.

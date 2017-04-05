@@ -23,34 +23,47 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/test", null ) shouldBe
-			(SC_OK,
+			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": []
 					|}
 				""".trim.stripMargin )
+		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
+			(SC_OK, "application/json", """
+								|{
+								|  "data": 0
+								|}
+							""".trim.stripMargin )
+		env.process( "GET", "/api/v1/test/size", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": 0
+					|}
+				""".trim.stripMargin )
  		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
  		env.process( "GET", "/api/v1/test/1", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
  		env.process( "GET", "/api/v1/tod", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""{
 					|  "error": "route not found"
 					|}""".stripMargin)
@@ -72,40 +85,40 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/todo", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/test", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
  		env.process( "GET", "/todo/1", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
  		env.process( "GET", "/test/1", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
  		env.process( "GET", "/tod", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""{
 					|  "error": "route not found"
 					|}""".stripMargin)
 		c.close
 	}
 	
-	"post/get/delete" in {
+	"post/put/get/delete" in {
 		val (c, s, d) = Test.dbconnect
 		val config =
 			"""
@@ -120,20 +133,19 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "POST", "/api/v1/todo", """{"name": "do something", "status": 1}""" ) shouldBe
-			(SC_CREATED, """
+			(SC_CREATED, "application/json", """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-
 		env.process( "POST", "/api/v1/test", """{"asdf": 123}""" ) shouldBe
-			(SC_CREATED, """
+			(SC_CREATED, "application/json", """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/todo", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": [
 			|    {
@@ -146,7 +158,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": {
 			|    "id": 1,
@@ -156,42 +168,97 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe (SC_NO_CONTENT, null)
- 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
-			(SC_NOT_FOUND,
+//		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1}""" ) shouldBe
+//			(SC_BAD_REQUEST, "application/json",
+//				"""
+//					|{
+//					|  "error": "update: missing field(s): description"
+//					|}
+//				""".trim.stripMargin)
+		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1, description: null, extra: null}""" ) shouldBe
+			(SC_BAD_REQUEST, "application/json",
 				"""
 					|{
-					|  "error": "id 1 not found"
+					|  "error": "update: excess field(s): extra"
 					|}
-				""".trim.stripMargin )
-		env.process( "GET", "/api/v1/test", null ) shouldBe
-			(SC_OK, """
-			|{
-			|  "data": [
-			|    {
-			|      "id": 1,
-			|      "asdf": 123
-			|    }
-			|  ]
-			|}
-			""".trim.stripMargin )
-		env.process( "GET", "/api/v1/test/1", null ) shouldBe
-			(SC_OK, """
-			|{
-			|  "data": {
-			|    "id": 1,
-			|    "asdf": 123
-			|  }
-			|}
-			""".trim.stripMargin )
-		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe (SC_NO_CONTENT, null)
- 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
-			(SC_NOT_FOUND,
-				"""
-					|{
-					|  "error": "id 1 not found"
-					|}
-				""".trim.stripMargin )
+				""".trim.stripMargin)
+//		env.process( "PUT", "/api/v1/todo/1", """{"name": "do something else", "status": 1, description: null}""" ) shouldBe
+//			(SC_NO_CONTENT, null, null)
+//		env.process( "PUT", "/api/v1/test/1", """{"asdf": 1234}""" ) shouldBe
+//			(SC_NO_CONTENT, null, null)
+//		env.process( "GET", "/api/v1/todo", null ) shouldBe
+//			(SC_OK, "application/json", """
+//																		|{
+//																		|  "data": [
+//																		|    {
+//																		|      "id": 1,
+//																		|      "name": "do something else",
+//																		|      "description": null,
+//																		|      "status": 1
+//																		|    }
+//																		|  ]
+//																		|}
+//																	""".trim.stripMargin )
+//		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
+//			(SC_OK, "application/json", """
+//																		|{
+//																		|  "data": {
+//																		|    "id": 1,
+//																		|    "name": "do something else",
+//																		|    "description": null,
+//																		|    "status": 1
+//																		|  }
+//																		|}
+//																	""".trim.stripMargin )
+//		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
+//			(SC_OK, "application/json", """
+//								|{
+//								|  "data": 1
+//								|}
+//							""".trim.stripMargin )
+//		env.process( "DELETE", "/api/v1/todo/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+// 		env.process( "GET", "/api/v1/todo/1", null ) shouldBe
+//			(SC_NOT_FOUND, "application/json",
+//				"""
+//					|{
+//					|  "error": "id 1 not found"
+//					|}
+//				""".trim.stripMargin )
+//		env.process( "GET", "/api/v1/test", null ) shouldBe
+//			(SC_OK, "application/json", """
+//			|{
+//			|  "data": [
+//			|    {
+//			|      "id": 1,
+//			|      "asdf": 1234
+//			|    }
+//			|  ]
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "GET", "/api/v1/test/1", null ) shouldBe
+//			(SC_OK, "application/json", """
+//			|{
+//			|  "data": {
+//			|    "id": 1,
+//			|    "asdf": 1234
+//			|  }
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "GET", "/api/v1/test/size", null ) shouldBe
+//			(SC_OK, "application/json",
+//				"""
+//					|{
+//					|  "data": 1
+//					|}
+//				""".trim.stripMargin )
+//		env.process( "DELETE", "/api/v1/test/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+// 		env.process( "GET", "/api/v1/test/1", null ) shouldBe
+//			(SC_NOT_FOUND, "application/json",
+//				"""
+//					|{
+//					|  "error": "id 1 not found"
+//					|}
+//				""".trim.stripMargin )
 		c.close
 	}
 	
@@ -202,21 +269,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 			|
 			|routes
-			|	GET   /f/a:integer/b:integer Ok( null, f(a, b) )
-			|	GET   /plus/a:/b:            Ok( null, a + b )
-			|	GET   /combine               Ok( null, {"a": 1} + json )
-			|	GET   /eval                  Ok( null, toString(eval(json.expr)) )			# GET /eval {"expr": "3 + 4"}
+			|	GET   /f/a:integer/b:integer Ok( f(/a, /b) )
+			|	GET   /plus/a:/b:            Ok( /a + /b )
+			|	GET   /combine               Ok( {"a": 1} + $entity )
+			|	GET   /eval                  Ok( toString(eval($entity.expr)) )			# GET /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/eval", """ {"expr": "(i + 2)/2*i"} """ ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": "-1/2+i"
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/f/3/4", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": {
 			|    "a": 3,
@@ -242,33 +309,33 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "GET", "/products", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
 		env.process( "GET", "/types", null ) shouldBe
-			(SC_OK, """
+			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
  		env.process( "GET", "/products/1", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
  		env.process( "GET", "/types/1", null ) shouldBe
-			(SC_NOT_FOUND,
+			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		env.process( "GET", "/product", null ) shouldBe //deliberatly misspelled
-			(SC_NOT_FOUND,
+ 		env.process( "GET", "/product", null ) shouldBe
+			(SC_NOT_FOUND, "application/json",
 				"""{
 					|  "error": "route not found"
 					|}""".stripMargin )
@@ -289,82 +356,113 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val env = Energize.configure( io.Source.fromString(config), c, s, d )
 
 		env.process( "POST", "/types", """{"name": "normal"}""" ) shouldBe
-			(SC_CREATED, """
+			(SC_CREATED, "application/json", """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-
-		env.process( "POST", "/products", """{"code": "12345", "type": "normal"}""" ) shouldBe
-			(SC_CREATED,  """
-			|{
-			|  "data": 1
-			|}
-			""".trim.stripMargin )
-		env.process( "GET", "/products", null ) shouldBe
-			(SC_OK, """
-			|{
-			|  "data": [
-			|    {
-			|      "id": 1,
-			|      "code": "12345",
-			|      "type": {
-			|        "id": 1,
-			|        "name": "normal"
-			|      }
-			|    }
-			|  ]
-			|}
-			""".trim.stripMargin )
-		env.process( "GET", "/products/1", null ) shouldBe
-			(SC_OK, """
-			|{
-			|  "data": {
-			|    "id": 1,
-			|    "code": "12345",
-			|    "type": {
-			|      "id": 1,
-			|      "name": "normal"
-			|    }
-			|  }
-			|}
-			""".trim.stripMargin )
-		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null)
- 		env.process( "GET", "/products/1", null ) shouldBe
-			(SC_NOT_FOUND,
-				"""
-					|{
-					|  "error": "id 1 not found"
-					|}
-				""".trim.stripMargin )
-		env.process( "GET", "/types", null ) shouldBe
-			(SC_OK, """
-			|{
-			|  "data": [
-			|    {
-			|      "id": 1,
-			|      "name": "normal"
-			|    }
-			|  ]
-			|}
-			""".trim.stripMargin )
-		env.process( "GET", "/types/1", null ) shouldBe
-			(SC_OK, """
-			|{
-			|  "data": {
-			|    "id": 1,
-			|    "name": "normal"
-			|  }
-			|}
-			""".trim.stripMargin )
-		env.process( "DELETE", "/types/1", null ) shouldBe (SC_NO_CONTENT, null)
- 		env.process( "GET", "/types/1", null ) shouldBe
-			(SC_NOT_FOUND,
-				"""
-					|{
-					|  "error": "id 1 not found"
-					|}
-				""".trim.stripMargin )
+		env.process( "POST", "/types", """{"name": "normal"}""" ) shouldBe
+			(SC_CONFLICT, "application/json", """
+																				 |{
+																				 |  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(NAME) VALUES ('normal', 1)\"; SQL statement:\nINSERT INTO types (name) VALUES (?) [23505-194]"
+																				 |}
+																			 """.trim.stripMargin )
+//		env.process( "POST", "/types", """{"name": "special"}""" ) shouldBe
+//			(SC_CREATED, "application/json", """
+//																				 |{
+//																				 |  "data": 3
+//																				 |}
+//																			 """.trim.stripMargin )
+//		env.process( "POST", "/products", """{"code": "12345", "type": "normal"}""" ) shouldBe
+//			(SC_CREATED, "application/json",  """
+//			|{
+//			|  "data": 1
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "GET", "/products", null ) shouldBe
+//			(SC_OK, "application/json", """
+//			|{
+//			|  "data": [
+//			|    {
+//			|      "id": 1,
+//			|      "code": "12345",
+//			|      "type": {
+//			|        "id": 1,
+//			|        "name": "normal"
+//			|      }
+//			|    }
+//			|  ]
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "GET", "/products/1", null ) shouldBe
+//			(SC_OK, "application/json", """
+//			|{
+//			|  "data": {
+//			|    "id": 1,
+//			|    "code": "12345",
+//			|    "type": {
+//			|      "id": 1,
+//			|      "name": "normal"
+//			|    }
+//			|  }
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "PUT", "/products/1", """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+//		env.process( "GET", "/products", null ) shouldBe
+//			(SC_OK, "application/json", """
+//																		|{
+//																		|  "data": [
+//																		|    {
+//																		|      "id": 1,
+//																		|      "code": "123456",
+//																		|      "type": {
+//																		|        "id": 3,
+//																		|        "name": "special"
+//																		|      }
+//																		|    }
+//																		|  ]
+//																		|}
+//																	""".trim.stripMargin )
+//		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+// 		env.process( "GET", "/products/1", null ) shouldBe
+//			(SC_NOT_FOUND, "application/json",
+//				"""
+//					|{
+//					|  "error": "id 1 not found"
+//					|}
+//				""".trim.stripMargin )
+//		env.process( "GET", "/types", null ) shouldBe
+//			(SC_OK, "application/json", """
+//			|{
+//			|  "data": [
+//			|    {
+//			|      "id": 1,
+//			|      "name": "normal"
+//			|    },
+//			|    {
+//			|      "id": 3,
+//			|      "name": "special"
+//			|    }
+//			|  ]
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "GET", "/types/1", null ) shouldBe
+//			(SC_OK, "application/json", """
+//			|{
+//			|  "data": {
+//			|    "id": 1,
+//			|    "name": "normal"
+//			|  }
+//			|}
+//			""".trim.stripMargin )
+//		env.process( "DELETE", "/types/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+// 		env.process( "GET", "/types/1", null ) shouldBe
+//			(SC_NOT_FOUND, "application/json",
+//				"""
+//					|{
+//					|  "error": "id 1 not found"
+//					|}
+//				""".trim.stripMargin )
 		c.close
 	}
 }

@@ -33,8 +33,10 @@ case object TimeType extends PrimitiveColumnType
 case object TimestampType extends PrimitiveColumnType
 case object TimestamptzType extends PrimitiveColumnType
 case object BinaryType extends PrimitiveColumnType
+case class BLOBType( rep: Symbol ) extends PrimitiveColumnType
 case object FloatType extends PrimitiveColumnType
 case class DecimalType( prec: Int, scale: Int ) extends PrimitiveColumnType
+case class MediaType( typ: Option[String], limit0: Option[String], var limit: Int ) extends PrimitiveColumnType
 case class ArrayType( parm: PrimitiveColumnType, dpos: Position, dim: String, var dimint: Int ) extends ColumnType
 case class SingleReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 case class ManyReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
@@ -56,9 +58,11 @@ case class NameURISegment( segment: String ) extends URISegment
 case class ParameterURISegment( name: String, typ: String ) extends URISegment
 
 trait ExpressionAST extends AST
+case class SystemValueExpression( name: String, var value: Option[SystemValue] = None ) extends ExpressionAST
 case class ApplyExpression( function: ExpressionAST, pos: Position, args: List[ExpressionAST] ) extends ExpressionAST
-case class VariableExpression( name: String ) extends ExpressionAST
-case class OptVariableExpression( name: String ) extends ExpressionAST
+case class VariableExpression( name: String, var value: Option[Any] = None ) extends ExpressionAST
+case class QueryParameterExpression( name: String ) extends ExpressionAST
+case class PathParameterExpression( name: String ) extends ExpressionAST
 case class LiteralExpression( value: Any ) extends ExpressionAST
 case class ObjectExpression( pairs: List[(String, ExpressionAST)] ) extends ExpressionAST
 case class ListExpression( exprs: List[ExpressionAST] ) extends ExpressionAST

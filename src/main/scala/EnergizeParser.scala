@@ -16,7 +16,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		{
 			override def token: Parser[Token] = decimalParser | super.token
 
-			override def identChar = letter | elem('_') | elem('$')
+			override def identChar = letter | elem('_')// | elem('$')
 			
 			override def whitespace: Parser[Any] = rep[Any](
 				whitespaceChar
@@ -64,13 +64,14 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone",
+				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
+				"blob", "binary",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "binary", "float", "decimal"
+				"realm", "protected", "float", "decimal"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
-				":", "->", ".", ";", "?", "<-", ".."
+				":", "->", ".", ";", "?", "<-", "..", "$"
 				)
 		}
 
@@ -112,9 +113,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"realm" ~> pos ~ stringLit ^^ {case p ~ r => List( RealmDefinition(p.pos, r) )}
 
 	lazy val functionsDefinition: PackratParser[List[FunctionDefinition]] =
-		"def" ~> functionDefinition ^^ {f => List( f )} |
-		"def" ~> (Indent ~> rep1(functionDefinition <~ nl) <~ Dedent)
-		
+		"def" ~> (Indent ~> rep1(functionDefinition <~ nl) <~ Dedent) |
+		"def" ~> functionDefinition ^^ {f => List( f )}
+
 	lazy val functionDefinition: PackratParser[FunctionDefinition] =
 // 		pos ~ ident ~ parenparameters ~ ("=" ~> expression) ^^ {case p ~ n ~ pat ~ e => FunctionDefinition( p.pos, n, FunctionPart(pat, e) )}
 		positioned( ident ~ parenparameters ~ ("=" ~> expression) ^^ {
@@ -168,10 +169,15 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"timestamp" ^^^ TimestampType |
 		"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType |
 		"binary" ^^^ BinaryType |
+		"blob" ~> opt("(" ~> ident <~ ")") ^^ {
+			case None => BLOBType( 'base64 )
+			case Some( r ) => BLOBType( Symbol(r) )} |
 		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
-			case p ~ s => DecimalType( p.toInt, s.toInt )
-		}
+			case p ~ s => DecimalType( p.toInt, s.toInt )} |
+		"media" ~> opt("(" ~> (stringLit ~ opt("," ~> numericLit)) <~ ")") ^^ {
+			case Some( t ~ l ) => MediaType( Some(t), l, Int.MaxValue )
+			case None => MediaType( None, None, Int.MaxValue )}
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
@@ -213,7 +219,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"long"
 		
 	lazy val nameSegment: PackratParser[NameURISegment] =
-		ident ^^ NameURISegment
+		ident ^^ NameURISegment |
+		stringLit ^^ NameURISegment
 		
 	lazy val mathSymbols = Set( '+, '-, '*, '/, '//, Symbol("\\"), Symbol("\\%"), '^, '%, 'mod, '|, '/|, '==, '!=, '<, '>, '<=, '>= )
 	
@@ -316,7 +323,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			} |
 		functionLiteral |
 		variableExpression |
-		optVariableExpression |
+		queryParameterExpression |
+		pathParameterExpression |
+		systemValueExpression |
 		stringLit ^^ LiteralExpression |
 		("true"|"false") ^^ (b => LiteralExpression( b.toBoolean )) |
 		"null" ^^^ LiteralExpression( null ) |
@@ -327,10 +336,14 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val pair: PackratParser[(String, ExpressionAST)] = (ident|stringLit) ~ (":" ~> expression) ^^ {case k ~ v => (k, v)}
 		
-	lazy val variableExpression = ident ^^ VariableExpression
+	lazy val variableExpression = ident ^^ {n => VariableExpression( n , None )}
 	
-	lazy val optVariableExpression = "?" ~> ident ^^ OptVariableExpression
-	
+	lazy val queryParameterExpression = "?" ~> ident ^^ QueryParameterExpression
+
+	lazy val pathParameterExpression = "/" ~> ident ^^ PathParameterExpression
+
+	lazy val systemValueExpression = "$" ~> ident ^^ (n => SystemValueExpression( n ))
+
 	lazy val functionLiteral =
 		parameters ~ ("->" ~> expression) ^^ {case p ~ e => FunctionExpression( p, e )}
 		
@@ -370,7 +383,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val actionPrimaryExpression: PackratParser[ExpressionAST] =
 		variableExpression |
-		optVariableExpression |
+		queryParameterExpression |
+		pathParameterExpression |
+		systemValueExpression |
 		"null" ^^^ LiteralExpression( null ) |
 		"{" ~> repsep(pair, ",") <~ "}" ^^ ObjectExpression
 

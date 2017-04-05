@@ -5,7 +5,7 @@ import java.net.URI
 
 import collection.JavaConverters._
 import util.matching.Regex
-import collection.mutable.HashMap
+import collection.mutable.{ArrayBuffer, HashMap}
 
 import org.apache.http.client.utils.URLEncodedUtils
 
@@ -13,43 +13,73 @@ import xyz.hyperreal.lia.Math
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 
-case class Environment( tables: Map[String, Table], routes: List[Route], variables: Map[String, Any], connection: Connection, statement: Statement, db: Database ) {
+object Environment {
+	val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
+	val entityVariable = new SystemVariable
+	var pathMap = Map[String, Any]()
+	var queryMap = Map[String, Any]()
+}
 
-	private val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
+// add RouteTable class to speed up adding variables
+class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any],
+									 val connection: Connection, val statement: Statement, val db: Database ) {
+
+	private val routeTable = ArrayBuffer( croutes: _* )
+	private var routeList = routeTable.toList
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
-	
-	def add( kv: (String, Any) ) = Environment( tables, routes, variables + kv, connection, statement, db )
-	
-	def add( m: collection.Map[String, Any] ) = Environment( tables, routes, variables ++ m, connection, statement, db )
 
-	def remove( n: String ) = Environment( tables, routes, variables - n, connection, statement, db )
+	def routes = routeList
+
+	def add( kv: (String, Any) ) = new Environment( tables, routes, variables + kv, connection, statement, db )
+
+	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, variables ++ m, connection, statement, db )
+
+	def remove( n: String ) = new Environment( tables, routes, variables - n, connection, statement, db )
 
 	def get( name: String ) =
 		variables get name match {
 			case None => tables get db.desensitize( name )
 			case res => res
 		}
-	
+
+	def table( name: String ) = tables(db.desensitize(name)).asInstanceOf[Table]
+
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
-	def process( reqmethod: String, requri: String, reqbody: String ): (Int, AnyRef) = {
-		def notfound = {
-			val (sc, obj) = ResultFunctions.NotFound( this, "route not found" )
+	def native( name: String, args: Any* ) = variables( name ).asInstanceOf[Native]( this, args.toList )
 
-			(sc, DefaultJSONWriter.toString( obj ))
+	def result( name: String, args: Any* ) = native( name, args: _* ).asInstanceOf[(Int, String, OBJ)]
+
+	def add( route: Route ) = routeTable += route
+
+	def remove( method: String, path: List[URISegment] ): Unit = {
+		for (i <- 0 until routeTable.length)
+			if (routeTable(i).method == method && routeTable(i).path == path) {
+				routeTable.remove( i )
+				return
+			}
+
+		sys.error( s"route not found: $method $path" )
+	}
+
+	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String, AnyRef) = {
+		def notfound = {
+			val (sc, ctype, obj) = result( "NotFound", "route not found" )
+
+			(sc, ctype, DefaultJSONWriter.toString( obj ))
 		}
 
 		val uri = new URI( requri )
 		val reqpath = uri.getPath
-		val reqquery = URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue))
-		
+		val reqquery = Map( URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => (p.getName, p.getValue)): _* )
+
 //			val map1 = new HashMap[String, Set[String]] with MultiMap[String, String]
-		
+
 //			URLEncodedUtils.parse( uri, "UTF-8" ).asScala map (p => map1.addBinding( p.getName, p.getValue ))
 
 		// 	var map = Map[String, Any]()
-			
+
 		// 	URLEncodedUtils.parse( uri, "UTF-8" ).asScala foreach (
 		// 		p =>
 		// 			map get p.getName match {
@@ -59,16 +89,16 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 		// 			})
 		// 	map
 		// }
-		
+
 //		val reqfrag = uri.getFragment
-		
+
 			if (routes eq null)
 				sys.error( "no routes loaded" )
-				
+
 			val segments = {
 				val trimed = reqpath.trim
 				val l = trimed split "/" toList
-				
+
 				if (l == List( "" ))
 					return notfound
 				else if (l.nonEmpty && l.head != "")
@@ -81,17 +111,17 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 				}
 			val len = segments.length
 			val urivars = new HashMap[String, Any]
-			
+
 			def integer( s: String ) = {
 				if (s forall (c => c.isDigit))
 					Some( BigInt(s) )
 				else
 					None
 			}
-			
+
 			for (Route( rmethod, uri, action) <- routes) {
 				urivars.clear
-				
+
 				if (len == uri.length && reqmethod.toUpperCase == rmethod && uri.zip( segments ).forall {
 					case (NameURISegment( route ), segment) => route == segment
 					case (ParameterURISegment( name, "string" ), segment) =>
@@ -113,33 +143,32 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						}
 					case _ => false
 				}) {
-					val reqvars =
-						(if (reqbody eq null)
-							urivars
-						else
-							urivars + ("json" -> DefaultJSONReader.fromString(reqbody))) ++ reqquery
 					try {
-						val (sc, obj) =
+						val (sc, ctype, obj) =
 							try {
-								(this add reqvars).deref( action ).asInstanceOf[(Int, OBJ)]
+								Environment.entityVariable.value = if (reqbody eq null) null else DefaultJSONReader.fromString( reqbody )
+								Environment.pathMap = urivars.toMap
+								Environment.queryMap = reqquery
+								deref( action ).asInstanceOf[(Int, String, AnyRef)]
 							} catch {
 								case e: UnauthorizedException =>
-									ResultFunctions.Unauthorized( this, "realm" -> e.getMessage )
+									result( "Unauthorized", "realm" -> e.getMessage )
 								case e: ExpiredException =>
-									ResultFunctions.Unauthorized( this, "realm" -> e.getMessage,
-										"error" -> "invalid_token", "error_description" -> "The access token expired")
+									result( "Unauthorized", "realm" -> e.getMessage,
+										"error" -> "invalid_token", "error_description" -> "The access token expired" )
 								case e: ForbiddenException =>
-									ResultFunctions.Forbidden( this, e.getMessage )
+									result( "Forbidden", e.getMessage )
 								case e: BadRequestException =>
-									ResultFunctions.BadRequest( this, e.getMessage )
+									result( "BadRequest", e.getMessage )
 								case e: NotFoundException =>
-									ResultFunctions.NotFound( this, e.getMessage )
+									result( "NotFound", e.getMessage )
 								case e: SQLException if db.conflict( e.getMessage )  =>
-									ResultFunctions.Conflict( this, e.getMessage )
+									result( "Conflict", e.getMessage )
 							}
 
-						return (sc, obj match {
-								case null => null
+						return (sc, ctype, obj match {
+//								case null => null
+//								case s: String => s
 								case o: Map[_, _] => DefaultJSONWriter.toString( o.asInstanceOf[OBJ] )
 								case _ => obj
 							})
@@ -170,10 +199,10 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
-			case AssignmentExpression( v, expr ) =>
+			case AssignmentExpression( v, e ) =>
 				variables get v match {
 					case None => sys.error( s"variable '$v' not found" )
-					case Some( h: Variable ) => h.value = deref( expr )
+					case Some( h: Variable ) => h.value = deref( e )
 					case _ => sys.error( s"'$v' is not a variable" )
 				}
 			case RangeExpression( start, end ) => evalbi( start ) to evalbi( end )
@@ -214,7 +243,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						val list = args map (a => deref( a ))
 						
 						if (f.applicable( list ))
-							f( list, this )
+							f( this, list )
 						else
 							problem( pos, "wrong number or type of arguments for native function: " + f )
 					case f: FunctionExpression =>
@@ -223,15 +252,27 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 							
 						(this add (f.params zip (args map (a => deref( a )))).toMap).deref( f.expr )
 					case m: Map[_, _] =>
-						if (args.tail != Nil)
+						if (args == Nil || args.tail != Nil)
 							problem( pos, "can only apply a map to one argument" )
 
 						m.asInstanceOf[Map[String, Any]]( evals(args.head) )
 				}
-			case LiteralExpression( s: String ) => varRegex.replaceAllIn( s, replacer )
+			case LiteralExpression( s: String ) => Environment.varRegex.replaceAllIn( s, replacer )
 			case LiteralExpression( v ) => v
-			case VariableExpression( n ) => lookup( n )
-			case OptVariableExpression( n ) => variables get n
+			case VariableExpression( _, Some(v) ) => v
+			case v@VariableExpression( n, None ) =>
+				val o = lookup( n )
+
+				v.value = Some( o )
+				o
+			case PathParameterExpression( n ) => Environment.pathMap( n )
+			case QueryParameterExpression( n ) => Environment.queryMap get n
+			case SystemValueExpression( _, Some(s) ) => s.value
+			case s@SystemValueExpression( n, None ) =>
+				val v = Builtins.system( n )
+
+				s.value = Some( v )
+				v.value
 			case ObjectExpression( pairs ) =>
 				Map( pairs map {case (k, v) => (k, deref(v))}: _* )
 			case ConditionalExpression( cond, no ) =>
@@ -240,7 +281,7 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 						case Nil =>
 							no match {
 								case None => null
-								case Some( expr ) => eval( expr )
+								case Some( e ) => eval( e )
 							}
 						case (ifexpr, thenexpr) :: tail =>
 							if (evalb( ifexpr ))
@@ -325,7 +366,8 @@ case class Environment( tables: Map[String, Table], routes: List[Route], variabl
 
 case class Route( method: String, path: List[URISegment], action: ExpressionAST )
 
-case class Table(name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean, var preparedInsert: PreparedStatement ) {
+case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean,
+									var preparedInsert: PreparedStatement ) {
 	def names = columns map (c => c.name)
 }
 

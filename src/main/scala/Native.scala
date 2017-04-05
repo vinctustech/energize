@@ -23,7 +23,7 @@ object Native {
 				} toList
 				
 			new Native( m.getName, classes ) {
-				def apply( args: List[Any], env: Environment ) =
+				def apply( env: Environment, args: List[Any] ): AnyRef =
 					try {
 						m.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
 					} catch {
@@ -58,23 +58,24 @@ object Native {
 			sys.error( "wrong number of parameters" )
 		
 		new Native( name, classes ) {
-			def apply( args: List[Any], env: Environment ) = method.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
+			def apply( env: Environment, args: List[Any] ): AnyRef = method.invoke( f, (env +: args).asInstanceOf[List[AnyRef]]: _* )
 		}
 	}
 }
 
-abstract class Native( val name: String, val classes: List[Class[_]] ) extends ((List[Any], Environment) => Any) {
+abstract class Native( val name: String, val classes: List[Class[_]] ) extends ((Environment, List[Any]) => AnyRef) {
 	val argc = classes.length
 	
 	require( classes.head == classOf[Environment], "first parameter should be of type Env: " + name )
 
 	def applicable( args: List[Any] ) =
 		if (args.length == argc - 1)
-			args zip classes.drop(1) forall {case (arg, cla) => arg == null || cla.isInstance( arg )}
+			args zip classes.drop(1) forall {case (arg, cla) => arg == null || cla.isInstance( arg ) ||
+				cla == classOf[java.lang.Long] && arg.isInstanceOf[java.lang.Integer]}
 		else
 			false
 			
-	def apply( args: List[Any], env: Environment ): Any
+	def apply( env: Environment, args: List[Any] ): AnyRef
 	
 	override def toString = name + (classes map (c => c.getSimpleName) mkString ("(", ", ", ")"))
 }
