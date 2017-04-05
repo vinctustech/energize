@@ -2,8 +2,10 @@ package xyz.hyperreal.energize
 
 import java.sql._
 
-import collection.mutable.{HashMap, LinkedHashMap, ArrayBuffer}
+import collection.mutable.{HashMap, LinkedHashMap, ArrayBuffer, ListBuffer}
 import collection.JavaConverters._
+
+import xyz.hyperreal.json.{JSON, DefaultJSONReader}
 
 import org.mindrot.jbcrypt.BCrypt
 
@@ -39,20 +41,26 @@ object Energize {
 		configure( p.parseFromSource(src, p.source), connection, statement, database )
 	}
 
-//	def configure( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
-//		val json = DefaultJSONReader.fromString( src )
-//		val ast =
-//			SourceAST(
-//				json.getList( "declarations" ) map {
-//					case o: JSON =>
-//						o getString "type" match {
-//							case "resource" =>
-//								TableDefinition( Protection(None), null, o getString "name", null, null, resource = true )
-//						}
-//				} )
-//
-//		configure( ast, connection, statement, database )
-//	}
+	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Env = {
+		val s = src mkString
+		val json = DefaultJSONReader.fromString( s )
+		val decl = new ListBuffer[StatementAST]
+
+				for ((k, v) <- json)
+					k match {
+						case "tables" =>
+							for (t <- v.asInstanceOf[List[JSON]]) {
+								val cols = new ListBuffer[TableColumn]
+
+								for (c: JSON <- t getList "fields")
+									println( c.getString("name") )
+								
+								decl += TableDefinition( None, null, t getString "name", null, cols toList, resource = true )
+							}
+					}
+
+		configure( SourceAST(decl toList), connection, statement, database )
+	}
 
 	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Environment =
 		configure( ast, connection, statement, db, false )
