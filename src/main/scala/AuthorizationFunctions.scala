@@ -87,7 +87,7 @@ object AuthorizationFunctions {
 	}
 
 	def logout( env: Environment ) = {
-		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+		val access = env.bindings get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
 
 		if (access.isEmpty)
 			0
@@ -96,7 +96,7 @@ object AuthorizationFunctions {
 	}
 
 	def me( env: Environment ) = {
-		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+		val access = env.bindings get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
 
 		def barred = throw new UnauthorizedException( "Protected" )
 
@@ -128,7 +128,7 @@ object AuthorizationFunctions {
 	}
 
 	def authorize( env: Environment, group: Option[String] ) {
-		val access = env.variables get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+		val access = env.bindings get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
 
 		def barred = throw new UnauthorizedException( "Protected" )
 

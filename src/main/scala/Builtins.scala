@@ -29,10 +29,10 @@ object Builtins {
 		pairs( Native(FileFunctions) ) ++
 		constants toMap
 
-	val system =
+	def sys =
 		Map(
 			"version" -> new SystemConstant( VERSION ),
-			"entity" -> Environment.entityVariable
+			"entity" -> new SystemVariable
 		)
 
 	val routes =

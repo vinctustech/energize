@@ -15,30 +15,29 @@ import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 
 object Environment {
 	val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
-	val entityVariable = new SystemVariable
-	var pathMap = Map[String, Any]()
-	var queryMap = Map[String, Any]()
 }
 
 // add RouteTable class to speed up adding variables
-class Environment( val tables: Map[String, Table], croutes: List[Route], val variables: Map[String, Any],
-									 val connection: Connection, val statement: Statement, val db: Database ) {
+class Environment( val tables: Map[String, Table], croutes: List[Route], val bindings: Map[String, Any],
+									 val sbindings: Map[String, SystemValue], val connection: Connection, val statement: Statement,
+									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, Any] ) {
 
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
+	private lazy val entityVariable = sbindings( "entity" ).asInstanceOf[SystemVariable]
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 
 	def routes = routeList
 
-	def add( kv: (String, Any) ) = new Environment( tables, routes, variables + kv, connection, statement, db )
+	def add( kv: (String, Any) ) = new Environment( tables, routes, bindings + kv, sbindings, connection, statement, db, pathMap, queryMap )
 
-	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, variables ++ m, connection, statement, db )
+	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, bindings ++ m, sbindings, connection, statement, db, pathMap, queryMap )
 
-	def remove( n: String ) = new Environment( tables, routes, variables - n, connection, statement, db )
+	def remove( n: String ) = new Environment( tables, routes, bindings - n, sbindings, connection, statement, db, pathMap, queryMap )
 
 	def get( name: String ) =
-		variables get name match {
+		bindings get name match {
 			case None => tables get db.desensitize( name )
 			case res => res
 		}
@@ -47,7 +46,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
-	def native( name: String, args: Any* ) = variables( name ).asInstanceOf[Native]( this, args.toList )
+	def native( name: String, args: Any* ) = bindings( name ).asInstanceOf[Native]( this, args.toList )
 
 	def result( name: String, args: Any* ) = native( name, args: _* ).asInstanceOf[(Int, String, OBJ)]
 
@@ -146,9 +145,9 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 					try {
 						val (sc, ctype, obj) =
 							try {
-								Environment.entityVariable.value = if (reqbody eq null) null else DefaultJSONReader.fromString( reqbody )
-								Environment.pathMap = urivars.toMap
-								Environment.queryMap = reqquery
+								entityVariable.value = if (reqbody eq null) null else DefaultJSONReader.fromString( reqbody )
+								pathMap = urivars.toMap
+								queryMap = reqquery
 								deref( action ).asInstanceOf[(Int, String, AnyRef)]
 							} catch {
 								case e: UnauthorizedException =>
@@ -184,8 +183,8 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 	def evaluate( expr: String ): Any = {
 		val p = new EnergizeParser
 		val ast = p.parseFromString( expr, p.expressionStatement )
-		
-		deref( ast.expr )	
+
+		deref( ast.expr )
 	}
 
 	def replacer =
@@ -200,7 +199,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 	def eval( expr: ExpressionAST ): Any =
 		expr match {
 			case AssignmentExpression( v, e ) =>
-				variables get v match {
+				bindings get v match {
 					case None => sys.error( s"variable '$v' not found" )
 					case Some( h: Variable ) => h.value = deref( e )
 					case _ => sys.error( s"'$v' is not a variable" )
@@ -265,11 +264,11 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val var
 
 				v.value = Some( o )
 				o
-			case PathParameterExpression( n ) => Environment.pathMap( n )
-			case QueryParameterExpression( n ) => Environment.queryMap get n
+			case PathParameterExpression( n ) => pathMap( n )
+			case QueryParameterExpression( n ) => queryMap get n
 			case SystemValueExpression( _, Some(s) ) => s.value
 			case s@SystemValueExpression( n, None ) =>
-				val v = Builtins.system( n )
+				val v = sbindings( n )
 
 				s.value = Some( v )
 				v.value

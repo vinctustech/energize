@@ -89,7 +89,7 @@ object Energize {
 		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
-		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
+		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
