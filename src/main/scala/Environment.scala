@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql._
+import java.sql.{Connection, Statement, SQLException, PreparedStatement}
 import java.net.URI
 
 import collection.JavaConverters._
