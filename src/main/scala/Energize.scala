@@ -54,7 +54,7 @@ object Energize {
 
 								for (c: JSON <- t getList "fields")
 									println( c.getString("name") )
-								
+
 								decl += TableDefinition( None, null, t getString "name", null, cols toList, resource = true )
 							}
 					}
