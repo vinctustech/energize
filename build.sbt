@@ -4,6 +4,8 @@ version := "0.7"
 
 scalaVersion := "2.12.1"
 
+crossScalaVersions := Seq( "2.11.8" )
+
 scalacOptions ++= Seq( "-deprecation", "-feature", "-language:postfixOps", "-language:implicitConversions", "-language:existentials" )
 
 incOptions := incOptions.value.withNameHashing( true )
@@ -44,10 +46,10 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "indentation-lexical" % "0.6",
-	"xyz.hyperreal" %% "json" % "0.5",
-	"xyz.hyperreal" %% "table" % "0.2",
-	"xyz.hyperreal" %% "lia" % "0.19"
+	"xyz.hyperreal" %% "indentation-lexical" % "0.7",
+	"xyz.hyperreal" %% "json" % "0.7",
+	"xyz.hyperreal" %% "table" % "0.3",
+	"xyz.hyperreal" %% "lia" % "0.20"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMain" )

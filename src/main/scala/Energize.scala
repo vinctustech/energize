@@ -41,7 +41,7 @@ object Energize {
 		configure( p.parseFromSource(src, p.source), connection, statement, database )
 	}
 
-	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Env = {
+	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val s = src mkString
 		val json = DefaultJSONReader.fromString( s )
 		val decl = new ListBuffer[StatementAST]
@@ -49,13 +49,26 @@ object Energize {
 				for ((k, v) <- json)
 					k match {
 						case "tables" =>
-							for (t <- v.asInstanceOf[List[JSON]]) {
+							for (tab <- v.asInstanceOf[List[JSON]]) {
 								val cols = new ListBuffer[TableColumn]
 
-								for (c: JSON <- t getList "fields")
-									println( c.getString("name") )
+								for (c <- tab.getList[JSON]( "fields" )) {
+									val typ = c.getMap( "type" )
+									val cat = typ getString "category"
+									val styp = typ getString "type"
+									val ctyp =
+										cat match {
+											case "primitive" =>
+												styp match {
+													case "string" => StringType
+													case "integer" => IntegerType
+												}
+										}
 
-								decl += TableDefinition( None, null, t getString "name", null, cols toList, resource = true )
+									cols += TableColumn( c getString "name", ctyp, Nil )
+								}
+
+								decl += TableDefinition( None, null, tab getString "name", null, cols toList, resource = true )
 							}
 					}
 
@@ -107,7 +120,7 @@ object Energize {
 					val cols = new LinkedHashMap[String, Column]
 					
 					columns foreach {
-						case col@TableColumn( modifiers, typ, cname ) =>
+						case col@TableColumn( cname, typ, modifiers ) =>
 							if (cols contains db.desensitize( cname ))
 								problem( col.pos, s"column '$cname' defined twice" )
 								

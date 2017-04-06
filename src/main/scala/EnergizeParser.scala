@@ -147,7 +147,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
 			case name ~ typ ~ modifiers =>
-				TableColumn( modifiers, typ, name )} )
+				TableColumn( name, typ, modifiers )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
