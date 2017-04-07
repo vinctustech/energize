@@ -68,7 +68,7 @@ object Energize {
 									cols += TableColumn( c getString "name", ctyp, Nil )
 								}
 
-								decl += TableDefinition( None, null, tab getString "name", null, cols toList, resource = true )
+								decl += TableDefinition( None, null, tab getString "name", Nil, cols toList, resource = true )
 							}
 					}
 

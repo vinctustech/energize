@@ -1,0 +1,16 @@
+{
+  "tables": [
+    {
+      "name": "r",
+      "fields": [
+        {
+          "name": "f",
+          "type": {
+            "category": "primitive",
+            "type": "integer"
+          }
+        }
+      ]
+    }
+  ]
+}
