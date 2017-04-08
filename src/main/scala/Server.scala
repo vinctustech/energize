@@ -16,7 +16,7 @@ import org.apache.http.protocol.HttpContext
 import org.apache.http.HttpStatus._
 
 
-class Server( env: Environment ) {
+class Server( env: Environment, port: Int ) {
 	val origin = SERVER.getString( "origin" )
 	val docroot = SERVER.getString( "docroot" )
 	val charset = Charset forName SERVER.getString( "charset" )
@@ -27,7 +27,7 @@ class Server( env: Environment ) {
 		.setTcpNoDelay(true)
 		.build
 	val server = ServerBootstrap.bootstrap
-		.setListenerPort( SERVER.getInt("port") )
+		.setListenerPort( port )
 		.setServerInfo( SERVER.getString("name") + "/" + SERVER.getString("version") )
 		.setIOReactorConfig(config)
 		.setSslContext(null)
@@ -44,14 +44,14 @@ class Server( env: Environment ) {
 			ContentType.create( typ )
 
 	def start {
-		server.start
-		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
-
 		Runtime.getRuntime.addShutdownHook(new Thread {
 			override def run {
 				server.shutdown(1, TimeUnit.MILLISECONDS)
 			}
 		})
+
+		server.start
+		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
 	}
 	
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {
