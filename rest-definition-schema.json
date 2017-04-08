@@ -42,6 +42,10 @@
                     "type": {
                       "description": "Primitive type or type parameter",
                       "type": "string"
+                    },
+                    "parameters": {
+                      "description": "Optional type parameters",
+                      "type": "array",
                     }
                   }
                 },
