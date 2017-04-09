@@ -16,7 +16,7 @@ import org.apache.http.protocol.HttpContext
 import org.apache.http.HttpStatus._
 
 
-class Server( env: Environment, port: Int ) {
+class EnergizeServer( env: Environment, port: Int ) {
 	val origin = SERVER.getString( "origin" )
 	val docroot = SERVER.getString( "docroot" )
 	val charset = Charset forName SERVER.getString( "charset" )
@@ -51,7 +51,7 @@ class Server( env: Environment, port: Int ) {
 		})
 
 		server.start
-		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
+//		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
 	}
 	
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {

@@ -48,6 +48,6 @@ object ServerMain extends App {
 				Energize.configure( config, connection, statement, db )
 
 		println( "starting server on port " + port )
-		new Server( env, port ).start
+		new EnergizeServer( env, port ).start
 	}
 }
