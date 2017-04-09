@@ -71,7 +71,10 @@ object Energize {
 											case "binary" => BinaryType
 											case "blob" => BLOBType( 'base64 )
 											case "float" => FloatType
-//												case "decimal"
+											case "decimal" =>
+												val List( prec, scale ) = typ.getList[Int]( "parameters" )
+
+												DecimalType( prec, scale )
 											case "media" => MediaType( None, None, Int.MaxValue )
 										}
 								}
