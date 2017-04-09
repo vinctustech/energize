@@ -158,6 +158,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			ident ^^ (SingleReferenceType( _, null ))
 		)
 
+	lazy val mimeType: PackratParser[MimeType] =
+		(ident <~ "/") ~ (ident | "*") ^^ {case maj ~ min => MimeType( maj, min )}
+
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
 		"string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
@@ -175,9 +178,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
-		"media" ~> opt("(" ~> (stringLit ~ opt("," ~> numericLit)) <~ ")") ^^ {
-			case Some( t ~ l ) => MediaType( Some(t), l, Int.MaxValue )
-			case None => MediaType( None, None, Int.MaxValue )}
+		"media" ~> opt("(" ~> (repsep(mimeType, ",") ~ opt("," ~> numericLit)) <~ ")") ^^ {
+			case Some( ts ~ l ) => MediaType( ts, l, Int.MaxValue )
+			case None => MediaType( Nil, None, Int.MaxValue )}
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )

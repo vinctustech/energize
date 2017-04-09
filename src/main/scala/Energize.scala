@@ -46,31 +46,45 @@ object Energize {
 		val json = DefaultJSONReader.fromString( s )
 		val decl = new ListBuffer[StatementAST]
 
-				for ((k, v) <- json)
-					k match {
-						case "tables" =>
-							for (tab <- v.asInstanceOf[List[JSON]]) {
-								val cols = new ListBuffer[TableColumn]
+		for ((k, v) <- json)
+			k match {
+				case "tables" =>
+					for (tab <- v.asInstanceOf[List[JSON]]) {
+						val cols = new ListBuffer[TableColumn]
 
-								for (c <- tab.getList[JSON]( "fields" )) {
-									val typ = c.getMap( "type" )
-									val cat = typ getString "category"
-									val styp = typ getString "type"
-									val ctyp =
-										cat match {
-											case "primitive" =>
-												styp match {
-													case "string" => StringType
-													case "integer" => IntegerType
-												}
+						for (c <- tab.getList[JSON]( "fields" )) {
+							val typ = c.getMap( "type" )
+							val cat = typ getString "category"
+							val styp = typ getString "type"
+							val ctyp =
+								cat match {
+									case "primitive" =>
+										styp match {
+											case "string" => StringType
+											case "integer" => IntegerType
+											case "long" => LongType
+											case "uuid" => UUIDType
+											case "date" => DateType
+											case "datetime" => DatetimeType
+											case "time" => TimeType
+											case "timestamp" => TimestampType
+											case "binary" => BinaryType
+											case "blob" => BLOBType( 'base64 )
+											case "float" => FloatType
+											case "decimal" =>
+												val List( prec, scale ) = typ.getList[Int]( "parameters" )
+
+												DecimalType( prec, scale )
+											case "media" => MediaType( Nil, None, Int.MaxValue )
 										}
-
-									cols += TableColumn( c getString "name", ctyp, Nil )
 								}
 
-								decl += TableDefinition( None, null, tab getString "name", Nil, cols toList, resource = true )
-							}
+							cols += TableColumn( c getString "name", ctyp, Nil )
+						}
+
+						decl += TableDefinition( None, null, tab getString "name", Nil, cols toList, tab.getBoolean("resource") )
 					}
+			}
 
 		configure( SourceAST(decl toList), connection, statement, database )
 	}

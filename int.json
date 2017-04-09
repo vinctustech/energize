@@ -2,6 +2,7 @@
   "tables": [
     {
       "name": "r",
+      "resource": true,
       "fields": [
         {
           "name": "f",
