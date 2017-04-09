@@ -75,7 +75,7 @@ object Energize {
 												val List( prec, scale ) = typ.getList[Int]( "parameters" )
 
 												DecimalType( prec, scale )
-											case "media" => MediaType( None, None, Int.MaxValue )
+											case "media" => MediaType( Nil, None, Int.MaxValue )
 										}
 								}
 
