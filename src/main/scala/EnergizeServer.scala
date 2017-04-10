@@ -16,6 +16,32 @@ import org.apache.http.protocol.HttpContext
 import org.apache.http.HttpStatus._
 
 
+object EnergizeServer {
+	def instance( config: io.Source, json: Boolean, port: Int ) = {
+		val (connection, statement, db) = Energize.dbconnect
+
+		sys.addShutdownHook {
+			connection.close
+		}
+
+		println( connection )
+		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
+
+		val env =
+			if (json)
+				Energize.configureFromJSON( config, connection, statement, db )
+			else
+				Energize.configure( config, connection, statement, db )
+
+		println( "starting server on port " + port )
+
+		val res = new EnergizeServer( env, port )
+
+		res.start
+		res
+	}
+}
+
 class EnergizeServer( env: Environment, port: Int ) {
 	val origin = SERVER.getString( "origin" )
 	val docroot = SERVER.getString( "docroot" )
@@ -46,12 +72,15 @@ class EnergizeServer( env: Environment, port: Int ) {
 	def start {
 		Runtime.getRuntime.addShutdownHook(new Thread {
 			override def run {
-				server.shutdown(1, TimeUnit.MILLISECONDS)
+				shutdown
 			}
 		})
 
 		server.start
-//		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
+	}
+
+	def shutdown: Unit = {
+		server.shutdown(0, TimeUnit.MILLISECONDS)
 	}
 	
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {

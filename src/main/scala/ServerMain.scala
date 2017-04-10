@@ -29,25 +29,5 @@ object ServerMain extends App {
 		else
 			io.Source.fromFile( arg.head + (if (json) ".json" else ".energize") )
 
-	instance( config, json, SERVER.getInt("port") )
-
-	def instance( config: io.Source, json: Boolean, port: Int ): Unit = {
-		val (connection, statement, db) = Energize.dbconnect
-
-		sys.addShutdownHook {
-			connection.close
-		}
-
-		println( connection )
-		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
-
-		val env =
-			if (json)
-				Energize.configureFromJSON( config, connection, statement, db )
-			else
-				Energize.configure( config, connection, statement, db )
-
-		println( "starting server on port " + port )
-		new EnergizeServer( env, port ).start
-	}
+	EnergizeServer.instance( config, json, SERVER.getInt("port") )
 }

@@ -12,6 +12,8 @@ import org.mindrot.jbcrypt.BCrypt
 
 object Energize {
 
+	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
+
 	def dbconnect: (Connection, Statement, Database) = {
 		val name = DATABASE.getString( "name" )
 		val driver = DATABASE.getString( "driver" )
@@ -75,7 +77,20 @@ object Energize {
 												val List( prec, scale ) = typ.getList[Int]( "parameters" )
 
 												DecimalType( prec, scale )
-											case "media" => MediaType( Nil, None, Int.MaxValue )
+											case "media" =>
+												val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
+												val allowed1 =
+													for (a <- allowed.asInstanceOf[List[String]])
+														yield
+															a match {
+																case MIME( typ, subtype ) => MimeType( typ, subtype )
+																case _ => sys.error( s"bad MIME type: $a" )
+															}
+
+												if (limit eq null)
+													MediaType( allowed1, null, Int.MaxValue )
+												else
+													MediaType( allowed1, null, limit.asInstanceOf[Int] )
 										}
 								}
 
