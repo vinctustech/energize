@@ -41,8 +41,9 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
-	"org.mindrot" % "jbcrypt" % "0.3m"
-//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
+	"org.mindrot" % "jbcrypt" % "0.3m",
+	"com.typesafe.akka" %% "akka-http-spray-json" % "10.0.5"
+	//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
 )
 
 libraryDependencies ++= Seq(

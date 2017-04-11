@@ -15,6 +15,8 @@ import org.apache.http.nio.protocol._
 import org.apache.http.protocol.HttpContext
 import org.apache.http.HttpStatus._
 
+import spray.json._
+
 
 object EnergizeServer {
 	def instance( config: io.Source, json: Boolean, port: Int ) = {
