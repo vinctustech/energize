@@ -15,8 +15,36 @@ import org.apache.http.nio.protocol._
 import org.apache.http.protocol.HttpContext
 import org.apache.http.HttpStatus._
 
+import spray.json._
 
-class Server( env: Environment ) {
+
+object EnergizeServer {
+	def instance( config: io.Source, json: Boolean, port: Int ) = {
+		val (connection, statement, db) = Energize.dbconnect
+
+		sys.addShutdownHook {
+			connection.close
+		}
+
+		println( connection )
+		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
+
+		val env =
+			if (json)
+				Energize.configureFromJSON( config, connection, statement, db )
+			else
+				Energize.configure( config, connection, statement, db )
+
+		println( "starting server on port " + port )
+
+		val res = new EnergizeServer( env, port )
+
+		res.start
+		res
+	}
+}
+
+class EnergizeServer( env: Environment, port: Int ) {
 	val origin = SERVER.getString( "origin" )
 	val docroot = SERVER.getString( "docroot" )
 	val charset = Charset forName SERVER.getString( "charset" )
@@ -27,7 +55,7 @@ class Server( env: Environment ) {
 		.setTcpNoDelay(true)
 		.build
 	val server = ServerBootstrap.bootstrap
-		.setListenerPort( SERVER.getInt("port") )
+		.setListenerPort( port )
 		.setServerInfo( SERVER.getString("name") + "/" + SERVER.getString("version") )
 		.setIOReactorConfig(config)
 		.setSslContext(null)
@@ -44,14 +72,17 @@ class Server( env: Environment ) {
 			ContentType.create( typ )
 
 	def start {
-		server.start
-		server.awaitTermination(Long.MaxValue, TimeUnit.DAYS)
-
 		Runtime.getRuntime.addShutdownHook(new Thread {
 			override def run {
-				server.shutdown(1, TimeUnit.MILLISECONDS)
+				shutdown
 			}
 		})
+
+		server.start
+	}
+
+	def shutdown: Unit = {
+		server.shutdown(0, TimeUnit.MILLISECONDS)
 	}
 	
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {

@@ -1,8 +1,10 @@
 name := "energize"
 
-version := "0.7"
+version := "0.8"
 
 scalaVersion := "2.12.1"
+
+crossScalaVersions := Seq( "2.11.8" )
 
 scalacOptions ++= Seq( "-deprecation", "-feature", "-language:postfixOps", "-language:implicitConversions", "-language:existentials" )
 
@@ -39,15 +41,17 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
-	"org.mindrot" % "jbcrypt" % "0.3m"
-//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
+	"org.mindrot" % "jbcrypt" % "0.3m",
+	"com.typesafe.akka" %% "akka-http-spray-json" % "10.0.5"
+	//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "indentation-lexical" % "0.6",
-	"xyz.hyperreal" %% "json" % "0.5",
-	"xyz.hyperreal" %% "table" % "0.2",
-	"xyz.hyperreal" %% "lia" % "0.19"
+	"xyz.hyperreal" %% "indentation-lexical" % "0.7",
+	"xyz.hyperreal" %% "json" % "0.7",
+	"xyz.hyperreal" %% "table" % "0.3",
+	"xyz.hyperreal" %% "lia" % "0.20",
+	"xyz.hyperreal" %% "options" % "0.2"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMain" )

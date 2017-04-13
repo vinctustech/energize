@@ -147,7 +147,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
 			case name ~ typ ~ modifiers =>
-				TableColumn( modifiers, typ, name )} )
+				TableColumn( name, typ, modifiers )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
@@ -157,6 +157,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
 			ident ^^ (SingleReferenceType( _, null ))
 		)
+
+	lazy val mimeType: PackratParser[MimeType] =
+		(ident <~ "/") ~ (ident | "*") ^^ {case typ ~ subtype => MimeType( typ, subtype )}
 
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
 		"string" ^^^ StringType |
@@ -175,9 +178,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
-		"media" ~> opt("(" ~> (stringLit ~ opt("," ~> numericLit)) <~ ")") ^^ {
-			case Some( t ~ l ) => MediaType( Some(t), l, Int.MaxValue )
-			case None => MediaType( None, None, Int.MaxValue )}
+		"media" ~> opt("(" ~> (repsep(mimeType, ",") ~ opt("," ~> numericLit)) <~ ")") ^^ {
+			case Some( ts ~ Some(l) ) => MediaType( ts, l, Int.MaxValue )
+			case Some( ts ~ None ) => MediaType( ts, null, Int.MaxValue )
+			case None => MediaType( Nil, null, Int.MaxValue )}
 
 	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )

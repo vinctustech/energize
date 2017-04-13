@@ -47,7 +47,7 @@ object H2Database extends Database {
 						buf ++= ", "
 						buf ++= cname
 						buf += ' '
-						dimension( typ )
+						parameters( typ )
 						buf ++=
 							(typ match {
 								case StringType => "VARCHAR(255)"
@@ -162,7 +162,7 @@ object PostgresDatabase extends Database {
 					buf ++= ", "
 					buf ++= cname
 					buf += ' '
-					dimension( typ )
+					parameters( typ )
 					buf ++=
 						(typ match {
 							case p: PrimitiveColumnType => primitive( p )
@@ -326,7 +326,7 @@ abstract class Database {
 
 	def desensitize( name: String ): String
 
-	def dimension( typ: ColumnType ) =
+	protected def parameters( typ: ColumnType ) =
 		typ match {
 			case ArrayType( _, _, null, _ ) =>
 			case a@ArrayType( _, p, d, _ ) =>

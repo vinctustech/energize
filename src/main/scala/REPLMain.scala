@@ -50,7 +50,7 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		env = new Environment( Map(), Nil, Builtins.map ++ vars, connection, statement, db )
+		env = new Environment( Map.empty, Nil, Builtins.map ++ vars, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	}

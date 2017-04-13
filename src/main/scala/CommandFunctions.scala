@@ -144,8 +144,17 @@ object CommandFunctions {
 								}
 
 							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
-						case MediaType( _, _, _ ) =>
-							val id = insert( env, env table "_media_", v.asInstanceOf[OBJ] )
+						case MediaType( allowed, _, limit ) =>
+							val obj = v.asInstanceOf[OBJ]
+
+							obj( "type" ).asInstanceOf[String] match {
+								case t@Energize.MIME( typ, subtype ) =>
+									if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && asubtype == "*" || subtype == asubtype})
+										throw new BadRequestException( s"insert: MIME type not allowed: $t" )
+								case t => throw new BadRequestException( s"insert: invalid MIME type: $t" )
+							}
+
+							val id = insert( env, env table "_media_", obj )
 
 							resource.preparedInsert.setLong( i + 1, id )
 

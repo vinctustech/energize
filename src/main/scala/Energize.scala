@@ -2,13 +2,17 @@ package xyz.hyperreal.energize
 
 import java.sql._
 
-import collection.mutable.{HashMap, LinkedHashMap, ArrayBuffer}
+import collection.mutable.{HashMap, LinkedHashMap, ArrayBuffer, ListBuffer}
 import collection.JavaConverters._
+
+import xyz.hyperreal.json.{JSON, DefaultJSONReader}
 
 import org.mindrot.jbcrypt.BCrypt
 
 
 object Energize {
+
+	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
 
 	def dbconnect: (Connection, Statement, Database) = {
 		val name = DATABASE.getString( "name" )
@@ -39,20 +43,66 @@ object Energize {
 		configure( p.parseFromSource(src, p.source), connection, statement, database )
 	}
 
-//	def configure( src: String, connection: Connection, statement: Statement, database: Database ): Env = {
-//		val json = DefaultJSONReader.fromString( src )
-//		val ast =
-//			SourceAST(
-//				json.getList( "declarations" ) map {
-//					case o: JSON =>
-//						o getString "type" match {
-//							case "resource" =>
-//								TableDefinition( Protection(None), null, o getString "name", null, null, resource = true )
-//						}
-//				} )
-//
-//		configure( ast, connection, statement, database )
-//	}
+	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
+		val s = src mkString
+		val json = DefaultJSONReader.fromString( s )
+		val decl = new ListBuffer[StatementAST]
+
+		for ((k, v) <- json)
+			k match {
+				case "tables" =>
+					for (tab <- v.asInstanceOf[List[JSON]]) {
+						val cols = new ListBuffer[TableColumn]
+
+						for (c <- tab.getList[JSON]( "fields" )) {
+							val typ = c.getMap( "type" )
+							val cat = typ getString "category"
+							val styp = typ getString "type"
+							val ctyp =
+								cat match {
+									case "primitive" =>
+										styp match {
+											case "string" => StringType
+											case "integer" => IntegerType
+											case "long" => LongType
+											case "uuid" => UUIDType
+											case "date" => DateType
+											case "datetime" => DatetimeType
+											case "time" => TimeType
+											case "timestamp" => TimestampType
+											case "binary" => BinaryType
+											case "blob" => BLOBType( 'base64 )
+											case "float" => FloatType
+											case "decimal" =>
+												val List( prec, scale ) = typ.getList[Int]( "parameters" )
+
+												DecimalType( prec, scale )
+											case "media" =>
+												val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
+												val allowed1 =
+													for (a <- allowed.asInstanceOf[List[String]])
+														yield
+															a match {
+																case MIME( typ, subtype ) => MimeType( typ, subtype )
+																case _ => sys.error( s"bad MIME type: $a" )
+															}
+
+												if (limit eq null)
+													MediaType( allowed1, null, Int.MaxValue )
+												else
+													MediaType( allowed1, null, limit.asInstanceOf[Int] )
+										}
+								}
+
+							cols += TableColumn( c getString "name", ctyp, Nil )
+						}
+
+						decl += TableDefinition( None, null, tab getString "name", Nil, cols toList, tab.getBoolean("resource") )
+					}
+			}
+
+		configure( SourceAST(decl toList), connection, statement, database )
+	}
 
 	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Environment =
 		configure( ast, connection, statement, db, false )
@@ -68,7 +118,7 @@ object Energize {
 		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
-		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, connection, statement, db )
+		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
@@ -99,7 +149,7 @@ object Energize {
 					val cols = new LinkedHashMap[String, Column]
 					
 					columns foreach {
-						case col@TableColumn( modifiers, typ, cname ) =>
+						case col@TableColumn( cname, typ, modifiers ) =>
 							if (cols contains db.desensitize( cname ))
 								problem( col.pos, s"column '$cname' defined twice" )
 								
