@@ -17,8 +17,8 @@
 					<a href="/energize/">Energize</a>
 				</div>
 				<ul class="navbar-nav">
-					<li class="active"><a href="/energize/docs/installation">Docs</a></li>
-					<li><a href="/energize/tutorial/introduction">Tutorial</a></li>
+					<li><a href="/energize/docs/installation">Docs</a></li>
+					<li class="active"><a href="/energize/tutorial/introduction">Tutorial</a></li>
 					<li><a href="https://github.com/vinctustech/energize">Github</a></li>
 				</ul>
 			</div>
@@ -27,7 +27,7 @@
 		<main class="main-content">
 			<div class="docs-body">
 				<div class="docs-left">
-					{% include nav_docs.html %}
+					{% include nav_tutorial.html %}
 				</div>
 
 				<div class="docs-right">
@@ -35,10 +35,10 @@
 
 					<div class="docs-prevnext">
 						{% if page.prev %}
-							<a class="docs-prev" href="/energize/docs/{{ page.prev }}">&larr; Prev</a>
+							<a class="docs-prev" href="/energize/tutorial/{{ page.prev }}">&larr; Prev</a>
 						{% endif %}
 						{% if page.next %}
-							<a class="docs-next" href="/energize/docs/{{ page.next }}">Next &rarr;</a>
+							<a class="docs-next" href="/energize/tutorial/{{ page.next }}">Next &rarr;</a>
 						{% endif %}
 					</div>
 				</div>

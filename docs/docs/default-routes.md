@@ -24,12 +24,10 @@ The default routes for `CRUD` operations on the resource will be handled automat
 To create a document, make a `POST` request at the resources end-point.
 
 ```
-POST http://localhost:8080/messages HTTP/1.1
-Content-Type: application/json
-
-{
-  text: "Hello World!"
-}
+curl http://localhost:8080/messages \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"text": "Hello world!"}'
 ```
 
 If successful, this will respond with a `201 Created` and include a `JSON` body with the created document's `id`.
@@ -48,7 +46,7 @@ Content-Type: application/json
 To retrieve a document, make a `GET` request at the resources end-point followed by the `id` of the required document.
 
 ```
-GET http://localhost:8080/messages/1 HTTP/1.1
+curl http://localhost:8080/messages/1
 ```
 
 If the document exists, you will recieve a `200 OK` with the document's data included as `JSON`.
@@ -67,12 +65,10 @@ If the document exists, you will recieve a `200 OK` with the document's data inc
 To update a document, make a `PUT` request at the resources end-point followed by the `id` of the document to be updated, and include all the required fields to be updated as `JSON`.
 
 ```
-PUT http://localhost:8080/messages/1 HTTP/1.1
-Content-Type: application/json
-
-{
-  "text": "Hello World! Goodbye World."
-}
+curl http://localhost:8080/messages/1 \
+  -X PUT \
+  -H 'Content-Type: application/json' \
+  -d '{"text": "Hello world! Goodbye world."}'
 ```
 
 If successful, you will receive a `204 No Content`, meaning it has successfully updated the document, but there is no data in the response body.
@@ -84,7 +80,8 @@ If successful, you will receive a `204 No Content`, meaning it has successfully 
 To delete a document, make a `DELETE` request at the resources end-point followed by the `id` of the document you want to delete.
 
 ```
-DELETE http://localhost:8080/messages/1 HTTP/1.1
+curl http://localhost:8080/messages/1 \
+  -X DELETE
 ```
 
 If successful, you will receive a `204 No Content`, meaning it has successfully deleted the document, but there is no data in the response body.
@@ -94,7 +91,7 @@ If successful, you will receive a `204 No Content`, meaning it has successfully 
 To list all `messages` documents, make a `GET` request at the resource end-point.
 
 ```
-GET http://localhost:8080/messages HTTP/1.1
+curl http://localhost:8080/messages
 ```
 
 If successful, you will recieve a `200 OK` with an array of the resources as `JSON`.

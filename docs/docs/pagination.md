@@ -19,7 +19,7 @@ resource messages
 There are default query parameters that can be used on the resources default routes. For example, to paginate over a list of documents use the `page` and `limit` query parameters.
 
 ```
-GET http://localhost:8080/messages?page=2&limit=5
+curl http://localhost:8080/messages?page=2&limit=5
 ```
 
 This will retrieve 5 documents on the second page of results.
@@ -31,7 +31,7 @@ This will retrieve 5 documents on the second page of results.
 Sometimes we may only need certain fields of documents. To save bandwidth, we can pass the `fields` query parameter, which will only return the specified fields.
 
 ```
-GET http://localhost:8080/messages?page=2&limit=5&fields=text
+curl http://localhost:8080/messages?page=2&limit=5&fields=text
 ```
 
 This will retrieve 5 documents on the second page of results, and only return the `text` field as `JSON` in the body.
@@ -41,7 +41,7 @@ This will retrieve 5 documents on the second page of results, and only return th
 To sort a list of results, use the `sort` with the `order` query parameters. The `order` query parameter can take either `asc` or `desc`.
 
 ```
-GET http://localhost:8080/messages?sort=text&order=asc
+curl http://localhost:8080/messages?sort=text&order=asc
 ```
 
 This will sort the result list by the `text` field in ascending order.
@@ -53,7 +53,7 @@ This will sort the result list by the `text` field in ascending order.
 To return the total number of documents of a resource, use the `count` path parameter on the resource end-point.
 
 ```
-GET http://localhost:8080/messages/count
+curl http://localhost:8080/messages/count
 ```
 
 This will return the total number of documents of the specified resource.
