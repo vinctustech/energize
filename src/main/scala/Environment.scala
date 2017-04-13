@@ -30,6 +30,10 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 
 	def routes = routeList
 
+	def discard: Unit = {
+		connection.close
+	}
+
 	def add( kv: (String, Any) ) = new Environment( tables, routes, bindings + kv, sbindings, connection, statement, db, pathMap, queryMap )
 
 	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, bindings ++ m, sbindings, connection, statement, db, pathMap, queryMap )
