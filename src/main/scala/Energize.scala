@@ -43,6 +43,39 @@ object Energize {
 		configure( p.parseFromSource(src, p.source), connection, statement, database )
 	}
 
+	def primitive( typ: JSON ): PrimitiveColumnType =
+		typ getString "type" match {
+			case "string" => StringType
+			case "integer" => IntegerType
+			case "long" => LongType
+			case "uuid" => UUIDType
+			case "date" => DateType
+			case "datetime" => DatetimeType
+			case "time" => TimeType
+			case "timestamp" => TimestampType
+			case "binary" => BinaryType
+			case "blob" => BLOBType( 'base64 )
+			case "float" => FloatType
+			case "decimal" =>
+				val List( prec, scale ) = typ.getList[Int]( "parameters" )
+
+				DecimalType( prec, scale )
+			case "media" =>
+				val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
+				val allowed1 =
+					for (a <- allowed.asInstanceOf[List[String]])
+						yield
+							a match {
+								case MIME( typ, subtype ) => MimeType( typ, subtype )
+								case _ => sys.error( s"bad MIME type: $a" )
+							}
+
+				if (limit eq null)
+					MediaType( allowed1, null, Int.MaxValue )
+				else
+					MediaType( allowed1, null, limit.asInstanceOf[Int] )
+		}
+
 	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val s = src mkString
 		val json = DefaultJSONReader.fromString( s )
@@ -57,41 +90,12 @@ object Energize {
 						for (c <- tab.getList[JSON]( "fields" )) {
 							val typ = c.getMap( "type" )
 							val cat = typ getString "category"
-							val styp = typ getString "type"
 							val ctyp =
 								cat match {
-									case "primitive" =>
-										styp match {
-											case "string" => StringType
-											case "integer" => IntegerType
-											case "long" => LongType
-											case "uuid" => UUIDType
-											case "date" => DateType
-											case "datetime" => DatetimeType
-											case "time" => TimeType
-											case "timestamp" => TimestampType
-											case "binary" => BinaryType
-											case "blob" => BLOBType( 'base64 )
-											case "float" => FloatType
-											case "decimal" =>
-												val List( prec, scale ) = typ.getList[Int]( "parameters" )
-
-												DecimalType( prec, scale )
-											case "media" =>
-												val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
-												val allowed1 =
-													for (a <- allowed.asInstanceOf[List[String]])
-														yield
-															a match {
-																case MIME( typ, subtype ) => MimeType( typ, subtype )
-																case _ => sys.error( s"bad MIME type: $a" )
-															}
-
-												if (limit eq null)
-													MediaType( allowed1, null, Int.MaxValue )
-												else
-													MediaType( allowed1, null, limit.asInstanceOf[Int] )
-										}
+									case "primitive" => primitive( typ )
+									case "array" => ArrayType( primitive(typ), null, null, 1 )
+									case "single" => SingleReferenceType( typ getString "type", null )
+									case "many" => ManyReferenceType( typ getString "type", null )
 								}
 
 							cols += TableColumn( c getString "name", ctyp, Nil )
