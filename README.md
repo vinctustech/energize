@@ -126,35 +126,35 @@ getting the response
 	  "status": "ok",
 	  "data": [
 	    {
-	  	  "id": 1,
-		  "name": "finish 0.1",
-		  "description": null,
-		  "status": 1
+	      "id": 1,
+	      "name": "finish 0.1",
+	      "description": null,
+	      "status": 1
 	    },
 	    {
-		  "id": 2,
-		  "name": "write readme",
-		  "description": "add example involving finishing 0.1 and writing the readme",
-		  "status": 1
+	      "id": 2,
+	      "name": "write readme",
+	      "description": "add example involving finishing 0.1 and writing the readme",
+	      "status": 1
 	    }
 	  ]
 	}
 
 The `description` is `null` in the first one because we marked that column as `optional` and did not provide data for it in our post. Also, notice that the property names are the column names originally provided in the configuration and not the case-insensitive uppercase names that are returned by the database. We can retrieve just the second item with the command
 
-  curl http://localhost:8080/api/v1/todo/2
+	curl http://localhost:8080/api/v1/todo/2
   
 to get
 
-  {
-    "status": "ok",
-    "data": {
-      "id": 2,
-      "name": "write readme",
-      "description": "add example involving finishing 0.1 and writing the readme",
-      "status": 1
-    }
-  }
+	{
+	  "status": "ok",
+	  "data": {
+	    "id": 2,
+	    "name": "write readme",
+	    "description": "add example involving finishing 0.1 and writing the readme",
+	    "status": 1
+	  }
+	}
 
 Notice that with this response, the `data` field is not an array but a single object since the URI path is pointing to a single item within the `todo` resource.  Lastly, if we try querying the server for an item that does not exist from a resource that does exist, we should get a `404` status code from the server because what is being requested doesn't exist. Try it
 
@@ -167,19 +167,19 @@ Press `Ctrl-C` to stop the server.
 
 To start the REPL, type the following command (while in the same folder where the executable was placed)
 
-  java -cp energize-0.8.jar xyz.hyperreal.energize.REPLMain
+	java -cp energize-0.8.jar xyz.hyperreal.energize.REPLMain
   
 By default, the REPL creates an in-memory H2 database for you and connects to it. Type `help` to see all the REPL commands. Tell the REPL to load the `todo` configuration by typing
 
-  l todo
+	l todo
   
 To verify that a table called `todo` has been created, type the SQL command
 
-  select * from todo;
+	select * from todo;
   
 To use your Postgres database specified in your database configuration instead type the following commands
 
-  config
-  connect
+	config
+	connect
   
 In the REPL, you can always restart from scratch using the `wipe` command, reload a modified configuration using `load`, etc.
