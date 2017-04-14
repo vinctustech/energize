@@ -76,6 +76,25 @@ object Energize {
 					MediaType( allowed1, null, limit.asInstanceOf[Int] )
 		}
 
+	def parsePath( path: String ): Option[URIPath] =
+		if (path endsWith "/")
+			None
+		else
+			path split "/" match {
+				case Array()|Array( "" ) => None
+				case a =>
+					if (a.head != "")
+						None
+					else {
+						val tail = a.tail
+
+						if (tail contains "")
+							None
+						else
+							Some( URIPath(tail map NameURISegment toList) )
+					}
+			}
+
 	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val s = src mkString
 		val json = DefaultJSONReader.fromString( s )
@@ -90,23 +109,24 @@ object Energize {
 								case None => None
 								case Some( groups: List[String] ) => Some( groups headOption )
 							}
+						val bases = tab getList[String] "bases" map parsePath map (_ get)
 						val cols = new ListBuffer[TableColumn]
 
 						for (c <- tab.getList[JSON]( "fields" )) {
-							val typ = c.getMap( "type" )
+							val typ = c getMap "type"
 							val cat = typ getString "category"
 							val ctyp =
 								cat match {
 									case "primitive" => primitive( typ )
 									case "array" => ArrayType( primitive(typ), null, null, 1 )
-									case "single" => SingleReferenceType( typ getString "type", null )
-									case "many" => ManyReferenceType( typ getString "type", null )
+									case "one-to-many" => SingleReferenceType( typ getString "type", null )
+									case "many-to-many" => ManyReferenceType( typ getString "type", null )
 								}
 
 							cols += TableColumn( c getString "name", ctyp, Nil )
 						}
 
-						decl += TableDefinition( pro, null, tab getString "name", Nil, cols toList, tab.getBoolean("resource") )
+						decl += TableDefinition( pro, null, tab getString "name", bases, cols toList, tab.getBoolean("resource") )
 					}
 				case "routes" =>
 			}

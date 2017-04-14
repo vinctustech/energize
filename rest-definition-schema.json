@@ -17,7 +17,12 @@
             "type": "boolean"
           },
           "protection": {
-            "description": "Option array of user groups who can access the resource",
+            "description": "Optional array of user groups who can access the resource",
+            "type": "array",
+            "items": "string"
+          },
+          "bases": {
+            "description": "Array of path bases for auto-generated routes",
             "type": "array",
             "items": "string"
           },
