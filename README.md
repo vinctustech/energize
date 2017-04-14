@@ -39,22 +39,22 @@ Run it as a normal Java executable JAR with the command `java -jar energize-0.8.
 
 Use the following definition to use *energize* in your Maven project:
 
-  <repository>
-    <id>hyperreal</id>
-    <url>https://dl.bintray.com/edadma/maven</url>
-  </repository>
-
-  <dependency>
-    <groupId>xyz.hyperreal</groupId>
-    <artifactId>energize</artifactId>
-    <version>0.8</version>
-  </dependency>
-
+	<repository>
+	  <id>hyperreal</id>
+	  <url>https://dl.bintray.com/edadma/maven</url>
+	</repository>
+	 
+	<dependency>
+	  <groupId>xyz.hyperreal</groupId>
+	  <artifactId>energize</artifactId>
+	  <version>0.8</version>
+	</dependency>
+	
 Add the following to your `build.sbt` file to use *energize* in your SBT project:
 
-  resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
-
-  libraryDependencies += "xyz.hyperreal" %% "energize" % "0.8"
+    resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
+	 
+    libraryDependencies += "xyz.hyperreal" %% "energize" % "0.8"
 
 
 Building
@@ -67,9 +67,9 @@ Building
 
 ### Clone and Run the SBT (Simple Build Tool)
 
-  git clone git://github.com/vinctustech/energize.git
-  cd energize
-  sbt
+	git clone git://github.com/vinctustech/energize.git
+	cd energize
+	sbt
   
 ### SBT Commands
 
@@ -87,10 +87,10 @@ Example
 
 This example shows how to get a simple API to support a "to do list" app working. Start by creating a folder for the example. Now download the [executable](https://dl.bintray.com/edadma/generic/energize-0.8.jar) and place it in the example folder you just created. Now, create a text file called `todo.energize` will the following text in it.
 
-  resource todo /api/v1
-    name        string  required
-    description string  optional
-    status      integer required
+	resource todo /api/v1
+	  name        string  required
+	  description string  optional
+	  status      integer required
 
 The executable contains both an HTTP server and a REPL to make it easier to develop your API definitions. We'll start by looking at the server.
 
@@ -99,46 +99,46 @@ The executable contains both an HTTP server and a REPL to make it easier to deve
 
 Now, on the command line in the example folder, start the server with the command
 
-  java -jar energize-0.8.jar todo
+    java -jar energize-0.8.jar todo
   
 You should now have a working HTTP server bound to port 8080 that will serve API requests for a todo list. Let's try it out. Using `curl`, let's add an item to our todo list database. To do that, type
 
-  curl --data "{name: \"finish 0.1\", status: 1}" http://localhost:8080/api/v1/todo
+	curl --data "{name: \"finish 0.1\", status: 1}" http://localhost:8080/api/v1/todo
 
 You should see
 
-  {
-    "status": "ok",
-    "update": 1
-  }
+	{
+	  "status": "ok",
+	  "update": 1
+	}
 
 as the response. This means that the route (URI) was correct and that one row was added to the database. Add another item by typing
 
-  curl --data "{name: \"write readme\", description: \"add example involving finishing 0.1 and writing the readme\", status: 1}" http://localhost:8080/api/v1/todo
+	curl --data "{name: \"write readme\", description: \"add example involving finishing 0.1 and writing the readme\", status: 1}" http://localhost:8080/api/v1/todo
 
 We can see our todo list with the command
 
-  curl http://localhost:8080/api/v1/todo
+	curl http://localhost:8080/api/v1/todo
   
 getting the response
 
-  {
-    "status": "ok",
-    "data": [
-      {
-        "id": 1,
-        "name": "finish 0.1",
-        "description": null,
-        "status": 1
-      },
-      {
-        "id": 2,
-        "name": "write readme",
-        "description": "add example involving finishing 0.1 and writing the readme",
-        "status": 1
-      }
-    ]
-  }
+	{
+	  "status": "ok",
+	  "data": [
+	    {
+	  	  "id": 1,
+		  "name": "finish 0.1",
+		  "description": null,
+		  "status": 1
+	    },
+	    {
+		  "id": 2,
+		  "name": "write readme",
+		  "description": "add example involving finishing 0.1 and writing the readme",
+		  "status": 1
+	    }
+	  ]
+	}
 
 The `description` is `null` in the first one because we marked that column as `optional` and did not provide data for it in our post. Also, notice that the property names are the column names originally provided in the configuration and not the case-insensitive uppercase names that are returned by the database. We can retrieve just the second item with the command
 
@@ -158,7 +158,7 @@ to get
 
 Notice that with this response, the `data` field is not an array but a single object since the URI path is pointing to a single item within the `todo` resource.  Lastly, if we try querying the server for an item that does not exist from a resource that does exist, we should get a `404` status code from the server because what is being requested doesn't exist. Try it
 
-  curl http://localhost:8080/api/v1/todo/3
+    curl http://localhost:8080/api/v1/todo/3
 
 Press `Ctrl-C` to stop the server.
 
