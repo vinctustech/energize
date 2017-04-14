@@ -85,6 +85,11 @@ object Energize {
 			k match {
 				case "tables" =>
 					for (tab <- v.asInstanceOf[List[JSON]]) {
+						val pro =
+							tab get "protection" match {
+								case None => None
+								case Some( groups: List[String] ) => Some( groups headOption )
+							}
 						val cols = new ListBuffer[TableColumn]
 
 						for (c <- tab.getList[JSON]( "fields" )) {
@@ -101,8 +106,9 @@ object Energize {
 							cols += TableColumn( c getString "name", ctyp, Nil )
 						}
 
-						decl += TableDefinition( None, null, tab getString "name", Nil, cols toList, tab.getBoolean("resource") )
+						decl += TableDefinition( pro, null, tab getString "name", Nil, cols toList, tab.getBoolean("resource") )
 					}
+				case "routes" =>
 			}
 
 		configure( SourceAST(decl toList), connection, statement, database )

@@ -16,6 +16,11 @@
             "description": "True if this defines a resource; false if it defines a table",
             "type": "boolean"
           },
+          "protection": {
+            "description": "Option array of user groups who can access the resource",
+            "type": "array",
+            "items": "string"
+          },
           "fields": {
             "title": "Field set",
             "type": "array",
