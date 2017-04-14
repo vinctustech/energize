@@ -59,11 +59,10 @@ $ re-start messenger
 Now we can `POST` a message to our REST API:
 
 ```
-POST http://localhost:8080/messages HTTP/1.1
-
-{
-  "text": "Hello World!"
-}
+curl http://localhost:8080/messages \
+	-X POST \
+	-H 'Content-Type: application/json' \
+	-d '{"text": "Hello world!"}'
 ```
 
 This will respond with a JSON result giving the `id` of the created document:

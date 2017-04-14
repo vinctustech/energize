@@ -300,6 +300,12 @@
                           EnergizeParser
                         </a>
                       </li><li class="current-entities indented3">
+                        <a class="object" href="EnergizeServer$.html" title=""></a>
+                        <a class="class" href="EnergizeServer.html" title=""></a>
+                        <a href="EnergizeServer.html" title="">
+                          EnergizeServer
+                        </a>
+                      </li><li class="current-entities indented3">
                         <a class="object" href="Environment$.html" title=""></a>
                         <a class="class" href="Environment.html" title=""></a>
                         <a href="Environment.html" title="">
@@ -412,6 +418,12 @@
                         <a class="class" href="" title=""></a>
                         <a href="" title="">
                           MediaType
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="MimeType.html" title=""></a>
+                        <a href="MimeType.html" title="">
+                          MimeType
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -544,12 +556,6 @@
                         <a class="class" href="RoutesDefinition.html" title=""></a>
                         <a href="RoutesDefinition.html" title="">
                           RoutesDefinition
-                        </a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="class" href="Server.html" title=""></a>
-                        <a href="Server.html" title="">
-                          Server
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -754,7 +760,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">MediaType</span><span class="params">(<span name="typ">typ: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="limit0">limit0: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="limit">limit: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="PrimitiveColumnType.html" class="extype" name="xyz.hyperreal.energize.PrimitiveColumnType">PrimitiveColumnType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">MediaType</span><span class="params">(<span name="allowed">allowed: <span class="extype" name="scala.List">List</span>[<a href="MimeType.html" class="extype" name="xyz.hyperreal.energize.MimeType">MimeType</a>]</span>, <span name="limit0">limit0: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="limit">limit: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <a href="PrimitiveColumnType.html" class="extype" name="xyz.hyperreal.energize.PrimitiveColumnType">PrimitiveColumnType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
 
@@ -810,9 +816,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="xyz.hyperreal.energize.MediaType#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(typ:Option[String],limit0:Option[String],limit:Int):xyz.hyperreal.energize.MediaType"></a><a id="&lt;init&gt;:MediaType"></a>
+      <a id="&lt;init&gt;(allowed:List[xyz.hyperreal.energize.MimeType],limit0:String,limit:Int):xyz.hyperreal.energize.MediaType"></a><a id="&lt;init&gt;:MediaType"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/MediaType.html#&lt;init&gt;(typ:Option[String],limit0:Option[String],limit:Int):xyz.hyperreal.energize.MediaType" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/MediaType.html#&lt;init&gt;(allowed:List[xyz.hyperreal.energize.MimeType],limit0:String,limit:Int):xyz.hyperreal.energize.MediaType" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -821,7 +827,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MediaType</span><span class="params">(<span name="typ">typ: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="limit0">limit0: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="limit">limit: <span class="extype" name="scala.Int">Int</span></span>)</span>
+        <span class="name">MediaType</span><span class="params">(<span name="allowed">allowed: <span class="extype" name="scala.List">List</span>[<a href="MimeType.html" class="extype" name="xyz.hyperreal.energize.MimeType">MimeType</a>]</span>, <span name="limit0">limit0: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="limit">limit: <span class="extype" name="scala.Int">Int</span></span>)</span>
       </span>
       
       
@@ -883,6 +889,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="xyz.hyperreal.energize.MediaType#allowed" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="allowed:List[xyz.hyperreal.energize.MimeType]"></a><a id="allowed:List[MimeType]"></a>
+      <span class="permalink">
+      <a href="../../../xyz/hyperreal/energize/MediaType.html#allowed:List[xyz.hyperreal.energize.MimeType]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">allowed</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="MimeType.html" class="extype" name="xyz.hyperreal.energize.MimeType">MimeType</a>]</span>
+      </span>
+      
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -1008,9 +1030,9 @@
       
       
     </li><li name="xyz.hyperreal.energize.MediaType#limit0" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="limit0:Option[String]"></a>
+      <a id="limit0:String"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/MediaType.html#limit0:Option[String]" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/MediaType.html#limit0:String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1019,7 +1041,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">limit0</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+        <span class="name">limit0</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
@@ -1119,22 +1141,6 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="xyz.hyperreal.energize.MediaType#typ" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="typ:Option[String]"></a>
-      <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/MediaType.html#typ:Option[String]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">typ</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
-      </span>
-      
-      
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">

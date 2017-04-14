@@ -35,13 +35,10 @@ resource books
 To create the relationship, create a document and use the `id` of a related document as the value of the field.
 
 ```
-POST http://localhost:8080/books HTTP/1.1
-Content-Type: application/json
-
-{
-  "title": "Dune: House Atreides",
-  "publisher": 1
-}
+curl http://localhost:8080/books \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"title": "Dune: House Atreides", "publisher": 1}'
 ```
 
 Here, the `publisher` field has a value of `1` (the `id` of the related document).
@@ -59,29 +56,25 @@ resource books
 To create the relationships, first create a document, and then populate it's relationships. The URI should be that of the resource end-point, followed by the `id`, and then the name of the resource we are creating relationships for.
 
 ```
-POST http://localhost:8080/books/1/authors HTTP/1.1
-Content-Type: application/json
-
-{
-  "name": "Brian Herbert"
-}
+curl http://localhost:8080/books/1/authors \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Brian Herbert"}'
 ```
 
 And again...
 
 ```
-POST http://localhost:8080/books/1/authors
-Content-Type: application/json
-
-{
-  "name": "Kevin J. Anderson"	
-}
+curl http://localhost:8080/books/1/authors \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Kevin J. Anderson"}'
 ```
 
 Now retrieve our book by `id`, to get all related data.
 
 ```
-GET http://localhost:8080/books/1 HTTP/1.1
+curl http://localhost:8080/books/1
 ```
 
 If successful, this should return a `200 OK` with the following json.

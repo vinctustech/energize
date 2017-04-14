@@ -35,25 +35,19 @@ resource users
 To handle registration, use the following default registration route.
 
 ```
-POST http://localhost:8080/auth/register HTTP/1.1
-Content-Type: application/json
-
-{
-  "email": "test@example.com",
-  "password": "not-so-secret"
-}
+curl http://localhost:8080/auth/register \
+  -X POST
+  -H 'Content-Type: application/json' \
+  -d '{"email": "test@example.com", "password": "not-so-secret"}'
 ```
 
 To handle login, use the following default login route.
 
 ```
-POST http://localhost:8080/auth/login HTTP/1.1
-Content-Type: application/json
-
-{
-  "email": "test@example.com",
-  "password": "not-so-secret"
-}
+curl http://localhost:8080/auth/login \
+  -X POST
+  -H 'Content-Type: application/json' \
+  -d '{"email": "test@example.com", "password": "not-so-secret"}'
 ```
 
 If successful, you will get a `200 OK` with an access token in the response json.
@@ -67,13 +61,11 @@ If successful, you will get a `200 OK` with an access token in the response json
 This access token can be used on every subsequent request in the `Authorization` header as a bearer token to authenticate the user on protected resources.
 
 ```
-POST http://localhost:8080/some-protected-resource HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer arjcyaiprkealtj
-
-{
-  "data": "some-random-data"
-}
+curl http://localhost:8080/some-protected-resource \
+  -X POST
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer jtwmaswrjwrooar' \
+  -d '{"data": "some-data"}'
 ```
 
 > Note: On registration, an access token is also given in the response json.
