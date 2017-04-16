@@ -1,19 +1,19 @@
-energize [![CircleCI](https://circleci.com/bb/vinctus/energize.svg?style=shield&circle-token=8d36e9c65cfc8f8b3ca6d14af06301d7eb5512db)](https://circleci.com/bb/vinctus/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+Energize [![CircleCI](https://circleci.com/bb/vinctus/energize.svg?style=shield&circle-token=8d36e9c65cfc8f8b3ca6d14af06301d7eb5512db)](https://circleci.com/bb/vinctus/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ====
 
-Mock API Platform
+Mock API Framework
 
 
 Overview
 --------
 
-*energize* allows you to get your REST API server and database up and running in very little time.
+*Energize* allows you to get your REST API server and database up and running in very little time.
 
 
 License
 -------
 
-*energize* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
+*Energize* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
 
 
 Documentation
@@ -37,7 +37,7 @@ Run it as a normal Java executable JAR with the command `java -jar energize-0.8.
 
 ### Library
 
-Use the following definition to use *energize* in your Maven project:
+Use the following definition to use *Energize* in your Maven project:
 
 	<repository>
 	  <id>hyperreal</id>
@@ -50,7 +50,7 @@ Use the following definition to use *energize* in your Maven project:
 	  <version>0.8</version>
 	</dependency>
 	
-Add the following to your `build.sbt` file to use *energize* in your SBT project:
+Add the following to your `build.sbt` file to use *Energize* in your SBT project:
 
     resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
 	 
