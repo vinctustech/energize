@@ -80,8 +80,8 @@ object Energize {
 		if (path endsWith "/")
 			None
 		else
-			path split "/" match {
-				case Array()|Array( "" ) => None
+			path split "/" toList match {
+				case Nil|List( "" ) => None
 				case a =>
 					if (a.head != "")
 						None
@@ -91,7 +91,7 @@ object Energize {
 						if (tail contains "")
 							None
 						else
-							Some( URIPath(tail map NameURISegment toList) )
+							Some( URIPath(tail map NameURISegment) )
 					}
 			}
 
@@ -123,7 +123,7 @@ object Energize {
 									case "many-to-many" => ManyReferenceType( typ getString "type", null )
 								}
 
-							cols += TableColumn( c getString "name", ctyp, Nil )
+							cols += TableColumn( c getString "name", ctyp, c getList[String] "modifiers" map ColumnTypeModifier )
 						}
 
 						decl += TableDefinition( pro, null, tab getString "name", bases, cols toList, tab.getBoolean("resource") )
