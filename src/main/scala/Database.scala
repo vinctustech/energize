@@ -53,6 +53,7 @@ object H2Database extends Database {
 								case StringType => "VARCHAR(255)"
 								case IntegerType => "INT"
 								case LongType => "BIGINT"
+								case FloatType => "FLOAT"
 								case UUIDType => "UUID"
 								case DateType => "DATE"
 								case DatetimeType => "DATETIME"
@@ -135,12 +136,15 @@ object PostgresDatabase extends Database {
 			case StringType => "VARCHAR(255)"
 			case IntegerType => "INT"
 			case LongType => "BIGINT"
+			case FloatType => "FLOAT"
 			case UUIDType => "UUID"
 			case DateType => "DATE"
 			case DatetimeType => "TIMESTAMP"
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
 			case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
+			case BLOBType( _ ) => "BLOB"
+			case MediaType( _, _, _ ) => "BIGINT"
 		}
 
 	def desensitize( name: String ) = name.toLowerCase
@@ -233,6 +237,7 @@ object MySQLDatabase extends Database {
 			case StringType => "VARCHAR(255)"
 			case IntegerType => "INT"
 			case LongType => "BIGINT"
+			case FloatType => "FLOAT"
 			case UUIDType => "UUID"
 			case DateType => "DATE"
 			case DatetimeType => "DATETIME"

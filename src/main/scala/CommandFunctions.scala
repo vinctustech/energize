@@ -105,7 +105,8 @@ object CommandFunctions {
 					c.typ match {
 						case StringType => Types.VARCHAR
 						case IntegerType => Types.INTEGER
-						case LongType => Types.BIGINT
+						case FloatType => Types.FLOAT
+						case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT
 						case BLOBType( _ ) => Types.BLOB
 						case TimestampType => Types.TIMESTAMP
 					}
@@ -131,6 +132,7 @@ object CommandFunctions {
 //							if (v eq null)
 //								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
+						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Double] )
 						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
 						case BinaryType|StringType => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
