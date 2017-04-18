@@ -33,10 +33,16 @@ package object energize {
 			})
 		}
 
-	def parseCode( code: String ) = {
+	def parseExpression( expression: String ) = {
 		val p = new EnergizeParser
 
-		p.parseFromString( code, p.statements )
+		p.parseFromString( expression, p.expressionStatement ).expr
+	}
+
+	def parseStatements( statements: String ) = {
+		val p = new EnergizeParser
+
+		p.parseFromString( statements, p.statements )
 	}
 
 	def byte2hex( b: Byte ) = new String( Array(hex charAt (b >> 4), hex charAt (b&0x0F)) )
