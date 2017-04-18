@@ -129,6 +129,33 @@ object Energize {
 						decl += TableDefinition( pro, null, tab getString "name", bases, cols toList, tab.getBoolean("resource") )
 					}
 				case "routes" =>
+					for (routes <- v.asInstanceOf[List[JSON]]) {
+						val base =
+							if (routes contains "base")
+								parsePath( routes getString "base" ).get
+							else
+								URIPath( Nil )
+						val protection =
+							if (routes contains "protection") {
+								val p = routes getString "protection"
+
+								if (p eq null)
+									Some( None )
+								else
+									Some( Some(p) )
+							} else
+								None
+						val mappings =
+							for (m <- routes.getList[JSON]( "mappings" ))
+								yield {
+									val method = HTTPMethod( m getString "method" )
+									val path = parsePath( m getString "path" ).get
+									val action = parseExpression( m getString "action" )
+
+									URIMapping( method, path, action )
+								}
+
+					}
 			}
 
 		configure( SourceAST(decl toList), connection, statement, database )
@@ -261,7 +288,7 @@ object Energize {
 										connection, statement, db ).routes
 							}
 					}
-				case RoutesDefinition( URIPath(base), mappings, protection ) =>
+				case RoutesDefinition( URIPath(base), protection, mappings ) =>
 					val block = new ArrayBuffer[Route]
 
 					mappings foreach {
