@@ -109,7 +109,11 @@ object Energize {
 								case None => None
 								case Some( groups: List[String] ) => Some( groups headOption )
 							}
-						val bases = tab getList[String] "bases" map parsePath map (_ get)
+						val base =
+							if (tab contains "base")
+								parsePath( tab getString "base" )
+							else
+								None
 						val cols = new ListBuffer[TableColumn]
 
 						for (c <- tab.getList[JSON]( "fields" )) {
@@ -126,7 +130,7 @@ object Energize {
 							cols += TableColumn( c getString "name", ctyp, c getList[String] "modifiers" map ColumnTypeModifier )
 						}
 
-						decl += TableDefinition( pro, null, tab getString "name", bases, cols toList, tab.getBoolean("resource") )
+						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
 					}
 				case "routes" =>
 					for (routes <- v.asInstanceOf[List[JSON]]) {
@@ -197,7 +201,7 @@ object Energize {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
-				case TableDefinition( protection, pos, name, bases, columns, resource ) =>
+				case TableDefinition( protection, pos, name, base, columns, resource ) =>
 					var mtm = false
 
 					if (tables contains db.desensitize( name ))
@@ -269,7 +273,7 @@ object Energize {
 								case Some( Some(g) ) => s"protected ($g)"
 							}
 
-						if (bases isEmpty) {
+						if (base isEmpty) {
 							routes ++= configure_( Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
 								connection, statement, db ).routes
 
@@ -277,7 +281,7 @@ object Energize {
 								routes ++= configure_( Builtins.mtmroutes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
 									connection, statement, db ).routes
 						} else
-							for (URIPath( base ) <- bases) {
+							for (URIPath( base ) <- base) {
 								routes ++= configure_( Builtins.routes.replaceAll( "<resource>", name ).
 									replaceAll( "<base>", base map {case NameURISegment( segment ) => segment} mkString("/", "/", "") ).replaceAll("<authorize>", authorize),
 									connection, statement, db ).routes

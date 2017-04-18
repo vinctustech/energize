@@ -21,8 +21,8 @@
             "type": "array",
             "items": "string"
           },
-          "bases": {
-            "description": "Array of path bases for auto-generated routes",
+          "base": {
+            "description": "Option base of paths for auto-generated routes",
             "type": "array",
             "items": "string"
           },
