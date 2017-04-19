@@ -155,10 +155,9 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 								deref( action ).asInstanceOf[(Int, String, AnyRef)]
 							} catch {
 								case e: UnauthorizedException =>
-									result( "Unauthorized", "realm" -> e.getMessage )
+									result( "Unauthorized", s"""realm="${e.getMessage}"""" )
 								case e: ExpiredException =>
-									result( "Unauthorized", "realm" -> e.getMessage,
-										"error" -> "invalid_token", "error_description" -> "The access token expired" )
+									result( "Unauthorized", s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""" )
 								case e: ForbiddenException =>
 									result( "Forbidden", e.getMessage )
 								case e: BadRequestException =>

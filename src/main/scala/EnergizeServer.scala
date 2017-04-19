@@ -283,8 +283,7 @@ class EnergizeServer( env: Environment, port: Int ) {
 						response.setStatusCode( status )
 
 						if (status == SC_UNAUTHORIZED) {
-							response.setHeader( "WWW-Authenticate", "Basic " + (contents.asInstanceOf[Seq[(String, String)]]
-								map {case (k, v) => s"""$k="$v""""} mkString ",") )
+							response.setHeader( "WWW-Authenticate", s"Basic $contents" )
 						} else if (contents ne null) {
 							val entity =
 								contents match {
@@ -303,7 +302,7 @@ class EnergizeServer( env: Environment, port: Int ) {
 						e.printStackTrace( Console.err )
 						response.setStatusCode( SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
-							new NStringEntity( s"""{"error": "${e.getMessage}"}""", `application/json` ) )
+							new NStringEntity( s""""error": "${e.getMessage}"""", `application/json` ) )
 				}
 			}
 		}

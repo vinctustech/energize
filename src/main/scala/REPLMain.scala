@@ -109,7 +109,7 @@ object REPLMain extends App {
 					|password (p) <password>              set database <password>
 					|quit (q)                             exit the REPL
 					|routes (r)                           print all routes showing absolute paths
-					|stack (s) on/off                     turn exception stack trace on or off
+					|trace (t) on/off                     turn exception stack trace on or off
 					|user (u) <user>                      set database <user>
 					|variable (v) <name> <value>          set variable <name> to <value> (added to environment)
 					|variable (v) <name>                  delete variable <name> (removed from environment)
@@ -158,8 +158,8 @@ object REPLMain extends App {
 						
 						println( method + " " + pathbuf + " " + action )
 					}
-				case List( "stack"|"s", "on" ) => stacktrace = true
-				case List( "stack"|"s", "off" ) => stacktrace = false
+				case List( "trace"|"t", "on" ) => stacktrace = true
+				case List( "trace"|"t", "off" ) => stacktrace = false
 				case List( "user"|"u", u ) => user = u
 				case List( "variable"|"v" ) => println( vars )
 				case List( "variable"|"v", n ) =>
