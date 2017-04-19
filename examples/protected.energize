@@ -8,6 +8,4 @@ resource r
 	a integer
 
 routes
-	GET  /r  protected (user)
-
-#authorize( Some("user") ); reject()  # add protection to "GET /r" route associated to resource "r"
+	GET  /r  protected (user)  # authorize( Some("user"), ?key ); reject()  # add protection to "GET /r" route associated to resource "r"

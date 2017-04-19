@@ -109,6 +109,11 @@ object Energize {
 								case None => None
 								case Some( groups: List[String] ) => Some( groups headOption )
 							}
+						val priv =
+							tab get "private" match {
+								case None => false
+								case Some( _ ) => true
+							}
 						val base =
 							if (tab contains "base")
 								parsePath( tab getString "base" )
@@ -130,7 +135,7 @@ object Energize {
 							cols += TableColumn( c getString "name", ctyp, c getList[String] "modifiers" map ColumnTypeModifier )
 						}
 
-						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
+						decl += TableDefinition( pro, priv, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
 					}
 				case "routes" =>
 					for (routes <- v.asInstanceOf[List[JSON]]) {
@@ -201,7 +206,7 @@ object Energize {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
-				case TableDefinition( protection, pos, name, base, columns, resource ) =>
+				case TableDefinition( protection, privat, pos, name, base, columns, resource ) =>
 					var mtm = false
 
 					if (tables contains db.desensitize( name ))
@@ -292,7 +297,7 @@ object Energize {
 										connection, statement, db ).routes
 							}
 					}
-				case RoutesDefinition( URIPath(base), protection, mappings ) =>
+				case RoutesDefinition( URIPath(base), protection, privat, mappings ) =>
 					val block = new ArrayBuffer[Route]
 
 					mappings foreach {
@@ -302,7 +307,13 @@ object Energize {
 							if (protection nonEmpty)
 								for ((Route( method, path, action), i) <- block zipWithIndex)
 									block(i) = Route( method, path,
-										CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get), QueryParameterExpression("key"))), action) )
+										CompoundExpression(ApplyExpression(VariableExpression("authorize"), null,
+											List(LiteralExpression(protection.get), QueryParameterExpression("key"))), action) )
+							else if (privat)
+								for ((Route( method, path, action), i) <- block zipWithIndex)
+									block(i) = Route( method, path,
+										CompoundExpression(ApplyExpression(VariableExpression("access"), null,
+											List(QueryParameterExpression("key"))), action) )
 					}
 
 					block ++=: routes

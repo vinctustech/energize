@@ -138,8 +138,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		("table" | "resource") ~ pos ~ ident ~ opt(protection) ~ opt(basePath) ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case k ~ p ~ name ~ pro ~ base ~ columns => List( TableDefinition( pro, p.pos, name, base, columns, k == "resource" ) )}
+		("table" | "resource") ~ pos ~ ident ~ opt(protection | "private") ~ opt(basePath) ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case k ~ p ~ name ~ Some( "private" ) ~ base ~ columns => List( TableDefinition( None, true, p.pos, name, base, columns, k == "resource" ) )
+			case k ~ p ~ name ~ (pro: Option[Option[String]]) ~ base ~ columns => List( TableDefinition( pro, false, p.pos, name, base, columns, k == "resource" ) )}
 
 	lazy val protection: PackratParser[Option[String]] =
 		"protected" ~> opt("(" ~> ident <~ ")") |
@@ -188,11 +189,15 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
-		"routes" ~> opt(basePath) ~ opt(protection) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
-			case Some( base ) ~ pro ~ mappings =>
-				List( RoutesDefinition(base, pro, mappings) )
-			case None ~ pro ~ mappings =>
-				List( RoutesDefinition(URIPath(Nil), pro, mappings) )
+		"routes" ~> opt(basePath) ~ opt(protection | "private") ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
+			case Some( base ) ~ Some( "private" ) ~ mappings =>
+				List( RoutesDefinition(base, None, true, mappings) )
+			case None ~ Some( "private" ) ~ mappings =>
+				List( RoutesDefinition(URIPath(Nil), None, true, mappings) )
+			case Some( base ) ~ (pro: Option[Option[String]]) ~ mappings =>
+				List( RoutesDefinition(base, pro, false, mappings) )
+			case None ~ (pro: Option[Option[String]]) ~ mappings =>
+				List( RoutesDefinition(URIPath(Nil), pro, false, mappings) )
 		}
 
 	def authorize( group: Option[String] ) = CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(group), QueryParameterExpression("key"))), ApplyExpression(VariableExpression("reject"), null, Nil))

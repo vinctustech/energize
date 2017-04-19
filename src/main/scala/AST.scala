@@ -11,7 +11,7 @@ trait AST
 case class SourceAST( statements: List[StatementAST] ) extends AST
 
 trait StatementAST extends AST
-case class TableDefinition( protection: Option[Option[String]], pos: Position, name: String, base: Option[URIPath],
+case class TableDefinition( protection: Option[Option[String]], privat: Boolean, pos: Position, name: String, base: Option[URIPath],
 														fields: List[TableColumn], resource: Boolean ) extends StatementAST
 
 case class TableColumn( name: String, typ: ColumnType, modifiers: List[ColumnTypeModifier] ) extends Positional
@@ -47,7 +47,7 @@ case class ColumnTypeModifier( modifier: String ) extends Positional
 
 case class RealmDefinition( pos: Position, realm: String ) extends StatementAST
 
-case class RoutesDefinition( base: URIPath, protection: Option[Option[String]], mappings: List[URIMapping]) extends StatementAST
+case class RoutesDefinition( base: URIPath, protection: Option[Option[String]], privat: Boolean, mappings: List[URIMapping]) extends StatementAST
 	
 case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 
