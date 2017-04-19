@@ -67,7 +67,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
 				"blob", "binary",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "float", "decimal"
+				"realm", "protected", "number", "decimal", "private"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -175,7 +175,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"blob" ~> opt("(" ~> ident <~ ")") ^^ {
 			case None => BLOBType( 'base64 )
 			case Some( r ) => BLOBType( Symbol(r) )} |
-		"float" ^^^ FloatType |
+		"number" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
 		"media" ~> opt("(" ~> (repsep(mimeType, ",") ~ opt("," ~> numericLit)) <~ ")") ^^ {
