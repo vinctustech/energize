@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.9b"
+version := "0.9c"
 
 scalaVersion := "2.12.1"
 
