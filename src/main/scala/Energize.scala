@@ -316,12 +316,12 @@ object Energize {
 									for ((Route( method, path, action), i) <- block zipWithIndex)
 										block(i) = Route( method, path,
 											CompoundExpression(ApplyExpression(VariableExpression("access"), null,
-												List(QueryParameterExpression("key"))), action) )
+												List(QueryParameterExpression("access_token"))), action) )
 								case Some( pro ) =>
 									for ((Route( method, path, action), i) <- block zipWithIndex)
 										block(i) = Route( method, path,
 											CompoundExpression(ApplyExpression(VariableExpression("authorize"), null,
-												List(LiteralExpression(pro), QueryParameterExpression("key"))), action) )
+												List(LiteralExpression(pro), QueryParameterExpression("access_token"))), action) )
 							}
 					}
 

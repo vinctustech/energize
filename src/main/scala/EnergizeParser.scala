@@ -198,10 +198,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	def authorize( group: Option[String] ) =
 		if (group == Some( null ))
 			CompoundExpression(ApplyExpression(VariableExpression("access"), null,
-				List(QueryParameterExpression("key"))), ApplyExpression(VariableExpression("reject"), null, Nil))
+				List(QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
 		else
 			CompoundExpression(ApplyExpression(VariableExpression("authorize"), null,
-				List(LiteralExpression(group), QueryParameterExpression("key"))), ApplyExpression(VariableExpression("reject"), null, Nil))
+				List(LiteralExpression(group), QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
 
 	lazy val uriMapping: PackratParser[URIMapping] =
 		httpMethod ~ "/" ~ actionExpression <~ nl ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
