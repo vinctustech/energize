@@ -21,7 +21,11 @@ package object energize {
 
 	private val hex = "0123456789ABCDEF"
 
-	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
+	def problem( pos: Position, error: String ) =
+		if (pos eq null)
+			sys.error( error )
+		else
+			sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
 	def escapeQuotes( s: String ): String = s replace ("'", "''")
 		

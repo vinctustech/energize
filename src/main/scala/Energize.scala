@@ -302,7 +302,7 @@ object Energize {
 							if (protection nonEmpty)
 								for ((Route( method, path, action), i) <- block zipWithIndex)
 									block(i) = Route( method, path,
-										CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get))), action) )
+										CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get), QueryParameterExpression("key"))), action) )
 					}
 
 					block ++=: routes
