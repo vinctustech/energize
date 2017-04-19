@@ -39,7 +39,8 @@ object REPLMain extends App {
 	var user = "sa"
 	var password = ""
 	var config: String = _
-		
+	var key = AUTHORIZATION.getString( "key" )
+
 	sys.addShutdownHook {
 		connection.close
 	}
@@ -50,7 +51,7 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		env = new Environment( Map.empty, Nil, Builtins.map ++ vars, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
+		env = new Environment( Map.empty, Nil, Builtins.map ++ vars, Builtins.sys, connection, statement, db, Map.empty, Map.empty, key )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	}
@@ -63,7 +64,7 @@ object REPLMain extends App {
 	}
 
 	def load( conf: String ) = {
-		env = Energize.configure( io.Source.fromFile(conf + ".energize"), connection, statement, db ) add vars
+		env = Energize.configure( io.Source.fromFile(conf + ".energize"), connection, statement, db, key ) add vars
 	}
 
 	connect

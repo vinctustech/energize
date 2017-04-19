@@ -20,7 +20,8 @@ object Environment {
 // add RouteTable class to speed up adding variables
 class Environment( val tables: Map[String, Table], croutes: List[Route], val bindings: Map[String, Any],
 									 val sbindings: Map[String, SystemValue], val connection: Connection, val statement: Statement,
-									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, Any] ) {
+									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, Any],
+									 val key: String ) {
 
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
@@ -34,11 +35,11 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 		connection.close
 	}
 
-	def add( kv: (String, Any) ) = new Environment( tables, routes, bindings + kv, sbindings, connection, statement, db, pathMap, queryMap )
+	def add( kv: (String, Any) ) = new Environment( tables, routes, bindings + kv, sbindings, connection, statement, db, pathMap, queryMap, key )
 
-	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, bindings ++ m, sbindings, connection, statement, db, pathMap, queryMap )
+	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, bindings ++ m, sbindings, connection, statement, db, pathMap, queryMap, key )
 
-	def remove( n: String ) = new Environment( tables, routes, bindings - n, sbindings, connection, statement, db, pathMap, queryMap )
+	def remove( n: String ) = new Environment( tables, routes, bindings - n, sbindings, connection, statement, db, pathMap, queryMap, key )
 
 	def get( name: String ) =
 		bindings get name match {

@@ -21,6 +21,7 @@ import spray.json._
 object EnergizeServer {
 	def instance( config: io.Source, json: Boolean, port: Int ) = {
 		val (connection, statement, db) = Energize.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
 
 		sys.addShutdownHook {
 			connection.close
@@ -31,9 +32,9 @@ object EnergizeServer {
 
 		val env =
 			if (json)
-				Energize.configureFromJSON( config, connection, statement, db )
+				Energize.configureFromJSON( config, connection, statement, db, key )
 			else
-				Energize.configure( config, connection, statement, db )
+				Energize.configure( config, connection, statement, db, key )
 
 		println( "starting server on port " + port )
 

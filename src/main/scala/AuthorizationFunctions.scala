@@ -10,7 +10,6 @@ object AuthorizationFunctionHelpers {
 	val CREDENTIALS = "(.*):(.*)"r
 	lazy val SCHEME = AUTHORIZATION.getString( "scheme" )
 	lazy val EXPIRATION = if (AUTHORIZATION.getIsNull( "expiration" )) Int.MaxValue else AUTHORIZATION.getInt( "expiration" )
-	lazy val KEY = AUTHORIZATION.getString( "key" )
 
 	SCHEME match {
 		case "Basic"|"Bearer" =>
@@ -166,7 +165,7 @@ object AuthorizationFunctions {
 	}
 
 	def access( env: Environment, key: Option[String] ): Unit =
-		if (key == None || key.get != AuthorizationFunctionHelpers.KEY)
+		if (key == None || key.get != env.key)
 			throw new ForbiddenException( "wrong or missing access key" )
 
 }

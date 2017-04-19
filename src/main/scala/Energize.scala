@@ -42,10 +42,10 @@ object Energize {
 		(connection, connection.createStatement, Database( name ))
 	}
 
-	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
+	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
 		val p = new EnergizeParser
 
-		configure( p.parseFromSource(src, p.source), connection, statement, database )
+		configure( p.parseFromSource(src, p.source), connection, statement, database, key )
 	}
 
 	def primitive( typ: JSON ): PrimitiveColumnType =
@@ -100,7 +100,7 @@ object Energize {
 					}
 			}
 
-	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
+	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
 		val s = src mkString
 		val json = DefaultJSONReader.fromString( s )
 		val decl = new ListBuffer[StatementAST]
@@ -172,24 +172,24 @@ object Energize {
 					}
 			}
 
-		configure( SourceAST(decl toList), connection, statement, database )
+		configure( SourceAST(decl toList), connection, statement, database, key )
 	}
 
-	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Environment =
-		configure( ast, connection, statement, db, false )
+	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): Environment =
+		configure( ast, connection, statement, db, key, false )
 
 	private def configure_( src: String, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val p = new EnergizeParser
 
-		configure( p.parseFromSource( io.Source.fromString( src ), p.source ), connection, statement, database, true )
+		configure( p.parseFromSource(io.Source.fromString( src ), p.source), connection, statement, database, null, true )
 	}
 
-	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, internal: Boolean ): Environment = {
+	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String, internal: Boolean ): Environment = {
 		val tables = new HashMap[String, Table]
 		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
-		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
+		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, Builtins.sys, connection, statement, db, Map.empty, Map.empty, key )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
