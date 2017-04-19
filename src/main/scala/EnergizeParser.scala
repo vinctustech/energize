@@ -142,7 +142,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			case k ~ p ~ name ~ pro ~ base ~ columns => List( TableDefinition( pro, p.pos, name, base, columns, k == "resource" ) )}
 
 	lazy val protection: PackratParser[Option[String]] =
-		"protected" ~> opt("(" ~> ident <~ ")")
+		"protected" ~> opt("(" ~> ident <~ ")") |
+		"private" ^^^ Some( null )
 
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
