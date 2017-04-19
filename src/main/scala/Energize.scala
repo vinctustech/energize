@@ -15,11 +15,16 @@ object Energize {
 	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
 
 	def dbconnect: (Connection, Statement, Database) = {
-		val name = DATABASE.getString( "name" )
-		val driver = DATABASE.getString( "driver" )
 		val url = DATABASE.getString( "url" )
 		val user = DATABASE.getString( "user" )
 		val password = DATABASE.getString( "password" )
+
+		dbconnect( url, user, password )
+	}
+
+	def dbconnect( url: String, user: String, password: String ): (Connection, Statement, Database) = {
+		val name = DATABASE.getString( "name" )
+		val driver = DATABASE.getString( "driver" )
 
 		dbconnect( name, driver, url, user, password )
 	}
