@@ -244,7 +244,6 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					case f: Native =>
 						val list = args map (a => deref( a ))
 
-						println( list, list map (_.getClass) )
 						if (f.applicable( list ))
 							f( this, list )
 						else
