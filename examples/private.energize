@@ -4,8 +4,8 @@
 	Note that other routes are not private, so test data can be posted first.
 */
 
-resource r private
+resource r
 	a integer
 
-#routes
-#	GET  /r  private  # access( ?key ); reject()  # add privacy to "GET /r" route associated to resource "r"
+routes
+	GET  /r  private  # access( ?key ); reject()  # add privacy to "GET /r" route associated to resource "r"
