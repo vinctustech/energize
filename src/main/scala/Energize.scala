@@ -169,6 +169,7 @@ object Energize {
 									URIMapping( method, path, action )
 								}
 
+						decl += RoutesDefinition( base, protection, mappings )
 					}
 			}
 
@@ -308,7 +309,7 @@ object Energize {
 
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
-							block += Route( method, base ++ path, action )
+							block += Route( method, URIPath(base ++ path), action )
 
 							protection match {
 								case None =>

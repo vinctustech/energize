@@ -48,10 +48,10 @@ case class ColumnTypeModifier( modifier: String ) extends Positional
 case class RealmDefinition( pos: Position, realm: String ) extends StatementAST
 
 case class RoutesDefinition( base: URIPath, protection: Option[Option[String]], mappings: List[URIMapping]) extends StatementAST
-	
+
 case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 
-case class URIPath( path: List[URISegment] )
+case class URIPath( segments: List[URISegment] )
 
 case class HTTPMethod( method: String )
 
@@ -86,8 +86,9 @@ case object ContinueExpression extends ExpressionAST
 case class RangeExpression( start: ExpressionAST, end: ExpressionAST ) extends ExpressionAST
 case class AssignmentExpression( v: String, expr: ExpressionAST ) extends ExpressionAST with Positional
 
-case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
+case class ECMAScriptExpressionAST( expr: Any ) extends ExpressionAST
 
+case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 // trait PatternAST extends AST
 // 
 // case class VariablePattern( name: String ) extends PatternAST

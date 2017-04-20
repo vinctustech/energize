@@ -37,7 +37,7 @@ package object energize {
 			})
 		}
 
-	def parseExpression( expression: String ) = {
+	def parseExpression( expression: String ): ExpressionAST = {
 		val p = new EnergizeParser
 
 		p.parseFromString( expression, p.expressionStatement ).expr

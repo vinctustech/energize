@@ -143,7 +143,7 @@ object REPLMain extends App {
 
 					sys.exit
 				case List( "routes"|"r" ) =>
-					for (Route(method, path, action) <- env.routes ) {
+					for (Route(method, URIPath(path), action) <- env.routes ) {
 						val pathbuf = new StringBuilder
 						
 						path foreach {

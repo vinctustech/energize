@@ -196,7 +196,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		}
 
 	def authorize( group: Option[String] ) =
-		if (group == Some( null ))
+		if (group contains null)
 			CompoundExpression(ApplyExpression(VariableExpression("access"), null,
 				List(QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
 		else

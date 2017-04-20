@@ -123,10 +123,10 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					None
 			}
 
-			for (Route( rmethod, uri, action) <- routes) {
+			for (Route( rmethod, URIPath(rsegments), action) <- routes) {
 				urivars.clear
 
-				if (len == uri.length && reqmethod.toUpperCase == rmethod && uri.zip( segments ).forall {
+				if (len == rsegments.length && reqmethod.toUpperCase == rmethod && rsegments.zip( segments ).forall {
 					case (NameURISegment( route ), segment) => route == segment
 					case (ParameterURISegment( name, "string" ), segment) =>
 						urivars(name) = segment
@@ -367,7 +367,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 
 }
 
-case class Route( method: String, path: List[URISegment], action: ExpressionAST )
+case class Route( method: String, path: URIPath, action: ExpressionAST )
 
 case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean,
 									var preparedInsert: PreparedStatement ) {
