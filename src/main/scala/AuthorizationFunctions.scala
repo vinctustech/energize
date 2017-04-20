@@ -166,6 +166,6 @@ object AuthorizationFunctions {
 
 	def access( env: Environment, key: Option[String] ): Unit =
 		if (key == None || key.get != env.key)
-			throw new ForbiddenException( "wrong or missing access key" )
+			throw new ForbiddenException( "wrong or missing access_token" )
 
 }
