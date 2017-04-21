@@ -1,5 +1,7 @@
 package xyz.hyperreal.energize
 
+import javax.script.CompiledScript
+
 import util.parsing.input.Position
 import util.parsing.input.Positional
 
@@ -86,7 +88,7 @@ case object ContinueExpression extends ExpressionAST
 case class RangeExpression( start: ExpressionAST, end: ExpressionAST ) extends ExpressionAST
 case class AssignmentExpression( v: String, expr: ExpressionAST ) extends ExpressionAST with Positional
 
-case class ECMAScriptExpressionAST( expr: Any ) extends ExpressionAST
+case class ECMAScriptExpression( expr: CompiledScript ) extends ExpressionAST
 
 case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 // trait PatternAST extends AST
@@ -105,6 +107,3 @@ case class VariableDefinition( name: String, value: ExpressionAST ) extends Stat
 case class ValueDefinition( name: String, value: ExpressionAST ) extends StatementAST with Positional
 
 case class ExpressionStatement( expr: ExpressionAST ) extends StatementAST
-	
-	
-case class RouteActionAST( expr: ExpressionAST ) extends AST

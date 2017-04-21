@@ -338,6 +338,8 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					}
 					
 				block( exprs )
+			case ECMAScriptExpression( expr ) =>
+
 			case _ => sys.error( "error evaluating expression: " + expr )
 		}
 
