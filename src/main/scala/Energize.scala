@@ -136,8 +136,13 @@ object Energize {
 									case "one-to-many" => SingleReferenceType( typ getString "type", null )
 									case "many-to-many" => ManyReferenceType( typ getString "type", null )
 								}
+							val modifiers =
+								if (c contains "modifiers")
+									c getList[String] "modifiers" map ColumnTypeModifier
+								else
+									Nil
 
-							cols += TableColumn( c getString "name", ctyp, c getList[String] "modifiers" map ColumnTypeModifier )
+							cols += TableColumn( c getString "name", ctyp, modifiers )
 						}
 
 						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )

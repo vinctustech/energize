@@ -60,7 +60,7 @@
                   }
                 },
                 "modifiers": {
-                  "description": "Modifier set",
+                  "description": "Optional modifier set",
                   "type": "array",
                   "items": "string",
                   "enum": [

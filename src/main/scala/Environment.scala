@@ -57,7 +57,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 
 	def add( route: Route ) = routeTable += route
 
-	def remove( method: String, path: List[URISegment] ): Unit = {
+	def remove( method: String, path: URIPath ): Unit = {
 		for (i <- 0 until routeTable.length)
 			if (routeTable(i).method == method && routeTable(i).path == path) {
 				routeTable.remove( i )

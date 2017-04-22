@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.9f"
+version := "0.9g"
 
 scalaVersion := "2.12.2"
 
@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
 	"org.xerial" % "sqlite-jdbc" % "3.16.1",
 	"org.firebirdsql.jdbc" % "jaybird-jdk16" % "2.2.12",
 	"org.apache.derby" % "derby" % "10.13.1.1",
-	"jline" % "jline" % "2.14.2",
+	"jline" % "jline" % "2.14.3",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
