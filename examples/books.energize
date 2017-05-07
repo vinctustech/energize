@@ -1,6 +1,6 @@
 resource books
 	title string required
-	author authors
+	authors authors array
 	publisher publishers
 
 resource authors
