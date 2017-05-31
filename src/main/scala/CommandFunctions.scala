@@ -131,6 +131,7 @@ object CommandFunctions {
 //						case ManyReferenceType( _, _ ) =>
 //							if (v eq null)
 //								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
+						case SingleReferenceType( _, _ ) => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
 						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Double] )
 						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )

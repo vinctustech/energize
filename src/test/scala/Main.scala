@@ -3,29 +3,25 @@ package xyz.hyperreal.energize
 
 object Main extends App {
 
- 	val (c, s, d) = Test.dbconnect//Energize.dbconnect
+	val (c, s, d) = Test.dbconnect//Energize.dbconnect
 
 //	val code = parseExpression( "1 + 2" )
 //	val env = Energize.configure( io.Source.fromString(""), c, s, d )
 //
 //	println( env.deref(code) )
 
-// 	val env = Energize.configure( io.Source.fromFile("examples/books.energize"), c, s, d )
-
+// 	val env = Energize.configure( io.Source.fromFile("examples/books.energize"), c, s, d, "123" )
+//
 //	println( env.process("GET", "/books", null) )
 //	println( env.process("GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books.id=3", null) )
 //	println( env.process("GET", "/books?order=title:asc", null) )
 //	println( env.process("GET", "/books/1", null) )
 
-// 	val env = Energize.configure( io.Source.fromFile("examples/books2.energize"), c, s, d )
-//
-//	println( env.process("POST", "/books", """{"title": "Dune: House Atreides"}"""))
+ 	val env = Energize.configure( io.Source.fromFile("examples/books2.energize"), c, s, d, "123" )
+
 //	println( env.process("POST", "/books/1/authors", """{"name": "Brian Herbert"}"""))
 //	println( env.process("POST", "/books/1/authors", """{"name": "Kevin J. Anderson"}"""))
-//	println( env.process("GET", "/books", null) )
-//	println( env.process("GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books.id=3", null) )
-//	println( env.process("GET", "/books?order=title:asc", null) )
-//	println( env.process("GET", "/books/1", null) )
+	println( env.process("GET", "/books", null) )
 
 // 	val env = Energize.configure( io.Source.fromFile("examples/customers.energize"), c, s )
 
