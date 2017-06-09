@@ -133,17 +133,22 @@ object QueryFunctions {
 //						}
 //						case Some( t ) if t == table =>
 							table.columnMap get cn match {
-								case None if cn == "id" => attr += ("id" -> obj)
+								case None if cn == "id" => attr += ("id" -> obj.get)
 								case None => sys.error( s"data from an unknown column: $cn" )
-								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj ne null =>
+								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> mkOBJ( reft, Nil ))
-								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _) ) if obj ne null =>
-									attr += (cname -> obj.asInstanceOf[Array[AnyRef]].toList)
+								case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
+									attr += (cname -> query( env, reft,
+										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "id")}" +
+											QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
+								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList)
 //									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
-								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj ne null =>
-									attr += (cname -> obj.asInstanceOf[Array[Byte]].map( byte2hex ).mkString)
-								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj ne null =>
-									val blob = obj.asInstanceOf[Blob]
+								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> obj.get.asInstanceOf[Array[Byte]].map( byte2hex ).mkString)
+								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj.get ne null =>
+									val blob = obj.get.asInstanceOf[Blob]
 									val array = blob.getBytes( 0L, blob.length.toInt )
 
 									rep match {
@@ -151,15 +156,15 @@ object QueryFunctions {
 										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
 										case 'array => attr += (cname -> array.toList)
 									}
-								case Some( Column(cname, MediaType( _, _, _ ), _, _, _, _) ) if obj ne null =>
-									attr += (cname -> s"/media/$obj")
-								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj ne null =>
-									attr += (cname -> env.db.writeTimestamp( obj ))
+								case Some( Column(cname, MediaType( _, _, _ ), _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> s"/media/${obj.get}")
+								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> env.db.writeTimestamp( obj.get ))
 								case Some( Column(cname, _, true, _, _, _) ) =>
 									if (allowsecret)
-										attr += (cname -> obj)
+										attr += (cname -> obj.get)
 								case Some( c ) =>
-									attr += (c.name -> obj)
+									attr += (c.name -> obj.get)
 					}
 			}
 			

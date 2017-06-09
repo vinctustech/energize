@@ -44,9 +44,11 @@ class Relation( env: Environment, rs: ResultSet ) extends Iterable[IndexedSeq[An
 
 	def get( index: Int ) = cur.head( index )
 
-	def get( table: String, column: String ): AnyRef = get( columnMap(Col(env.db.desensitize(table), env.db.desensitize(column))) )
+	def get( table: String, column: String ): Option[AnyRef] = {
+		columnMap get Col(env.db.desensitize(table), env.db.desensitize(column)) map get
+	}
 
-	def getLong( table: String, column: String ) = get( table, column ).asInstanceOf[Long]
+	def getLong( table: String, column: String ) = get( table, column ).get.asInstanceOf[Long]
 
 	override def toString =
 		columns.toString + rows
