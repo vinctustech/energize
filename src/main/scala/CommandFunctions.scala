@@ -228,7 +228,7 @@ object CommandFunctions {
 			com ++=
 				(for ((k, v) <- escapeQuotes( json ).toList)
 					yield {
-						resource.columnMap( env.db.desensitize( k ) ).typ match {
+						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
 							case StringType if v ne null => s"$k = '$v'"
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
@@ -254,7 +254,7 @@ object CommandFunctions {
 		json get field match {
 			case None => throw new BadRequestException( s"insertLinks: field not found: $field" )
 			case Some( vs ) =>
-				resource.columnMap( env.db.desensitize(field) ).typ match {
+				resource.columnMap(field).typ match {
 					case ManyReferenceType( _, ref ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							associateID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn(ref), v )
@@ -263,7 +263,7 @@ object CommandFunctions {
 		}
 
 	def append( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) = {
-		resource.columnMap.get( env.db.desensitize(field) ) match {
+		resource.columnMap.get(field) match {
 			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
 				val tid = insert( env, ref, json )
 
@@ -286,7 +286,7 @@ object CommandFunctions {
 		json get field match {
 			case None => throw new BadRequestException( s"append: field not found: $field" )
 			case Some( vs ) =>
-				resource.columnMap( env.db.desensitize(field) ).typ match {
+				resource.columnMap(field).typ match {
 					case ManyReferenceType( _, ref ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
 							deleteLinkID( env, resource, id, ref, CommandFunctionHelpers.uniqueColumn( ref ), v )
@@ -295,7 +295,7 @@ object CommandFunctions {
 		}
 
 	def deleteLinksID( env: Environment, resource: Table, id: Long, field: String, tid: Long ) =
-		resource.columnMap( env.db.desensitize(field) ).typ match {
+		resource.columnMap(field).typ match {
 			case ManyReferenceType( _, ref ) => deleteLinkIDs( env, resource, id, ref, tid )
 			case _ => throw new BadRequestException( s"append: field not many-to-many: $field" )
 		}

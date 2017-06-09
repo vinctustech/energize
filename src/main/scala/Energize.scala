@@ -276,7 +276,7 @@ object Energize {
 							if (typ.isInstanceOf[ManyReferenceType])
 								mtm = true
 
-							cols(db.desensitize( cname )) = Column( cname, typ, secret, required, unique, indexed )
+							cols(/*db.desensitize*/( cname )) = Column( cname, typ, secret, required, unique, indexed )
 					}
 
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
