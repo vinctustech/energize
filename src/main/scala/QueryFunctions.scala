@@ -52,7 +52,7 @@ object QueryFunctionHelpers {
 				"*"
 			else
 				fs mkString ","
-		val buf = new StringBuilder( s"SELECT $fs1 FROM ${resource.name}" )
+		val buf = new StringBuilder( s"SELECT * FROM ${resource.name}" )//s"SELECT $fs1 FROM ${resource.name}" )
 		val fssd = fss map (f => db.desensitize( f ))
 
 		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
@@ -93,10 +93,13 @@ object QueryFunctionHelpers {
 object QueryFunctions {
 	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
+		println(sql)
 		val res = new Relation( env.statement.executeQuery(sql) )
 		val list = new ListBuffer[OBJ]
 
 		def mkOBJ( table: Table ): OBJ = {
+			println( table.name )
+			println( res )
 			val attr = new ListBuffer[(String, AnyRef)]
 
 			for (i <- 0 until res.columnCount) {
@@ -106,7 +109,8 @@ object QueryFunctions {
 
 				if (dbtable == "")
 					table.columnMap get dbcol match {
-						case None => attr += (dbcol -> obj)
+						case None =>
+							attr += (dbcol -> obj)
 						case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 							attr += (cname -> query( env, reft,
 								s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
@@ -117,15 +121,15 @@ object QueryFunctions {
 				else
 					env.tables get dbtable match {
 						case None if !(dbtable contains '$') => sys.error( s"data from an unknown table: $dbtable" )
-	//					case None =>
-	//						table.columns get dbcol match {
-	//							case None => attr += (dbcol -> obj)
-	//							case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
-	//								attr += (cname -> query( env, reft,
-	//									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
-	//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
-	//							case Some( c ) => attr += (c.name -> obj)
-	//						}
+//					case None =>
+//						table.columns get dbcol match {
+//							case None => attr += (dbcol -> obj)
+//							case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
+//								attr += (cname -> query( env, reft,
+//									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
+//							case Some( c ) => attr += (c.name -> obj)
+//						}
 						case Some( t ) if t == table =>
 							t.columnMap get dbcol match {
 								case None if dbcol.toLowerCase == "id" => attr += ("id" -> obj)
@@ -153,7 +157,8 @@ object QueryFunctions {
 								case Some( Column(cname, _, true, _, _, _) ) =>
 									if (allowsecret)
 										attr += (cname -> obj)
-								case Some( c ) => attr += (c.name -> obj)
+								case Some( c ) =>
+									attr += (c.name -> obj)
 							}
 						case _ =>
 					}

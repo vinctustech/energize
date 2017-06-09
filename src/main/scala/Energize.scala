@@ -112,7 +112,8 @@ object Energize {
 						val pro =
 							tab get "protection" match {
 								case None => None
-								case Some( groups: List[String] ) => Some( groups headOption )
+								case Some( groups: List[_] ) => Some( groups.asInstanceOf[List[String]].headOption )
+								case Some( _ ) => sys.error( "protection expected to be a list" )
 							}
 						val priv =
 							tab get "private" match {

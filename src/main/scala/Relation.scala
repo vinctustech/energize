@@ -47,4 +47,7 @@ class Relation( rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 	def getLong( col: String ) = get( columnMap(col) ).asInstanceOf[Long]
 
 	case class Col( table: String, name: String )
+
+	override def toString =
+		columns.toString + rows
 }
