@@ -23,7 +23,8 @@ object QueryFunctionHelpers {
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
 	
-	def listQuery( db: Database, resource: Table, fields: Option[String], where: String, page: Option[String], start: Option[String], limit: Option[String] ) = {
+	def listQuery( db: Database, resource: Table, fields: Option[String], where: String, page: Option[String], start: Option[String],
+								 limit: Option[String] ) = {
 		val fs =
 			fields match {
 				case None => Nil
@@ -52,7 +53,7 @@ object QueryFunctionHelpers {
 				"*"
 			else
 				fs mkString ","
-		val buf = new StringBuilder( s"SELECT * FROM ${resource.name}" )//s"SELECT $fs1 FROM ${resource.name}" )
+		val buf = new StringBuilder( s"SELECT * FROM ${resource.name}" )//s"SELECT $fs1 FROM ${resource.name}" )//todo: here's the problem
 		val fssd = fss map (f => db.desensitize( f ))
 
 		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
@@ -73,7 +74,7 @@ object QueryFunctionHelpers {
 
 		buf ++= where
 		buf ++= pageStartLimit( page, start, limit )
-		buf.toString
+		Query( buf.toString, fs )
 	}
 
 	def pageStartLimit( page: Option[String], start: Option[String], limit: Option[String] ) =
@@ -91,15 +92,12 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( env: Environment, resource: Table, sql: String, page: Option[String], start: Option[String], limit: Option[String],
+	def query( env: Environment, resource: Table, sql: Query, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
-		println(sql)
-		val res = new Relation( env.statement.executeQuery(sql) )
+		val res = new Relation( env.statement.executeQuery(sql.query) )
 		val list = new ListBuffer[OBJ]
 
 		def mkOBJ( table: Table ): OBJ = {
-			println( table.name )
-			println( res )
 			val attr = new ListBuffer[(String, AnyRef)]
 
 			for (i <- 0 until res.columnCount) {
@@ -113,9 +111,9 @@ object QueryFunctions {
 							attr += (dbcol -> obj)
 						case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 							attr += (cname -> query( env, reft,
-								s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+								Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
 									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" +
-									QueryFunctionHelpers.pageStartLimit(page, start, limit), page, start, limit, allowsecret ))
+									QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
 						case Some( c ) => sys.error( s"data not from a table: matching column: ${c.name}" )
 					}
 				else
@@ -172,9 +170,14 @@ object QueryFunctions {
 
 		list.toList
 	}
-	
-	def size( env: Environment, resource: Table ) =
-		Math.maybePromote( query(env, resource, s"SELECT COUNT(*) FROM ${resource.name}", None, None, None, false).head.values.head.asInstanceOf[Long] )
+
+	def size( env: Environment, resource: Table ) = {
+		val res = env.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name}" )
+
+		res.next
+
+		res.getLong( 1 )
+	}
 
 	def list( env: Environment, resource: Table,
 						fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
@@ -214,7 +217,7 @@ object QueryFunctions {
 
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None, false )
 	}
-	
+
 	def findID( env: Environment, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
 		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id",
 			page, start, limit), None, None, None, false )
@@ -232,8 +235,8 @@ object QueryFunctions {
 	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
 		findValue( env, resource, field, value, allowsecret ).headOption
 
-	def findField( env: Environment, resource: String, id: Long, field: String ) =
-		query( env, env.tables(env.db.desensitize(resource)), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
+//	def findField( env: Environment, resource: String, id: Long, field: String ) =
+//		query( env, env.tables(env.db.desensitize(resource)), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
 
 	def readBlob( env: Environment, resource: String, id: Long, field: String ) = {
 		val res = env.statement.executeQuery( s"SELECT $field FROM $resource WHERE id = $id" )
@@ -259,3 +262,5 @@ object QueryFunctions {
 //			"data" -> blob.getBytes( 0, blob.length.toInt ))
 	}
 }
+
+case class Query( query: String, fields: List[String] = Nil )
