@@ -182,7 +182,7 @@ object QueryFunctions {
 
 		res.next
 
-		res.getLong( 1 )
+		BigInt( res.getLong(1) )
 	}
 
 	def list( env: Environment, resource: Table,
