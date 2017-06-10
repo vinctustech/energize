@@ -12,4 +12,4 @@ resource publishers
 
 if size( books ) == 0
 	insert( publishers, {name: "Spectra"} )
-	insert( books, {title: "Dune: House Atreides", publisher: 1} )
+	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	# could also write `publisher: 1`
