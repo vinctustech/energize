@@ -554,42 +554,37 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																				 |  "data": 3
 																				 |}
 																			 """.trim.stripMargin )
-//		env.process( "POST", "/customers", """{"lastname": "doe", "firstname": "john", products: ["savings"]}""" ) shouldBe
-//			(SC_CREATED, "application/json",  """
-//																					|{
-//																					|  "data": 1
-//																					|}
-//																				""".trim.stripMargin )
-//		env.process( "GET", "/customers", null ) shouldBe
-//			(SC_OK, "application/json", """
-//																		|{
-//																		|  "data": [
-//																		|    {
-//																		|      "id": 1,
-//																		|      "lastname": "doe",
-//																		|      "firstname": "john",
-//																		|      "products": [
-//																		|      {
-//																		|        "id": 1,
-//																		|        "name": "savings"
-//																		|      }]
-//																		|    }
-//																		|  ]
-//																		|}
-//																	""".trim.stripMargin )
-//		env.process( "GET", "/products/1", null ) shouldBe
-//			(SC_OK, "application/json", """
-//																		|{
-//																		|  "data": {
-//																		|    "id": 1,
-//																		|    "code": "12345",
-//																		|    "type": {
-//																		|      "id": 1,
-//																		|      "name": "normal"
-//																		|    }
-//																		|  }
-//																		|}
-//																	""".trim.stripMargin )
+		env.process( "POST", "/customers", """{"lastname": "doe", "firstname": "john"}""" ) shouldBe
+			(SC_CREATED, "application/json",  """
+																					|{
+																					|  "data": 1
+																					|}
+																				""".trim.stripMargin )
+		env.process( "GET", "/customers", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": [
+																		|    {
+																		|      "id": 1,
+																		|      "lastname": "doe",
+																		|      "firstname": "john",
+																		|      "products": []
+																		|    }
+																		|  ]
+																		|}
+																	""".trim.stripMargin )
+		env.process( "GET", "/customers/1", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": {
+																		|    "id": 1,
+																		|    "lastname": "doe",
+																		|    "firstname": "john",
+																		|    "products": []
+																		|  }
+																		|}
+																	""".trim.stripMargin )
+		env.process( "POST", "/customers/1/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
 //		env.process( "PUT", "/products/1", """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, null, null)
 //		env.process( "GET", "/products", null ) shouldBe
 //			(SC_OK, "application/json", """
