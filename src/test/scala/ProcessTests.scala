@@ -585,30 +585,33 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|}
 																	""".trim.stripMargin )
 		env.process( "POST", "/customers/1/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
-//		env.process( "PUT", "/products/1", """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, null, null)
-//		env.process( "GET", "/products", null ) shouldBe
-//			(SC_OK, "application/json", """
-//																		|{
-//																		|  "data": [
-//																		|    {
-//																		|      "id": 1,
-//																		|      "code": "123456",
-//																		|      "type": {
-//																		|        "id": 3,
-//																		|        "name": "special"
-//																		|      }
-//																		|    }
-//																		|  ]
-//																		|}
-//																	""".trim.stripMargin )
-//		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
-//		env.process( "GET", "/products/1", null ) shouldBe
-//			(SC_NOT_FOUND, "application/json",
-//				"""
-//					|{
-//					|  "error": "id 1 not found"
-//					|}
-//				""".trim.stripMargin )
+		env.process( "PUT", "/customers/1", """{"lastname": "doe", "firstname": "jane"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/customers", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": [
+																		|    {
+																		|      "id": 1,
+																		|      "lastname": "doe",
+																		|      "firstname": "jane",
+																		|      "products": [
+																		|        {
+																		|          "id": 1,
+																		|          "name": "savings"
+																		|        }
+																		|      ]
+																		|    }
+																		|  ]
+																		|}
+																	""".trim.stripMargin )
+		env.process( "DELETE", "/customers/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/customers/1", null ) shouldBe
+			(SC_NOT_FOUND, "application/json",
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 //		env.process( "GET", "/types", null ) shouldBe
 //			(SC_OK, "application/json", """
 //																		|{
