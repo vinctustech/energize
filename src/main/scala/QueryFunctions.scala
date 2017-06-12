@@ -5,17 +5,6 @@ import java.sql.Blob
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
 
-import xyz.hyperreal.lia.Math
-
-	
-// 	def list( env: Env, resource: Table ) =
-// 		resource.columns.values.find( c => c.typ.isInstanceOf[TableType] ) match {
-// 			case None =>
-// 				query( env, resource, s"SELECT * FROM ${resource.name}" )
-// 			case Some( Column(col, TableType(reft), _, _, _, _) ) =>
-// 				query( env, resource, s"SELECT * FROM ${resource.name} LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id" )
-// 			case _ => throw new EnergizeErrorException( "shouldn't be impossible" )
-// 		}
 
 object QueryFunctionHelpers {
 	val FILTER = "(.+)(=|<|>|<=|>=|!=|~)(.+)"r

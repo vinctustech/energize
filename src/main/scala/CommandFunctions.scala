@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Statement, Types, Timestamp}
+import java.sql.Types
 import javax.sql.rowset.serial.SerialBlob
 
 import collection.mutable.ListBuffer
@@ -97,7 +97,7 @@ object CommandFunctions {
 			throw new BadRequestException( "insert: excess field(s): " + diff.mkString(", ") )
 
 		val cols = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType])
-		val mtms = resource.columns filter (c => c.typ.isInstanceOf[ManyReferenceType])	// mtm fields cannot be null; still needs to be checked
+		val mtms = resource.columns filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
 
 		for ((c, i) <- cols zipWithIndex) {
 			def setNull: Unit = {
@@ -121,7 +121,6 @@ object CommandFunctions {
 					c.typ match {
 						case SingleReferenceType( _, tref ) if v != null && !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
 							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("id") )
-
 //								s"SELECT id FROM $tname WHERE " +
 //								(tref.columns.find(c => c.unique ) match {
 //									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )

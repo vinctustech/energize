@@ -612,38 +612,38 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-//		env.process( "GET", "/types", null ) shouldBe
-//			(SC_OK, "application/json", """
-//																		|{
-//																		|  "data": [
-//																		|    {
-//																		|      "id": 1,
-//																		|      "name": "normal"
-//																		|    },
-//																		|    {
-//																		|      "id": 3,
-//																		|      "name": "special"
-//																		|    }
-//																		|  ]
-//																		|}
-//																	""".trim.stripMargin )
-//		env.process( "GET", "/types/1", null ) shouldBe
-//			(SC_OK, "application/json", """
-//																		|{
-//																		|  "data": {
-//																		|    "id": 1,
-//																		|    "name": "normal"
-//																		|  }
-//																		|}
-//																	""".trim.stripMargin )
-//		env.process( "DELETE", "/types/1", null ) shouldBe (SC_NO_CONTENT, null, null)
-//		env.process( "GET", "/types/1", null ) shouldBe
-//			(SC_NOT_FOUND, "application/json",
-//				"""
-//					|{
-//					|  "error": "id 1 not found"
-//					|}
-//				""".trim.stripMargin )
+		env.process( "GET", "/products", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": [
+																		|    {
+																		|      "id": 1,
+																		|      "name": "savings"
+																		|    },
+																		|    {
+																		|      "id": 3,
+																		|      "name": "credit card"
+																		|    }
+																		|  ]
+																		|}
+																	""".trim.stripMargin )
+		env.process( "GET", "/products/1", null ) shouldBe
+			(SC_OK, "application/json", """
+																		|{
+																		|  "data": {
+																		|    "id": 1,
+																		|    "name": "savings"
+																		|  }
+																		|}
+																	""".trim.stripMargin )
+		env.process( "DELETE", "/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/products/1", null ) shouldBe
+			(SC_NOT_FOUND, "application/json",
+				"""
+					|{
+					|  "error": "id 1 not found"
+					|}
+				""".trim.stripMargin )
 		c.close
 	}
 }

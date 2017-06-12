@@ -331,7 +331,7 @@ abstract class Database {
 
 	def desensitize( name: String ): String
 
-	protected def parameters( typ: ColumnType ) =
+	protected def parameters( typ: ColumnType ) {
 		typ match {
 			case ArrayType( _, _, null, _ ) =>
 			case a@ArrayType( _, p, d, _ ) =>
@@ -346,6 +346,7 @@ abstract class Database {
 					problem( p, "dimension must be an integer" )
 			case _ =>
 		}
+	}
 
 	def readTimestamp( d: String ): Timestamp
 
