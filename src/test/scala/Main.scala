@@ -17,23 +17,17 @@ object Main extends App {
 //	println( env.process("GET", "/books?order=title:asc", null) )
 //	println( env.process("GET", "/books/1", null) )
 
- 	val env = Energize.configure( io.Source.fromFile("examples/books2.energize"), c, s, d, "123" )
+// 	val env = Energize.configure( io.Source.fromFile("examples/books2.energize"), c, s, d, "123" )
 
 //	println( env.process("POST", "/books/1/authors", """{"name": "Brian Herbert"}"""))
 //	println( env.process("POST", "/books/1/authors", """{"name": "Kevin J. Anderson"}"""))
-	println( env.process("GET", "/books", null) )
+//	println( env.process("GET", "/books", null) )
 
 // 	val env = Energize.configure( io.Source.fromFile("examples/customers.energize"), c, s )
-
- //  	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
+//
+//  println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
 //	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
 //	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
-
-// 	val env = Energize.configure( io.Source.fromFile("examples/data.energize"), c, s, d )
-//
-//	println( env.process("GET", "/data/20?fields=id,first_name", null) )
-//  println( env.process("GET", "/data?fields=first_name,city;limit=5;order=city:asc;filter=first_name~C%25", null) )
-//	println( env.process("GET", "/data?fields=id,first_name;limit=3;page=2", null) )
 
 //	val env = Energize.configure( io.Source.fromFile("examples/t1.energize"), c, s )
 
