@@ -10,12 +10,6 @@ object Main extends App {
 //
 //	println( env.deref(code) )
 
-// 	val env = Energize.configure( io.Source.fromFile("examples/customers.energize"), c, s )
-//
-//  println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
-//	println( env.process("GET", "/customers?filter=CustomerName~A%25,City=Berlin", null) )
-//	println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
-
 //	val env = Energize.configure( io.Source.fromFile("examples/t1.energize"), c, s )
 
 //	val env = Energize.configure( io.Source.fromFile("examples/students.energize"), c, s, d, "123" )

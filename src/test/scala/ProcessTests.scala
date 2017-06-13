@@ -711,7 +711,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin)
 	}
 
-	"request query parameters (no relationship)" in {
+	"request query parameters (no relationship) 1" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
 		val config =
@@ -804,6 +804,100 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|    {
 					|      "id": 6,
 					|      "first_name": "Queenie"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+	}
+
+	"request query parameters (no relationship) 2" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource customers
+				|	CustomerName string indexed
+				|	ContactName string indexed
+				|	Address string
+				|	City string indexed
+				|	PostalCode string indexed
+				|	Country string indexed
+				|
+				|if size( customers ) == 0
+				|	batchInsert( customers, [
+				|	 ["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
+				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
+				|	 ["Antonio Moreno Taquería",            "Antonio Moreno",     "Mataderos 2312",                "México D.F.", "05023",    "Mexico"],
+				|	 ["Around the Horn",                    "Thomas Hardy",       "120 Hanover Sq.",               "London",      "WA1 1DP",  "UK"],
+				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]] )			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "GET", "/customers?order=City:asc,PostalCode:desc", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "CustomerName": "Alfreds Futterkiste",
+					|      "ContactName": "Maria Anders",
+					|      "Address": "Obere Str. 57",
+					|      "City": "Berlin",
+					|      "PostalCode": "12209",
+					|      "Country": "Germany"
+					|    },
+					|    {
+					|      "id": 4,
+					|      "CustomerName": "Around the Horn",
+					|      "ContactName": "Thomas Hardy",
+					|      "Address": "120 Hanover Sq.",
+					|      "City": "London",
+					|      "PostalCode": "WA1 1DP",
+					|      "Country": "UK"
+					|    },
+					|    {
+					|      "id": 5,
+					|      "CustomerName": "Berglunds snabbköp",
+					|      "ContactName": "Christina Berglund",
+					|      "Address": "Berguvsvägen 8",
+					|      "City": "Luleå",
+					|      "PostalCode": "S-958 22",
+					|      "Country": "Sweden"
+					|    },
+					|    {
+					|      "id": 3,
+					|      "CustomerName": "Antonio Moreno Taquería",
+					|      "ContactName": "Antonio Moreno",
+					|      "Address": "Mataderos 2312",
+					|      "City": "México D.F.",
+					|      "PostalCode": "05023",
+					|      "Country": "Mexico"
+					|    },
+					|    {
+					|      "id": 2,
+					|      "CustomerName": "Ana Trujillo Emparedados y helados",
+					|      "ContactName": "Ana Trujillo",
+					|      "Address": "Avda. de la Constitución 2222",
+					|      "City": "México D.F.",
+					|      "PostalCode": "05021",
+					|      "Country": "Mexico"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/customers?filter=CustomerName~A%25,City=Berlin", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "CustomerName": "Alfreds Futterkiste",
+					|      "ContactName": "Maria Anders",
+					|      "Address": "Obere Str. 57",
+					|      "City": "Berlin",
+					|      "PostalCode": "12209",
+					|      "Country": "Germany"
 					|    }
 					|  ]
 					|}
