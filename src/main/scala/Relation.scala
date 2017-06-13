@@ -4,7 +4,7 @@ import java.sql._
 
 import collection.mutable.ListBuffer
 
-class Relation( rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
+class Relation( env: Environment, rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 	private val md = rs.getMetaData
 	private var cur: List[IndexedSeq[AnyRef]] = _
 
@@ -13,7 +13,7 @@ class Relation( rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 		for (i <- 1 to columnCount)
 			yield
 				Col( md.getTableName(i), md.getColumnName(i) )
-	val columnMap = Map( (for (i <- 0 until columnCount) yield (columns(i).name, i)): _* )
+	val columnMap = Map( (for (i <- 0 until columnCount) yield (columns(i), i)): _* )
 	val rows = {
 		val buf = new ListBuffer[IndexedSeq[AnyRef]]
 
@@ -44,7 +44,14 @@ class Relation( rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 
 	def get( index: Int ) = cur.head( index )
 
-	def getLong( col: String ) = get( columnMap(col) ).asInstanceOf[Long]
+	def get( table: String, column: String ): Option[AnyRef] = {
+		columnMap get Col(env.db.desensitize(table), env.db.desensitize(column)) map get
+	}
 
-	case class Col( table: String, name: String )
+	def getLong( table: String, column: String ) = get( table, column ).get.asInstanceOf[Long]
+
+	override def toString =
+		columns.toString + rows
 }
+
+case class Col( table: String, name: String )

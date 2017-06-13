@@ -373,7 +373,7 @@ case class Route( method: String, path: URIPath, action: ExpressionAST )
 
 case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean,
 									var preparedInsert: PreparedStatement ) {
-	def names = columns map (c => c.name)
+	def names = columns map (_.name)
 }
 
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )

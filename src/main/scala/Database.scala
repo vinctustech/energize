@@ -100,8 +100,8 @@ object H2Database extends Database {
 						buf ++= c
 						buf ++= ");\n"
 					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
@@ -331,7 +331,7 @@ abstract class Database {
 
 	def desensitize( name: String ): String
 
-	protected def parameters( typ: ColumnType ) =
+	protected def parameters( typ: ColumnType ) {
 		typ match {
 			case ArrayType( _, _, null, _ ) =>
 			case a@ArrayType( _, p, d, _ ) =>
@@ -346,6 +346,7 @@ abstract class Database {
 					problem( p, "dimension must be an integer" )
 			case _ =>
 		}
+	}
 
 	def readTimestamp( d: String ): Timestamp
 

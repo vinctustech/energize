@@ -1,7 +1,10 @@
 package xyz.hyperreal.energize
 
-import xyz.hyperreal.table.TextTable
 import java.time.{Instant, ZoneOffset}
+
+import util.Random._
+
+import xyz.hyperreal.table.TextTable
 
 
 object UtilityFunctions {
@@ -16,11 +19,11 @@ object UtilityFunctions {
 
 	def eval( env: Environment, expr: String ) = env.evaluate( expr )
 
-	def rndPrintable( env: Environment, len: Int ) = List.fill( len )( util.Random.nextPrintableChar ).mkString
+	def rndPrintable( env: Environment, len: Int ) = new String( Array.fill( len )( util.Random.nextPrintableChar) )
 
-	def rndAlpha( env: Environment, len: Int ) = List.fill( len )( (util.Random.nextInt('z' - 'a') + 'a').toChar ).mkString
+	def rndAlpha( env: Environment, len: Int ) = new String( Array.fill( len )((util.Random.nextInt('z' - 'a') + 'a').toChar) )
 
-	def rndInt( env: Environment, low: Int, high: Int ) = util.Random.nextInt( high - low ) + low
+	def rndInt( env: Environment, low: Int, high: Int ) = nextInt( high + 1 - low ) + low
 
 	def show( env: Environment, tab: String ) = Console.print( TextTable(env.statement.executeQuery(s"select * from $tab")) )
 
