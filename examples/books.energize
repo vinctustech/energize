@@ -1,7 +1,7 @@
 resource books
-	title string required
-	author authors
-	publisher publishers
+	title string required indexed
+	author authors array
+	publisher publishers array
 
 resource authors
 	name string unique required
