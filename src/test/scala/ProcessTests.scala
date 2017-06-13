@@ -647,7 +647,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 
-	"request query parameters" in {
+	"request query parameters (no relationship)" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
 		val config =
@@ -745,4 +745,166 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 	}
+
+	"request query parameters (one-to-many)" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource books
+				|	title string required
+				|	author authors
+				|	publisher publishers
+				|
+				|resource authors
+				|	name string unique required
+				|
+				|resource publishers
+				|	name string unique required
+				|
+				|
+				|if size( books ) == 0
+				|	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]] )
+				|
+				|	insert( authors, {name: "Fyodor Dostoyevsky"} )
+				|	insert( authors, {name: "Lewis Carroll"} )
+				|	insert( authors, {name: "Mark Twain"} )
+				|
+				|	insert( books, {title: "The Brothers Karamazov", author: "Fyodor Dostoyevsky", publisher: "North Point Press"} )
+				|	insert( books, {title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", publisher: "Enhanced Media"} )
+				|	insert( books, {title: "The Adventures of Huckleberry Finn", author: "Mark Twain", publisher: "Amazon Classics"} )
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "GET", "/books", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "title": "The Brothers Karamazov",
+					|      "author": {
+					|        "id": 1,
+					|        "name": "Fyodor Dostoyevsky"
+					|      },
+					|      "publisher": {
+					|        "id": 1,
+					|        "name": "North Point Press"
+					|      }
+					|    },
+					|    {
+					|      "id": 2,
+					|      "title": "Alice''s Adventures in Wonderland",
+					|      "author": {
+					|        "id": 2,
+					|        "name": "Lewis Carroll"
+					|      },
+					|      "publisher": {
+					|        "id": 2,
+					|        "name": "Enhanced Media"
+					|      }
+					|    },
+					|    {
+					|      "id": 3,
+					|      "title": "The Adventures of Huckleberry Finn",
+					|      "author": {
+					|        "id": 3,
+					|        "name": "Mark Twain"
+					|      },
+					|      "publisher": {
+					|        "id": 3,
+					|        "name": "Amazon Classics"
+					|      }
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin)
+
+		env.process( "GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books.id=3", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 3,
+					|      "title": "The Adventures of Huckleberry Finn",
+					|      "author": {
+					|        "id": 3,
+					|        "name": "Mark Twain"
+					|      },
+					|      "publisher": {
+					|        "id": 3,
+					|        "name": "Amazon Classics"
+					|      }
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin)
+
+		env.process( "GET", "/books?order=title:asc", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 2,
+					|      "title": "Alice''s Adventures in Wonderland",
+					|      "author": {
+					|        "id": 2,
+					|        "name": "Lewis Carroll"
+					|      },
+					|      "publisher": {
+					|        "id": 2,
+					|        "name": "Enhanced Media"
+					|      }
+					|    },
+					|    {
+					|      "id": 3,
+					|      "title": "The Adventures of Huckleberry Finn",
+					|      "author": {
+					|        "id": 3,
+					|        "name": "Mark Twain"
+					|      },
+					|      "publisher": {
+					|        "id": 3,
+					|        "name": "Amazon Classics"
+					|      }
+					|    },
+					|    {
+					|      "id": 1,
+					|      "title": "The Brothers Karamazov",
+					|      "author": {
+					|        "id": 1,
+					|        "name": "Fyodor Dostoyevsky"
+					|      },
+					|      "publisher": {
+					|        "id": 1,
+					|        "name": "North Point Press"
+					|      }
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin)
+
+		env.process( "GET", "/books/1", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": {
+					|    "id": 1,
+					|    "title": "The Brothers Karamazov",
+					|    "author": {
+					|      "id": 1,
+					|      "name": "Fyodor Dostoyevsky"
+					|    },
+					|    "publisher": {
+					|      "id": 1,
+					|      "name": "North Point Press"
+					|    }
+					|  }
+					|}
+				""".trim.stripMargin)
+	}
+
 }

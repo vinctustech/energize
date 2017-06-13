@@ -10,13 +10,6 @@ object Main extends App {
 //
 //	println( env.deref(code) )
 
-// 	val env = Energize.configure( io.Source.fromFile("examples/books.energize"), c, s, d, "123" )
-//
-//	println( env.process("GET", "/books", null) )
-//	println( env.process("GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books.id=3", null) )
-//	println( env.process("GET", "/books?order=title:asc", null) )
-//	println( env.process("GET", "/books/1", null) )
-
 // 	val env = Energize.configure( io.Source.fromFile("examples/books2.energize"), c, s, d, "123" )
 
 //	println( env.process("POST", "/books/1/authors", """{"name": "Brian Herbert"}"""))
