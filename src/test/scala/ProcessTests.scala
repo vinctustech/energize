@@ -7,7 +7,7 @@ import org.apache.http.HttpStatus._
 
 
 class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
-	
+
 	"empty database" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
@@ -298,7 +298,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin )
 		c.close
 	}
-	
+
 	"empty database (one-to-many)" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
@@ -346,7 +346,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}""".stripMargin )
 		c.close
 	}
-	
+
 	"post/get/put/delete (one-to-many)" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
@@ -647,6 +647,70 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		c.close
 	}
 
+	"post/get/put/delete (mixed relationships)" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource books
+				|	title string
+				|	authors authors array
+				|	publisher publishers
+				|
+				|resource authors
+				|	name string unique
+				|
+				|resource publishers
+				|	name string unique
+				|
+				|
+				|if size( books ) == 0
+				|	insert( publishers, {name: "Spectra"} )
+				|	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	# could also write `publisher: 1`		""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "POST","/books/1/authors", """{"name": "Brian Herbert"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "POST", "/books/1/authors", """{"name": "Kevin J. Anderson"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 2
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/books", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "title": "Dune: House Atreides",
+					|      "authors": [
+					|        {
+					|          "id": 1,
+					|          "name": "Brian Herbert"
+					|        },
+					|        {
+					|          "id": 2,
+					|          "name": "Kevin J. Anderson"
+					|        }
+					|      ],
+					|      "publisher": {
+					|        "id": 1,
+					|        "name": "Spectra"
+					|      }
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin)
+	}
+
 	"request query parameters (no relationship)" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
@@ -906,5 +970,4 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin)
 	}
-
 }

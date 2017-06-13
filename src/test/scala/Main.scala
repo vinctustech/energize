@@ -10,12 +10,6 @@ object Main extends App {
 //
 //	println( env.deref(code) )
 
-// 	val env = Energize.configure( io.Source.fromFile("examples/books2.energize"), c, s, d, "123" )
-
-//	println( env.process("POST", "/books/1/authors", """{"name": "Brian Herbert"}"""))
-//	println( env.process("POST", "/books/1/authors", """{"name": "Kevin J. Anderson"}"""))
-//	println( env.process("GET", "/books", null) )
-
 // 	val env = Energize.configure( io.Source.fromFile("examples/customers.energize"), c, s )
 //
 //  println( env.process("GET", "/customers?order=City:asc,PostalCode:desc", null) )
@@ -24,8 +18,8 @@ object Main extends App {
 
 //	val env = Energize.configure( io.Source.fromFile("examples/t1.energize"), c, s )
 
-//	val env = Energize.configure( io.Source.fromFile("examples/students.energize"), c, s, d )
-
+//	val env = Energize.configure( io.Source.fromFile("examples/students.energize"), c, s, d, "123" )
+//
 //	println( env.process("POST", "/students", """{"name": "carlos", "classrooms": ["101", "307"]}""") )
 //	println( env.process("GET", "/students/5", null) )
 //	println( env.process("PUT", "/students/5", """{"name": "zxvc", "classrooms": ["105", "302"]}""") )
@@ -33,10 +27,6 @@ object Main extends App {
 //	println( env.process("DELETE", "/students/5/classrooms/5", null) )
 //	println( env.process("GET", "/students/1", null) )
 //	println( env.process("GET", "/students", null) )
-
-//	val env = Energize.configure( io.Source.fromFile("examples/todo.energize"), c, s )
-//
-//	println( env.process("POST", "/todo", """{"name": "asdf", "status": 1}""") )
 
 //	val env = Energize.configure( io.Source.fromFile("examples/test.energize"), c, s )
 
