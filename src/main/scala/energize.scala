@@ -11,7 +11,7 @@ package object energize {
 	
 	type OBJ = Map[String, AnyRef]
 
-	lazy val VERSION = "0.8"
+	lazy val VERSION = "0.9"
 	lazy val CONFIG = ConfigFactory.load
 	lazy val DATABASE = CONFIG.getConfig( "database" )
 	lazy val SERVER = CONFIG.getConfig( "server" )
@@ -21,7 +21,11 @@ package object energize {
 
 	private val hex = "0123456789ABCDEF"
 
-	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
+	def problem( pos: Position, error: String ) =
+		if (pos eq null)
+			sys.error( error )
+		else
+			sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
 	def escapeQuotes( s: String ): String = s replace ("'", "''")
 		
@@ -33,10 +37,16 @@ package object energize {
 			})
 		}
 
-	def parseCode( code: String ) = {
+	def parseExpression( expression: String ): ExpressionAST = {
 		val p = new EnergizeParser
 
-		p.parseFromString( code, p.statements )
+		p.parseFromString( expression, p.expressionStatement ).expr
+	}
+
+	def parseStatements( statements: String ) = {
+		val p = new EnergizeParser
+
+		p.parseFromString( statements, p.statements )
 	}
 
 	def byte2hex( b: Byte ) = new String( Array(hex charAt (b >> 4), hex charAt (b&0x0F)) )

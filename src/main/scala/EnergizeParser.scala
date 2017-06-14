@@ -64,10 +64,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
-				"blob", "binary",
+				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
+				"blob", "binary", "boolean",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "float", "decimal"
+				"realm", "protected", "decimal", "private"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -138,11 +138,12 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		("table" | "resource") ~ pos ~ ident ~ opt(protection) ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case k ~ p ~ name ~ pro ~ bases ~ columns => List( TableDefinition( pro, p.pos, name, bases, columns, k == "resource" ) )}
+		("table" | "resource") ~ pos ~ ident ~ opt(protection) ~ opt(basePath) ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case k ~ p ~ name ~ pro ~ base ~ columns => List( TableDefinition( pro, p.pos, name, base, columns, k == "resource" ) )}
 
 	lazy val protection: PackratParser[Option[String]] =
-		"protected" ~> opt("(" ~> ident <~ ")")
+		"protected" ~> opt("(" ~> ident <~ ")") |
+		"private" ^^^ Some( null )
 
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
@@ -162,6 +163,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		(ident <~ "/") ~ (ident | "*") ^^ {case typ ~ subtype => MimeType( typ, subtype )}
 
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
+		"boolean" ^^^ BooleanType |
 		"string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
@@ -188,19 +190,25 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
 		"routes" ~> opt(basePath) ~ opt(protection) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
-			case Some( base ) ~ pro ~ mappings =>
-				List( RoutesDefinition( base, mappings, pro ) )
-			case None ~ pro ~ mappings =>
-				List( RoutesDefinition( URIPath(Nil), mappings, pro ) )
+			case Some( base ) ~ (pro: Option[Option[String]]) ~ mappings =>
+				List( RoutesDefinition(base, pro, mappings) )
+			case None ~ (pro: Option[Option[String]]) ~ mappings =>
+				List( RoutesDefinition(URIPath(Nil), pro, mappings) )
 		}
 
-	def authorize( group: Option[String] ) = CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(group))), ApplyExpression(VariableExpression("reject"), null, Nil))
+	def authorize( group: Option[String] ) =
+		if (group contains null)
+			CompoundExpression(ApplyExpression(VariableExpression("access"), null,
+				List(QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
+		else
+			CompoundExpression(ApplyExpression(VariableExpression("authorize"), null,
+				List(LiteralExpression(group), QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
 
 	lazy val uriMapping: PackratParser[URIMapping] =
 		httpMethod ~ "/" ~ actionExpression <~ nl ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
 		httpMethod ~ uriPath ~ actionExpression <~ nl ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )} |
-		httpMethod ~ "/" ~ protection <~ nl ^^ {case method ~ _ ~ group => URIMapping( method, URIPath(Nil), authorize(group) )} |
-		httpMethod ~ uriPath ~ protection <~ nl ^^ {case method ~ uri ~ group => URIMapping( method, uri, authorize(group) )}
+		httpMethod ~ "/" ~ protection <~ nl ^^ {case method ~ _ ~ pro => URIMapping( method, URIPath(Nil), authorize(pro) )} |
+		httpMethod ~ uriPath ~ protection <~ nl ^^ {case method ~ uri ~ pro => URIMapping( method, uri, authorize(pro) )}
 
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ HTTPMethod

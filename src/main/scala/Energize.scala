@@ -15,11 +15,16 @@ object Energize {
 	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
 
 	def dbconnect: (Connection, Statement, Database) = {
-		val name = DATABASE.getString( "name" )
-		val driver = DATABASE.getString( "driver" )
 		val url = DATABASE.getString( "url" )
 		val user = DATABASE.getString( "user" )
 		val password = DATABASE.getString( "password" )
+
+		dbconnect( url, user, password )
+	}
+
+	def dbconnect( url: String, user: String, password: String ): (Connection, Statement, Database) = {
+		val name = DATABASE.getString( "name" )
+		val driver = DATABASE.getString( "driver" )
 
 		dbconnect( name, driver, url, user, password )
 	}
@@ -37,13 +42,65 @@ object Energize {
 		(connection, connection.createStatement, Database( name ))
 	}
 
-	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
+	def configure( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
 		val p = new EnergizeParser
 
-		configure( p.parseFromSource(src, p.source), connection, statement, database )
+		configure( p.parseFromSource(src, p.source), connection, statement, database, key )
 	}
 
-	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database ): Environment = {
+	def primitive( typ: JSON ): PrimitiveColumnType =
+		typ getString "type" match {
+			case "string" => StringType
+			case "integer" => IntegerType
+			case "long" => LongType
+			case "uuid" => UUIDType
+			case "date" => DateType
+			case "datetime" => DatetimeType
+			case "time" => TimeType
+			case "timestamp" => TimestampType
+			case "binary" => BinaryType
+			case "blob" => BLOBType( 'base64 )
+			case "float" => FloatType
+			case "decimal" =>
+				val List( prec, scale ) = typ.getList[Int]( "parameters" )
+
+				DecimalType( prec, scale )
+			case "media" =>
+				val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
+				val allowed1 =
+					for (a <- allowed.asInstanceOf[List[String]])
+						yield
+							a match {
+								case MIME( typ, subtype ) => MimeType( typ, subtype )
+								case _ => sys.error( s"bad MIME type: $a" )
+							}
+
+				if (limit eq null)
+					MediaType( allowed1, null, Int.MaxValue )
+				else
+					MediaType( allowed1, null, limit.asInstanceOf[Int] )
+		}
+
+	def parsePath( path: String ): Option[URIPath] =
+		if (path endsWith "/")
+			None
+		else
+			path split "/" toList match {
+				case Nil|List( "" ) => None
+				case a =>
+					if (a.head != "")
+						None
+					else {
+						val tail = a.tail
+
+						if (tail contains "")
+							None
+						else
+							Some( URIPath(tail map NameURISegment) )
+					}
+			}
+
+	def configureFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
 		val s = src mkString
 		val json = DefaultJSONReader.fromString( s )
 		val decl = new ListBuffer[StatementAST]
@@ -52,73 +109,94 @@ object Energize {
 			k match {
 				case "tables" =>
 					for (tab <- v.asInstanceOf[List[JSON]]) {
+						val pro =
+							tab get "protection" match {
+								case None => None
+								case Some( groups: List[_] ) => Some( groups.asInstanceOf[List[String]].headOption )
+								case Some( _ ) => sys.error( "protection expected to be a list" )
+							}
+						val priv =
+							tab get "private" match {
+								case None => false
+								case Some( _ ) => true
+							}
+						val base =
+							if (tab contains "base")
+								parsePath( tab getString "base" )
+							else
+								None
 						val cols = new ListBuffer[TableColumn]
 
 						for (c <- tab.getList[JSON]( "fields" )) {
-							val typ = c.getMap( "type" )
+							val typ = c getMap "type"
 							val cat = typ getString "category"
-							val styp = typ getString "type"
 							val ctyp =
 								cat match {
-									case "primitive" =>
-										styp match {
-											case "string" => StringType
-											case "integer" => IntegerType
-											case "long" => LongType
-											case "uuid" => UUIDType
-											case "date" => DateType
-											case "datetime" => DatetimeType
-											case "time" => TimeType
-											case "timestamp" => TimestampType
-											case "binary" => BinaryType
-											case "blob" => BLOBType( 'base64 )
-											case "float" => FloatType
-											case "decimal" =>
-												val List( prec, scale ) = typ.getList[Int]( "parameters" )
-
-												DecimalType( prec, scale )
-											case "media" =>
-												val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
-												val allowed1 =
-													for (a <- allowed.asInstanceOf[List[String]])
-														yield
-															a match {
-																case MIME( typ, subtype ) => MimeType( typ, subtype )
-																case _ => sys.error( s"bad MIME type: $a" )
-															}
-
-												if (limit eq null)
-													MediaType( allowed1, null, Int.MaxValue )
-												else
-													MediaType( allowed1, null, limit.asInstanceOf[Int] )
-										}
+									case "primitive" => primitive( typ )
+									case "array" => ArrayType( primitive(typ), null, null, 1 )
+									case "one-to-many" => SingleReferenceType( typ getString "type", null )
+									case "many-to-many" => ManyReferenceType( typ getString "type", null )
 								}
+							val modifiers =
+								if (c contains "modifiers")
+									c getList[String] "modifiers" map ColumnTypeModifier
+								else
+									Nil
 
-							cols += TableColumn( c getString "name", ctyp, Nil )
+							cols += TableColumn( c getString "name", ctyp, modifiers )
 						}
 
-						decl += TableDefinition( None, null, tab getString "name", Nil, cols toList, tab.getBoolean("resource") )
+						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
+					}
+				case "routes" =>
+					for (routes <- v.asInstanceOf[List[JSON]]) {
+						val base =
+							if (routes contains "base")
+								parsePath( routes getString "base" ).get
+							else
+								URIPath( Nil )
+						val protection =
+							if (routes contains "protection") {
+								val p = routes getString "protection"
+
+								if (p eq null)
+									Some( None )
+								else
+									Some( Some(p) )
+							} else
+								None
+						val mappings =
+							for (m <- routes.getList[JSON]( "mappings" ))
+								yield {
+									val method = HTTPMethod( m getString "method" )
+									val path = parsePath( m getString "path" ).get
+									val action = parseExpression( m getString "action" )
+
+									URIMapping( method, path, action )
+								}
+
+						decl += RoutesDefinition( base, protection, mappings )
 					}
 			}
 
-		configure( SourceAST(decl toList), connection, statement, database )
+		configure( SourceAST(decl toList), connection, statement, database, key )
 	}
 
-	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database ): Environment =
-		configure( ast, connection, statement, db, false )
+	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): Environment =
+		configure( ast, connection, statement, db, key, false )
 
 	private def configure_( src: String, connection: Connection, statement: Statement, database: Database ): Environment = {
 		val p = new EnergizeParser
 
-		configure( p.parseFromSource( io.Source.fromString( src ), p.source ), connection, statement, database, true )
+		configure( p.parseFromSource(io.Source.fromString( src ), p.source), connection, statement, database, null, true )
 	}
 
-	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, internal: Boolean ): Environment = {
+	private def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String, internal: Boolean ): Environment = {
 		val tables = new HashMap[String, Table]
 		val routes = new ArrayBuffer[Route]
 		val defines = new HashMap[String, Any]
 
-		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
+		def env = new Environment( tables.toMap, routes.toList, Builtins.map ++ defines, Builtins.sys, connection, statement, db, Map.empty, Map.empty, key )
 		
 		def traverseDefinitions( list: List[AST] ) = list foreach interpretDefinitions
 		
@@ -140,7 +218,7 @@ object Energize {
 						problem( d.pos, s"'$name' already defined" )
 						
 					defines(name) = function
-				case TableDefinition( protection, pos, name, bases, columns, resource ) =>
+				case TableDefinition( protection, pos, name, base, columns, resource ) =>
 					var mtm = false
 
 					if (tables contains db.desensitize( name ))
@@ -198,7 +276,7 @@ object Energize {
 							if (typ.isInstanceOf[ManyReferenceType])
 								mtm = true
 
-							cols(db.desensitize( cname )) = Column( cname, typ, secret, required, unique, indexed )
+							cols(cname) = Column( cname, typ, secret, required, unique, indexed )
 					}
 
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
@@ -209,10 +287,11 @@ object Energize {
 							protection match {
 								case None => ""
 								case Some( None ) => "protected"
+								case Some( Some(null) ) => "private"
 								case Some( Some(g) ) => s"protected ($g)"
 							}
 
-						if (bases isEmpty) {
+						if (base isEmpty) {
 							routes ++= configure_( Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
 								connection, statement, db ).routes
 
@@ -220,7 +299,7 @@ object Energize {
 								routes ++= configure_( Builtins.mtmroutes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
 									connection, statement, db ).routes
 						} else
-							for (URIPath( base ) <- bases) {
+							for (URIPath( base ) <- base) {
 								routes ++= configure_( Builtins.routes.replaceAll( "<resource>", name ).
 									replaceAll( "<base>", base map {case NameURISegment( segment ) => segment} mkString("/", "/", "") ).replaceAll("<authorize>", authorize),
 									connection, statement, db ).routes
@@ -231,17 +310,26 @@ object Energize {
 										connection, statement, db ).routes
 							}
 					}
-				case RoutesDefinition( URIPath(base), mappings, protection ) =>
+				case RoutesDefinition( URIPath(base), protection, mappings ) =>
 					val block = new ArrayBuffer[Route]
 
 					mappings foreach {
 						case URIMapping( HTTPMethod(method), URIPath(path), action ) =>
-							block += Route( method, base ++ path, action )
+							block += Route( method, URIPath(base ++ path), action )
 
-							if (protection nonEmpty)
-								for ((Route( method, path, action), i) <- block zipWithIndex)
-									block(i) = Route( method, path,
-										CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(protection.get))), action) )
+							protection match {
+								case None =>
+								case Some( Some(null) ) =>
+									for ((Route( method, path, action), i) <- block zipWithIndex)
+										block(i) = Route( method, path,
+											CompoundExpression(ApplyExpression(VariableExpression("access"), null,
+												List(QueryParameterExpression("access_token"))), action) )
+								case Some( pro ) =>
+									for ((Route( method, path, action), i) <- block zipWithIndex)
+										block(i) = Route( method, path,
+											CompoundExpression(ApplyExpression(VariableExpression("authorize"), null,
+												List(LiteralExpression(pro), QueryParameterExpression("access_token"))), action) )
+							}
 					}
 
 					block ++=: routes

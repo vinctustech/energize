@@ -1,5 +1,7 @@
 package xyz.hyperreal.energize
 
+import javax.script.CompiledScript
+
 import util.parsing.input.Position
 import util.parsing.input.Positional
 
@@ -11,7 +13,7 @@ trait AST
 case class SourceAST( statements: List[StatementAST] ) extends AST
 
 trait StatementAST extends AST
-case class TableDefinition( protection: Option[Option[String]], pos: Position, name: String, bases: List[URIPath],
+case class TableDefinition( protection: Option[Option[String]], pos: Position, name: String, base: Option[URIPath],
 														fields: List[TableColumn], resource: Boolean ) extends StatementAST
 
 case class TableColumn( name: String, typ: ColumnType, modifiers: List[ColumnTypeModifier] ) extends Positional
@@ -23,6 +25,7 @@ trait ReferenceType {
 
 trait ColumnType extends Positional
 trait PrimitiveColumnType extends ColumnType
+case object BooleanType extends PrimitiveColumnType
 case object StringType extends PrimitiveColumnType
 case object IntegerType extends PrimitiveColumnType
 case object LongType extends PrimitiveColumnType
@@ -47,11 +50,11 @@ case class ColumnTypeModifier( modifier: String ) extends Positional
 
 case class RealmDefinition( pos: Position, realm: String ) extends StatementAST
 
-case class RoutesDefinition( base: URIPath, mappings: List[URIMapping], protection: Option[Option[String]] ) extends StatementAST
-	
+case class RoutesDefinition( base: URIPath, protection: Option[Option[String]], mappings: List[URIMapping]) extends StatementAST
+
 case class URIMapping( method: HTTPMethod, uri: URIPath, action: ExpressionAST )
 
-case class URIPath( path: List[URISegment] )
+case class URIPath( segments: List[URISegment] )
 
 case class HTTPMethod( method: String )
 
@@ -86,8 +89,9 @@ case object ContinueExpression extends ExpressionAST
 case class RangeExpression( start: ExpressionAST, end: ExpressionAST ) extends ExpressionAST
 case class AssignmentExpression( v: String, expr: ExpressionAST ) extends ExpressionAST with Positional
 
-case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
+case class ECMAScriptExpression( expr: CompiledScript ) extends ExpressionAST
 
+case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 // trait PatternAST extends AST
 // 
 // case class VariablePattern( name: String ) extends PatternAST
@@ -104,6 +108,3 @@ case class VariableDefinition( name: String, value: ExpressionAST ) extends Stat
 case class ValueDefinition( name: String, value: ExpressionAST ) extends StatementAST with Positional
 
 case class ExpressionStatement( expr: ExpressionAST ) extends StatementAST
-	
-	
-case class RouteActionAST( expr: ExpressionAST ) extends AST

@@ -20,7 +20,8 @@ object Environment {
 // add RouteTable class to speed up adding variables
 class Environment( val tables: Map[String, Table], croutes: List[Route], val bindings: Map[String, Any],
 									 val sbindings: Map[String, SystemValue], val connection: Connection, val statement: Statement,
-									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, Any] ) {
+									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, Any],
+									 val key: String ) {
 
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
@@ -34,11 +35,11 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 		connection.close
 	}
 
-	def add( kv: (String, Any) ) = new Environment( tables, routes, bindings + kv, sbindings, connection, statement, db, pathMap, queryMap )
+	def add( kv: (String, Any) ) = new Environment( tables, routes, bindings + kv, sbindings, connection, statement, db, pathMap, queryMap, key )
 
-	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, bindings ++ m, sbindings, connection, statement, db, pathMap, queryMap )
+	def add( m: collection.Map[String, Any] ) = new Environment( tables, routes, bindings ++ m, sbindings, connection, statement, db, pathMap, queryMap, key )
 
-	def remove( n: String ) = new Environment( tables, routes, bindings - n, sbindings, connection, statement, db, pathMap, queryMap )
+	def remove( n: String ) = new Environment( tables, routes, bindings - n, sbindings, connection, statement, db, pathMap, queryMap, key )
 
 	def get( name: String ) =
 		bindings get name match {
@@ -56,7 +57,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 
 	def add( route: Route ) = routeTable += route
 
-	def remove( method: String, path: List[URISegment] ): Unit = {
+	def remove( method: String, path: URIPath ): Unit = {
 		for (i <- 0 until routeTable.length)
 			if (routeTable(i).method == method && routeTable(i).path == path) {
 				routeTable.remove( i )
@@ -122,10 +123,10 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					None
 			}
 
-			for (Route( rmethod, uri, action) <- routes) {
+			for (Route( rmethod, URIPath(rsegments), action) <- routes) {
 				urivars.clear
 
-				if (len == uri.length && reqmethod.toUpperCase == rmethod && uri.zip( segments ).forall {
+				if (len == rsegments.length && reqmethod.toUpperCase == rmethod && rsegments.zip( segments ).forall {
 					case (NameURISegment( route ), segment) => route == segment
 					case (ParameterURISegment( name, "string" ), segment) =>
 						urivars(name) = segment
@@ -155,10 +156,9 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 								deref( action ).asInstanceOf[(Int, String, AnyRef)]
 							} catch {
 								case e: UnauthorizedException =>
-									result( "Unauthorized", "realm" -> e.getMessage )
+									result( "Unauthorized", s"""realm="${e.getMessage}"""" )
 								case e: ExpiredException =>
-									result( "Unauthorized", "realm" -> e.getMessage,
-										"error" -> "invalid_token", "error_description" -> "The access token expired" )
+									result( "Unauthorized", s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""" )
 								case e: ForbiddenException =>
 									result( "Forbidden", e.getMessage )
 								case e: BadRequestException =>
@@ -244,7 +244,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 				deref( function ) match {
 					case f: Native =>
 						val list = args map (a => deref( a ))
-						
+
 						if (f.applicable( list ))
 							f( this, list )
 						else
@@ -338,6 +338,8 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					}
 					
 				block( exprs )
+			case ECMAScriptExpression( expr ) =>
+
 			case _ => sys.error( "error evaluating expression: " + expr )
 		}
 
@@ -367,11 +369,11 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 
 }
 
-case class Route( method: String, path: List[URISegment], action: ExpressionAST )
+case class Route( method: String, path: URIPath, action: ExpressionAST )
 
 case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean,
 									var preparedInsert: PreparedStatement ) {
-	def names = columns map (c => c.name)
+	def names = columns map (_.name)
 }
 
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )

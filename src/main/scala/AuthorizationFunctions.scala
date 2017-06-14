@@ -127,37 +127,45 @@ object AuthorizationFunctions {
 		}
 	}
 
-	def authorize( env: Environment, group: Option[String] ) {
-		val access = env.bindings get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+	def authorize( env: Environment, group: Option[String], key: Option[String] ) {
+		if (key.isEmpty) {
+			val access = env.bindings get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
 
-		def barred = throw new UnauthorizedException( "Protected" )
+			def barred = throw new UnauthorizedException( "Protected" )
 
-		if (access isEmpty)
-			barred
+			if (access isEmpty)
+				barred
 
-		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
-			val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
+			if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
+				val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
 
-			QueryFunctions.findOption( env, env table "users", "email", email, true ) match {
-				case None => barred
-				case Some( u ) =>
-					if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))
-						barred
+				QueryFunctions.findOption( env, env table "users", "email", email, true ) match {
+					case None => barred
+					case Some( u ) =>
+						if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))
+							barred
 
-					if (group.nonEmpty && !u( "groups" ).asInstanceOf[List[String]].contains( group.get ))
-						barred
+						if (group.nonEmpty && !u( "groups" ).asInstanceOf[List[String]].contains( group.get ))
+							barred
+				}
+			} else {
+				QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get, false ) match {
+					case None => barred
+					case Some( t ) =>
+						if (group.nonEmpty && !t( "user" ).asInstanceOf[OBJ]( "groups" ).asInstanceOf[List[String]].contains( group.get ))
+							barred
+
+						if (Instant.now.getEpochSecond - OffsetDateTime.parse( t( "created" ).asInstanceOf[String] ).toInstant.getEpochSecond >=
+							AuthorizationFunctionHelpers.EXPIRATION)
+							throw new ExpiredException( "Protected" )
+				}
 			}
-		} else {
-			QueryFunctions.findOption( env, (env get "tokens" get).asInstanceOf[Table], "token", access.get, false ) match {
-				case None => barred
-				case Some( t ) =>
-					if (group.nonEmpty && !t("user").asInstanceOf[OBJ]( "groups" ).asInstanceOf[List[String]].contains( group.get ))
-						barred
-
-					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
-						AuthorizationFunctionHelpers.EXPIRATION)
-						throw new ExpiredException( "Protected" )
-			}
-		}
+		} else
+			access( env, key )
 	}
+
+	def access( env: Environment, key: Option[String] ): Unit =
+		if (key == None || key.get != env.key)
+			throw new ForbiddenException( "wrong or missing access_token" )
+
 }

@@ -39,7 +39,8 @@ object REPLMain extends App {
 	var user = "sa"
 	var password = ""
 	var config: String = _
-		
+	var key = AUTHORIZATION.getString( "key" )
+
 	sys.addShutdownHook {
 		connection.close
 	}
@@ -50,7 +51,7 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		env = new Environment( Map.empty, Nil, Builtins.map ++ vars, Builtins.sys, connection, statement, db, Map.empty, Map.empty )
+		env = new Environment( Map.empty, Nil, Builtins.map ++ vars, Builtins.sys, connection, statement, db, Map.empty, Map.empty, key )
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 	}
@@ -63,7 +64,7 @@ object REPLMain extends App {
 	}
 
 	def load( conf: String ) = {
-		env = Energize.configure( io.Source.fromFile(conf + ".energize"), connection, statement, db ) add vars
+		env = Energize.configure( io.Source.fromFile(conf + ".energize"), connection, statement, db, key ) add vars
 	}
 
 	connect
@@ -109,7 +110,7 @@ object REPLMain extends App {
 					|password (p) <password>              set database <password>
 					|quit (q)                             exit the REPL
 					|routes (r)                           print all routes showing absolute paths
-					|stack (s) on/off                     turn exception stack trace on or off
+					|trace (t) on/off                     turn exception stack trace on or off
 					|user (u) <user>                      set database <user>
 					|variable (v) <name> <value>          set variable <name> to <value> (added to environment)
 					|variable (v) <name>                  delete variable <name> (removed from environment)
@@ -142,7 +143,7 @@ object REPLMain extends App {
 
 					sys.exit
 				case List( "routes"|"r" ) =>
-					for (Route(method, path, action) <- env.routes ) {
+					for (Route(method, URIPath(path), action) <- env.routes ) {
 						val pathbuf = new StringBuilder
 						
 						path foreach {
@@ -158,8 +159,8 @@ object REPLMain extends App {
 						
 						println( method + " " + pathbuf + " " + action )
 					}
-				case List( "stack"|"s", "on" ) => stacktrace = true
-				case List( "stack"|"s", "off" ) => stacktrace = false
+				case List( "trace"|"t", "on" ) => stacktrace = true
+				case List( "trace"|"t", "off" ) => stacktrace = false
 				case List( "user"|"u", u ) => user = u
 				case List( "variable"|"v" ) => println( vars )
 				case List( "variable"|"v", n ) =>
