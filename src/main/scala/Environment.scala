@@ -381,12 +381,12 @@ case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boo
 class Variable( var value: Any )
 
 class Enum( val enum: List[String] ) {
-	private val map = Map( enum.zipWithIndex map {case (e, i) => e -> (i + 1)}: _* )
+	private val map = Map( enum.zipWithIndex: _* )
 	private val vec = enum toVector
 
 	def enum2int( s: String ) = map( s )
 
-	def int2enum( i: Int ) = vec( i - 1 )
+	def int2enum( i: Int ) = vec( i )
 }
 
 class NotFoundException( error: String ) extends Exception( error )

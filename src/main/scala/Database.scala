@@ -50,6 +50,7 @@ object H2Database extends Database {
 						parameters( typ )
 						buf ++=
 							(typ match {
+								case EnumType( enum ) => "ENUM(" + enum.map( "'" + _ + "'" ).mkString( "," ) + ")"
 								case StringType => "VARCHAR(255)"
 								case BooleanType => "BOOLEAN"
 								case IntegerType => "INT"

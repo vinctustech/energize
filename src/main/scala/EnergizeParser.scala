@@ -164,7 +164,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			primitiveColumnType <~ "array" ^^ (t => ArrayType( t, null, null, 1 )) |
 			primitiveColumnType |
 			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
-			ident ^^ (SingleReferenceType( _, null ))
+			ident ^^ IdentType
 		)
 
 	lazy val mimeType: PackratParser[MimeType] =

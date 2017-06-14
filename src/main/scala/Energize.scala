@@ -289,7 +289,17 @@ object Energize {
 							if (typ.isInstanceOf[ManyReferenceType])
 								mtm = true
 
-							cols(cname) = Column( cname, typ, secret, required, unique, indexed )
+							val typ1 =
+								typ match {
+									case IdentType( ident ) =>
+										defines get ident match {
+											case Some( e: Enum ) => EnumType( e.enum.toVector )
+											case _ => SingleReferenceType( ident, null )
+										}
+									case t => t
+								}
+
+							cols(cname) = Column( cname, typ1, secret, required, unique, indexed )
 					}
 
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )

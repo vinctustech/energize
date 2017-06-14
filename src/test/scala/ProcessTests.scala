@@ -370,7 +370,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		env.process( "POST", "/types", """{"name": "normal"}""" ) shouldBe
 			(SC_CONFLICT, "application/json", """
 																				 |{
-																				 |  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(NAME) VALUES ('normal', 1)\"; SQL statement:\nINSERT INTO types (name) VALUES (?) [23505-194]"
+																				 |  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(NAME) VALUES ('normal', 1)\"; SQL statement:\nINSERT INTO types (name) VALUES (?) [23505-196]"
 																				 |}
 																			 """.trim.stripMargin )
 		env.process( "POST", "/types", """{"name": "special"}""" ) shouldBe
@@ -545,7 +545,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		env.process( "POST", "/products", """{"name": "savings"}""" ) shouldBe
 			(SC_CONFLICT, "application/json", """
 																					|{
-																					|  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_F ON PUBLIC.PRODUCTS(NAME) VALUES ('savings', 1)\"; SQL statement:\nINSERT INTO products (name) VALUES (?) [23505-194]"
+																					|  "error": "Unique index or primary key violation: \"CONSTRAINT_INDEX_F ON PUBLIC.PRODUCTS(NAME) VALUES ('savings', 1)\"; SQL statement:\nINSERT INTO products (name) VALUES (?) [23505-196]"
 																					|}
 																				""".trim.stripMargin )
 		env.process( "POST", "/products", """{"name": "credit card"}""" ) shouldBe

@@ -1,2 +1,7 @@
-enum suit (clubs, diamonds, hearts, hearts, spades)
+enum suit (clubs, diamonds, hearts, spades)
 
+resource cards
+	suit suit
+	number integer
+
+insert( cards, {suit: 'hearts', number: 1} )

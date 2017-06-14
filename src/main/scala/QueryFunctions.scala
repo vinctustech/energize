@@ -145,10 +145,12 @@ object QueryFunctions {
 										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
 										case 'array => attr += (cname -> array.toList)
 									}
-								case Some( Column(cname, MediaType( _, _, _ ), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, MediaType(_, _, _), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> s"/media/${obj.get}")
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj.get ))
+								case Some( Column(cname, EnumType(enum), _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> enum(obj.get.asInstanceOf[Int]))
 								case Some( Column(cname, _, true, _, _, _) ) =>
 									if (allowsecret)
 										attr += (cname -> obj.get)
