@@ -829,7 +829,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
 				|	 ["Antonio Moreno Taquería",            "Antonio Moreno",     "Mataderos 2312",                "México D.F.", "05023",    "Mexico"],
 				|	 ["Around the Horn",                    "Thomas Hardy",       "120 Hanover Sq.",               "London",      "WA1 1DP",  "UK"],
-				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]] )			""".trim.stripMargin
+				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]] )
+			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
 
 		env.process( "GET", "/customers?order=City:asc,PostalCode:desc", null ) shouldBe

@@ -64,10 +64,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
-				"blob", "binary",
+				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
+				"blob", "binary", "boolean",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "number", "decimal", "private"
+				"realm", "protected", "decimal", "private"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -163,6 +163,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		(ident <~ "/") ~ (ident | "*") ^^ {case typ ~ subtype => MimeType( typ, subtype )}
 
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
+		"boolean" ^^^ BooleanType |
 		"string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
@@ -176,7 +177,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"blob" ~> opt("(" ~> ident <~ ")") ^^ {
 			case None => BLOBType( 'base64 )
 			case Some( r ) => BLOBType( Symbol(r) )} |
-		"number" ^^^ FloatType |
+		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
 		"media" ~> opt("(" ~> (repsep(mimeType, ",") ~ opt("," ~> numericLit)) <~ ")") ^^ {

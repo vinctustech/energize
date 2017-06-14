@@ -25,6 +25,7 @@ trait ReferenceType {
 
 trait ColumnType extends Positional
 trait PrimitiveColumnType extends ColumnType
+case object BooleanType extends PrimitiveColumnType
 case object StringType extends PrimitiveColumnType
 case object IntegerType extends PrimitiveColumnType
 case object LongType extends PrimitiveColumnType

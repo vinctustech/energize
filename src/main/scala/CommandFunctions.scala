@@ -60,6 +60,7 @@ object CommandFunctions {
 			def setNull: Unit = {
 				val t =
 					c.typ match {
+						case BooleanType => Types.BOOLEAN
 						case StringType => Types.VARCHAR
 						case IntegerType => Types.INTEGER
 						case FloatType => Types.FLOAT
@@ -88,6 +89,7 @@ object CommandFunctions {
 //							if (v eq null)
 //								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case SingleReferenceType( _, _ ) => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
+						case BooleanType => resource.preparedInsert.setBoolean( i + 1, v.asInstanceOf[Boolean] )
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
 						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Double] )
 						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
