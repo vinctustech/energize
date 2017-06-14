@@ -1,5 +1,5 @@
 resource events
 	title string
-	when date
+	event date
 
-insert( events, {title: "finish coding date support", when: "2017-06-14"} )
+insert( events, {title: "finish coding date support", event: "2017-06-14"} )

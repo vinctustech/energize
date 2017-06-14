@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Date, Blob}
+import java.sql.{Blob, Date, Time}
 
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
@@ -153,6 +153,8 @@ object QueryFunctions {
 									attr += (cname -> enum(obj.get.asInstanceOf[Int]))
 								case Some( Column(cname, DateType, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.asInstanceOf[Date].toString)
+								case Some( Column(cname, TimeType, _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> obj.get.asInstanceOf[Time].toString)
 								case Some( Column(cname, _, true, _, _, _) ) =>
 									if (allowsecret)
 										attr += (cname -> obj.get)

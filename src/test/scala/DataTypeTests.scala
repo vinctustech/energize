@@ -128,11 +128,11 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			"""
 				|resource events
 				|	title string
-				|	when date
+				|	event date
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
 
-		env.process( "POST", "/events", """{title: "finish coding date support", when: "2017-06-14"}""" ) shouldBe
+		env.process( "POST", "/events", """{title: "finish coding date support", event: "2017-06-14"}""" ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
@@ -147,12 +147,12 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|    {
 					|      "id": 1,
 					|      "title": "finish coding date support",
-					|      "when": "2017-06-14"
+					|      "event": "2017-06-14"
 					|    }
 					|  ]
 					|}
 				""".trim.stripMargin )
-		env.process( "PUT", "/events/1", """{title: "finish coding date support", when: "2017-06-15"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "PUT", "/events/1", """{title: "finish coding date support", event: "2017-06-15"}""" ) shouldBe (SC_NO_CONTENT, null, null)
 		env.process( "GET", "/events", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -161,7 +161,54 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|    {
 					|      "id": 1,
 					|      "title": "finish coding date support",
-					|      "when": "2017-06-15"
+					|      "event": "2017-06-15"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+	}
+
+	"time" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource alarms
+				|	title string
+				|	alarm time
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "POST", "/alarms", """{title: "finish coding time support", alarm: "17:00:00"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/alarms", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "title": "finish coding time support",
+					|      "alarm": "17:00:00"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "PUT", "/alarms/1", """{title: "finish coding time support", alarm: "16:45:00"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/alarms", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "title": "finish coding time support",
+					|      "alarm": "16:45:00"
 					|    }
 					|  ]
 					|}
