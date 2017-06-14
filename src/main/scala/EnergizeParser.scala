@@ -62,12 +62,12 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
-				"def", "var", "val",
+				"def", "var", "val", "enum",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
-				"blob", "binary",
+				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
+				"blob", "binary", "boolean",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "number", "decimal", "private"
+				"realm", "protected", "decimal", "private"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
@@ -102,12 +102,20 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ ExpressionStatement
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
+		enumDefinition |
 		realmDefinition |
 		tablesDefinition |
 		routesDefinition |
 		functionsDefinition |
 		variablesDefinition |
 		valuesDefinition
+
+	lazy val enumDefinition: PackratParser[List[EnumDefinition]] =
+		"enum" ~> pos ~ ident ~ ("(" ~> rep1sep(pos ~ ident, ",") <~ ")") ^^ {
+			case p ~ i ~ e => List( EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)}) )} |
+		"enum" ~> (Indent ~> rep1(pos ~ ident ~ ("(" ~> rep1sep(pos ~ ident, ",") <~ ")")) <~ Dedent) ^^ { l =>
+			l map {case p ~ i ~ e => EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)})}
+		}
 
 	lazy val realmDefinition: PackratParser[List[RealmDefinition]] =
 		"realm" ~> pos ~ stringLit ^^ {case p ~ r => List( RealmDefinition(p.pos, r) )}
@@ -156,13 +164,14 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			primitiveColumnType <~ "array" ^^ (t => ArrayType( t, null, null, 1 )) |
 			primitiveColumnType |
 			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
-			ident ^^ (SingleReferenceType( _, null ))
+			ident ^^ IdentType
 		)
 
 	lazy val mimeType: PackratParser[MimeType] =
 		(ident <~ "/") ~ (ident | "*") ^^ {case typ ~ subtype => MimeType( typ, subtype )}
 
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
+		"boolean" ^^^ BooleanType |
 		"string" ^^^ StringType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
@@ -176,7 +185,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"blob" ~> opt("(" ~> ident <~ ")") ^^ {
 			case None => BLOBType( 'base64 )
 			case Some( r ) => BLOBType( Symbol(r) )} |
-		"number" ^^^ FloatType |
+		"float" ^^^ FloatType |
 		("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
 			case p ~ s => DecimalType( p.toInt, s.toInt )} |
 		"media" ~> opt("(" ~> (repsep(mimeType, ",") ~ opt("," ~> numericLit)) <~ ")") ^^ {

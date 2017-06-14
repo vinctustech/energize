@@ -25,6 +25,7 @@ trait ReferenceType {
 
 trait ColumnType extends Positional
 trait PrimitiveColumnType extends ColumnType
+case object BooleanType extends PrimitiveColumnType
 case object StringType extends PrimitiveColumnType
 case object IntegerType extends PrimitiveColumnType
 case object LongType extends PrimitiveColumnType
@@ -42,12 +43,16 @@ case class MediaType( allowed: List[MimeType], limit0: String, var limit: Int ) 
 case class ArrayType( parm: PrimitiveColumnType, dpos: Position, dim: String, var dimint: Int ) extends ColumnType
 case class SingleReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
 case class ManyReferenceType( table: String, var ref: Table ) extends ColumnType with ReferenceType
+case class EnumType( enum: Vector[String] ) extends PrimitiveColumnType
+case class IdentType( ident: String ) extends ColumnType
 
 case class MimeType( typ: String, subtype: String )
 
 case class ColumnTypeModifier( modifier: String ) extends Positional
 
 case class RealmDefinition( pos: Position, realm: String ) extends StatementAST
+
+case class EnumDefinition( pos: Position, name: String, enum: List[(Position, String)] ) extends StatementAST
 
 case class RoutesDefinition( base: URIPath, protection: Option[Option[String]], mappings: List[URIMapping]) extends StatementAST
 

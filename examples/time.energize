@@ -1,0 +1,5 @@
+resource alarms
+	title string
+	alarm time
+
+insert( alarms, {title: "finish coding time support", alarm: "17:00:00"} )

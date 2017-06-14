@@ -193,6 +193,12 @@
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
+                        <a class="object" href="BooleanType$.html" title=""></a>
+                        <a href="BooleanType$.html" title="">
+                          BooleanType
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
                         <a class="object" href="BreakExpression$.html" title=""></a>
                         <a href="BreakExpression$.html" title="">
                           BreakExpression
@@ -202,6 +208,12 @@
                         <a class="object" href="Builtins$.html" title=""></a>
                         <a href="Builtins$.html" title="">
                           Builtins
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="Col.html" title=""></a>
+                        <a href="Col.html" title="">
+                          Col
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -289,6 +301,12 @@
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
+                        <a class="class" href="ECMAScriptExpression.html" title=""></a>
+                        <a href="ECMAScriptExpression.html" title="">
+                          ECMAScriptExpression
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
                         <a class="object" href="Energize$.html" title=""></a>
                         <a href="Energize$.html" title="">
                           Energize
@@ -304,6 +322,24 @@
                         <a class="class" href="EnergizeServer.html" title=""></a>
                         <a href="EnergizeServer.html" title="">
                           EnergizeServer
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="Enum.html" title=""></a>
+                        <a href="Enum.html" title="">
+                          Enum
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="EnumDefinition.html" title=""></a>
+                        <a href="EnumDefinition.html" title="">
+                          EnumDefinition
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="EnumType.html" title=""></a>
+                        <a href="EnumType.html" title="">
+                          EnumType
                         </a>
                       </li><li class="current-entities indented3">
                         <a class="object" href="Environment$.html" title=""></a>
@@ -382,6 +418,12 @@
                         <a class="class" href="HTTPMethod.html" title=""></a>
                         <a href="HTTPMethod.html" title="">
                           HTTPMethod
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="IdentType.html" title=""></a>
+                        <a href="IdentType.html" title="">
+                          IdentType
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -481,6 +523,12 @@
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
+                        <a class="class" href="Query.html" title=""></a>
+                        <a href="Query.html" title="">
+                          Query
+                        </a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
                         <a class="object" href="QueryFunctionHelpers$.html" title=""></a>
                         <a href="QueryFunctionHelpers$.html" title="">
                           QueryFunctionHelpers
@@ -544,12 +592,6 @@
                         <a class="class" href="Route.html" title=""></a>
                         <a href="Route.html" title="">
                           Route
-                        </a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="class" href="RouteActionAST.html" title=""></a>
-                        <a href="RouteActionAST.html" title="">
-                          RouteActionAST
                         </a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -816,9 +858,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="xyz.hyperreal.energize.Relation#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(rs:java.sql.ResultSet):xyz.hyperreal.energize.Relation"></a><a id="&lt;init&gt;:Relation"></a>
+      <a id="&lt;init&gt;(env:xyz.hyperreal.energize.Environment,rs:java.sql.ResultSet):xyz.hyperreal.energize.Relation"></a><a id="&lt;init&gt;:Relation"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/Relation.html#&lt;init&gt;(rs:java.sql.ResultSet):xyz.hyperreal.energize.Relation" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/Relation.html#&lt;init&gt;(env:xyz.hyperreal.energize.Environment,rs:java.sql.ResultSet):xyz.hyperreal.energize.Relation" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -827,7 +869,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Relation</span><span class="params">(<span name="rs">rs: <span class="extype" name="java.sql.ResultSet">ResultSet</span></span>)</span>
+        <span class="name">Relation</span><span class="params">(<span name="env">env: <a href="Environment.html" class="extype" name="xyz.hyperreal.energize.Environment">Environment</a></span>, <span name="rs">rs: <span class="extype" name="java.sql.ResultSet">ResultSet</span></span>)</span>
       </span>
       
       
@@ -836,25 +878,7 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="xyz.hyperreal.energize.Relation.Col" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ColextendsProductwithSerializable"></a><a id="Col:Col"></a>
-      <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/Relation.html#ColextendsProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="Relation$Col.html">
-              <span class="name">Col</span>
-            </a><span class="params">(<span name="table">table: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      
-      
-    </li><li name="scala.collection.TraversableLike.Self" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+              <ol><li name="scala.collection.TraversableLike.Self" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Self=Repr"></a><a id="Self:Self"></a>
       <span class="permalink">
       <a href="../../../xyz/hyperreal/energize/Relation.html#Self=Repr" title="Permalink">
@@ -1189,9 +1213,9 @@
       
       
     </li><li name="xyz.hyperreal.energize.Relation#columnMap" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="columnMap:scala.collection.immutable.Map[String,Int]"></a><a id="columnMap:Map[String,Int]"></a>
+      <a id="columnMap:scala.collection.immutable.Map[xyz.hyperreal.energize.Col,Int]"></a><a id="columnMap:Map[Col,Int]"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/Relation.html#columnMap:scala.collection.immutable.Map[String,Int]" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/Relation.html#columnMap:scala.collection.immutable.Map[xyz.hyperreal.energize.Col,Int]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1200,14 +1224,14 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">columnMap</span><span class="result">: <span class="extype" name="scala.collection.immutable.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">columnMap</span><span class="result">: <span class="extype" name="scala.collection.immutable.Map">Map</span>[<a href="Col.html" class="extype" name="xyz.hyperreal.energize.Col">Col</a>, <span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       
       
     </li><li name="xyz.hyperreal.energize.Relation#columns" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="columns:scala.collection.immutable.IndexedSeq[Relation.this.Col]"></a><a id="columns:IndexedSeq[Col]"></a>
+      <a id="columns:scala.collection.immutable.IndexedSeq[xyz.hyperreal.energize.Col]"></a><a id="columns:IndexedSeq[Col]"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/Relation.html#columns:scala.collection.immutable.IndexedSeq[Relation.this.Col]" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/Relation.html#columns:scala.collection.immutable.IndexedSeq[xyz.hyperreal.energize.Col]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1216,7 +1240,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">columns</span><span class="result">: <span class="extype" name="scala.collection.immutable.IndexedSeq">IndexedSeq</span>[<a href="Relation$Col.html" class="extype" name="xyz.hyperreal.energize.Relation.Col">Col</a>]</span>
+        <span class="name">columns</span><span class="result">: <span class="extype" name="scala.collection.immutable.IndexedSeq">IndexedSeq</span>[<a href="Col.html" class="extype" name="xyz.hyperreal.energize.Col">Col</a>]</span>
       </span>
       
       
@@ -1611,6 +1635,22 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>GenericTraversableTemplate</dd></dl></div>
     </li><li name="xyz.hyperreal.energize.Relation#get" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="get(table:String,column:String):Option[AnyRef]"></a><a id="get(String,String):Option[AnyRef]"></a>
+      <span class="permalink">
+      <a href="../../../xyz/hyperreal/energize/Relation.html#get(table:String,column:String):Option[AnyRef]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">get</span><span class="params">(<span name="table">table: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="column">column: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.AnyRef">AnyRef</span>]</span>
+      </span>
+      
+      
+    </li><li name="xyz.hyperreal.energize.Relation#get" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="get(index:Int):AnyRef"></a><a id="get(Int):AnyRef"></a>
       <span class="permalink">
       <a href="../../../xyz/hyperreal/energize/Relation.html#get(index:Int):AnyRef" title="Permalink">
@@ -1643,9 +1683,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="xyz.hyperreal.energize.Relation#getLong" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="getLong(col:String):Long"></a><a id="getLong(String):Long"></a>
+      <a id="getLong(table:String,column:String):Long"></a><a id="getLong(String,String):Long"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/Relation.html#getLong(col:String):Long" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/Relation.html#getLong(table:String,column:String):Long" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1654,7 +1694,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getLong</span><span class="params">(<span name="col">col: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+        <span class="name">getLong</span><span class="params">(<span name="table">table: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="column">column: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
       </span>
       
       
@@ -2791,9 +2831,9 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TraversableOnce → GenTraversableOnce</dd></dl></div>
     </li><li name="scala.collection.TraversableOnce#toMap" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="toMap[T,U](implicitev:&lt;:&lt;[A,(T,U)]):scala.collection.immutable.Map[T,U]"></a><a id="toMap[T,U](&lt;:&lt;[IndexedSeq[AnyRef],(T,U)]):Map[T,U]"></a>
+      <a id="toMap[T,U](implicitev:A&lt;:&lt;(T,U)):scala.collection.immutable.Map[T,U]"></a><a id="toMap[T,U](&lt;:&lt;[IndexedSeq[AnyRef],(T,U)]):Map[T,U]"></a>
       <span class="permalink">
-      <a href="../../../xyz/hyperreal/energize/Relation.html#toMap[T,U](implicitev:&lt;:&lt;[A,(T,U)]):scala.collection.immutable.Map[T,U]" title="Permalink">
+      <a href="../../../xyz/hyperreal/energize/Relation.html#toMap[T,U](implicitev:A&lt;:&lt;(T,U)):scala.collection.immutable.Map[T,U]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -2854,7 +2894,7 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>IterableLike → TraversableLike → GenTraversableOnce</dd></dl></div>
-    </li><li name="scala.collection.TraversableLike#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="xyz.hyperreal.energize.Relation#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <span class="permalink">
       <a href="../../../xyz/hyperreal/energize/Relation.html#toString():String" title="Permalink">
@@ -2866,10 +2906,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TraversableLike → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="xyz.hyperreal.energize.Relation">Relation</a> → TraversableLike → AnyRef → Any</dd></dl></div>
     </li><li name="scala.collection.TraversableLike#toTraversable" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toTraversable:Traversable[A]"></a><a id="toTraversable:Traversable[IndexedSeq[AnyRef]]"></a>
       <span class="permalink">
