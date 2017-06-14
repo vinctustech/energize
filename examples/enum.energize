@@ -1,0 +1,2 @@
+enum suit (clubs, diamonds, hearts, hearts, spades)
+

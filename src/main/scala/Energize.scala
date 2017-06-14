@@ -2,7 +2,7 @@ package xyz.hyperreal.energize
 
 import java.sql._
 
-import collection.mutable.{HashMap, LinkedHashMap, ArrayBuffer, ListBuffer}
+import collection.mutable.{HashSet, HashMap, LinkedHashMap, ArrayBuffer, ListBuffer}
 import collection.JavaConverters._
 
 import xyz.hyperreal.json.{JSON, DefaultJSONReader}
@@ -203,6 +203,19 @@ object Energize {
 		def interpretDefinitions( ast: AST ): Unit =
 			ast match {
 				case SourceAST( list ) => traverseDefinitions( list )
+				case EnumDefinition( pos, name, enum ) =>
+					if ((defines contains name) || (tables contains db.desensitize( name )))
+						problem( pos, s"'$name' already defined" )
+
+					val set = new HashSet[String]
+
+					for ((p, e) <- enum)
+						if (set(e))
+							problem( p, s"'$e' is a duplicate" )
+						else
+							set += e
+
+					defines(name) = new Enum( enum map {case (_, e) => e} )
 				case d@VariableDefinition( name, expr ) =>
 					if (defines contains name)
 						problem( d.pos, s"'$name' already defined" )
@@ -221,7 +234,7 @@ object Energize {
 				case TableDefinition( protection, pos, name, base, columns, resource ) =>
 					var mtm = false
 
-					if (tables contains db.desensitize( name ))
+					if (tables.contains( db.desensitize(name) ) || defines.contains( name ) && defines(name).isInstanceOf[Enum])
 						problem( pos, s"'$name' already defined" )
 					
 					val cols = new LinkedHashMap[String, Column]
