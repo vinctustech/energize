@@ -51,6 +51,7 @@ object Energize {
 	def primitive( typ: JSON ): PrimitiveColumnType =
 		typ getString "type" match {
 			case "string" => StringType
+			case "boolean" => BooleanType
 			case "integer" => IntegerType
 			case "long" => LongType
 			case "uuid" => UUIDType
@@ -65,6 +66,7 @@ object Energize {
 				val List( prec, scale ) = typ.getList[Int]( "parameters" )
 
 				DecimalType( prec, scale )
+			case "enum" => EnumType( typ.getList[String]("parameters").toVector )
 			case "media" =>
 				val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
 				val allowed1 =

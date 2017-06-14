@@ -1,0 +1,5 @@
+resource events
+	title string
+	when date
+
+insert( events, {title: "finish coding date support", when: "2017-06-14"} )

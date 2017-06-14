@@ -121,4 +121,51 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin )
 	}
 
+	"date" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource events
+				|	title string
+				|	when date
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "POST", "/events", """{title: "finish coding date support", when: "2017-06-14"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/events", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "title": "finish coding date support",
+					|      "when": "2017-06-14"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "PUT", "/events/1", """{title: "finish coding date support", when: "2017-06-15"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/events", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "title": "finish coding date support",
+					|      "when": "2017-06-15"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+	}
+
 }
