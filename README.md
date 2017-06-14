@@ -1,4 +1,4 @@
-Energize [![CircleCI](https://circleci.com/bb/vinctus/energize.svg?style=shield&circle-token=8d36e9c65cfc8f8b3ca6d14af06301d7eb5512db)](https://circleci.com/bb/vinctus/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+Energize [![Build Status](https://travis-ci.org/vinctustech/energize.svg?branch=master)](https://travis-ci.org/vinctustech/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ====
 
 Mock API Framework
