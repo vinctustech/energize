@@ -1,6 +1,6 @@
 	resource students
 		name string unique
-		classrooms array(classrooms)
+		classrooms array[classrooms]
 
 	resource classrooms
 		room string unique

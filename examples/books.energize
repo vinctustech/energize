@@ -1,6 +1,6 @@
 resource books
 	title string
-	authors authors array
+	authors array[authors]
 	publisher publishers
 
 resource authors

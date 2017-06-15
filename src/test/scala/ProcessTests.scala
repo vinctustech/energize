@@ -480,7 +480,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource customers
 				|  lastname   string  required
 				|  firstname  string  required
-				|  products   array(products)
+				|  products   array[products]
 				|
 				|resource products
 				|  name       string  unique required
@@ -529,7 +529,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource customers
 				|  lastname   string  required
 				|  firstname  string  required
-				|  products   array(products)
+				|  products   array[products]
 				|
 				|resource products
 				|  name       string  unique required
@@ -654,7 +654,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			"""
 				|resource books
 				|	title string
-				|	authors array(authors)
+				|	authors array[authors]
 				|	publisher publishers
 				|
 				|resource authors
