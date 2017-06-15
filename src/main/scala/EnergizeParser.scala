@@ -161,9 +161,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
 			primitiveColumnType ~ (("array" ~ "(") ~> pos) ~ (numericLit <~ ")") ^^ {case t ~ p ~ d => ArrayType( t, p.pos, d, -1 )} |
-			primitiveColumnType <~ "array" ^^ (t => ArrayType( t, null, null, 1 )) |
+			"array" ~> ("(" ~> primitiveColumnType <~ ")") ^^ (t => ArrayType( t, null, null, 1 )) |
 			primitiveColumnType |
-			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
+				"array" ~> ("(" ~> ident <~ ")") ^^ (ManyReferenceType( _, null )) |
 			ident ^^ IdentType
 		)
 

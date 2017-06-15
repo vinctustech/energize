@@ -1,5 +1,0 @@
-resource events
-	title string
-	event date
-
-insert( events, {title: "finish coding date support", event: "2017-06-14"} )
