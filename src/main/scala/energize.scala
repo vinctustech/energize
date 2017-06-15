@@ -49,7 +49,9 @@ package object energize {
 		p.parseFromString( statements, p.statements )
 	}
 
-	def byte2hex( b: Byte ) = new String( Array(hex charAt (b >> 4), hex charAt (b&0x0F)) )
+	def hex2array( s: String ) = s grouped 2 map (Integer.parseInt(_, 16).toByte) toList
+
+	def byte2hex( b: Byte ) = new String( Array(hex charAt ((b&0xFF) >> 4), hex charAt (b&0x0F)) )
 
 	def bytes2base64( data: Array[Byte] ) = new String( Base64.getMimeEncoder.encode(data) )
 

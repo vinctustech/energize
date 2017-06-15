@@ -49,7 +49,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "indentation-lexical" % "0.7",
 	"xyz.hyperreal" %% "json" % "0.7",
-	"xyz.hyperreal" %% "table" % "0.3",
+	"xyz.hyperreal" %% "table" % "0.4",
 	"xyz.hyperreal" %% "lia" % "0.20",
 	"xyz.hyperreal" %% "options" % "0.2"
 )

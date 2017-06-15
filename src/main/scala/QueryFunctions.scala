@@ -143,7 +143,7 @@ object QueryFunctions {
 									rep match {
 										case 'base64 => attr += (cname -> bytes2base64( array ))
 										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
-										case 'array => attr += (cname -> array.toList)
+										case 'list => attr += (cname -> array.toList)
 									}
 								case Some( Column(cname, MediaType(_, _, _), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> s"/media/${obj.get}")
