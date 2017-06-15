@@ -260,4 +260,62 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin )
 	}
 
+	"blob" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource blobs
+				|	a blob
+				|	b blob (base64)
+				|	c blob (hex)
+				|	d blob (list)
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString(config), c, s, d, key )
+
+		env.process( "POST", "/blobs", """{a: "AQID", b: "AQID", c: "010203", d: [1, 2, 3]}""" ) shouldBe (SC_CREATED, "application/json",
+			"""
+				|{
+				|  "data": 1
+				|}
+			""".trim.stripMargin )
+		env.process( "GET", "/blobs", null ) shouldBe (SC_OK, "application/json",
+			"""
+				|{
+				|  "data": [
+				|    {
+				|      "id": 1,
+				|      "a": "AQID",
+				|      "b": "AQID",
+				|      "c": "010203",
+				|      "d": [
+				|        1,
+				|        2,
+				|        3
+				|      ]
+				|    }
+				|  ]
+				|}
+			""".trim.stripMargin )
+//		env.process( "PUT", "/blobs/1", """{a: "AQIE", b: "AQIE", c: "010204", d: [1, 2, 4]}""" ) shouldBe (SC_NO_CONTENT, null, null)
+//		env.process( "GET", "/blobs", null ) shouldBe (SC_OK, "application/json",
+//			"""
+//				|{
+//				|  "data": [
+//				|    {
+//				|      "id": 1,
+//				|      "a": "AQIE",
+//				|      "b": "AQIE",
+//				|      "c": "010204",
+//				|      "d": [
+//				|        1,
+//				|        2,
+//				|        4
+//				|      ]
+//				|    }
+//				|  ]
+//				|}
+//			""".trim.stripMargin )
+	}
+
 }

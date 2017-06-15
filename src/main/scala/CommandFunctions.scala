@@ -101,7 +101,7 @@ object CommandFunctions {
 								rep match {
 									case 'base64 => base642bytes( v.toString )
 									case 'hex => v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray
-									case 'array => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
+									case 'list => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
 								}
 
 							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
@@ -192,6 +192,7 @@ object CommandFunctions {
 							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
 							case TimeType | DateType | StringType | EnumType(_) if v ne null => s"$k = '$v'"
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't yet supported" )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 									s"$k = $v"
