@@ -93,7 +93,7 @@ object CommandFunctions {
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
 						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Double] )
 						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
-						case BinaryType|StringType => resource.preparedInsert.setString( i + 1, v.toString )
+						case TimeType | DateType | BinaryType | StringType | EnumType(_) => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
 						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
@@ -101,7 +101,7 @@ object CommandFunctions {
 								rep match {
 									case 'base64 => base642bytes( v.toString )
 									case 'hex => v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray
-									case 'array => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
+									case 'list => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
 								}
 
 							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
@@ -190,8 +190,9 @@ object CommandFunctions {
 					yield {
 						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
-							case StringType if v ne null => s"$k = '$v'"
+							case TimeType | DateType | StringType | BinaryType | EnumType(_) if v ne null => s"$k = '$v'"
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 									s"$k = $v"

@@ -1,6 +1,7 @@
 package xyz.hyperreal.energize
 
 import org.apache.http.HttpStatus._
+
 import xyz.hyperreal.numbers.ComplexBigInt
 
 
@@ -64,7 +65,7 @@ object Builtins {
 		|  createdTime timestamp
 		|  updatedTime timestamp
 		|  state integer
-		|  groups string array
+		|  groups array[string]
 		|  password string secret
 		|
 		|routes protected

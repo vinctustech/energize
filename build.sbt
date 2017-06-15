@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.9"
+version := "0.10"
 
 scalaVersion := "2.12.2"
 
@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"com.h2database" % "h2" % "1.4.194",
+	"com.h2database" % "h2" % "1.4.196",
   "org.postgresql" % "postgresql" % "9.4.1212.jre7",
 	"mysql" % "mysql-connector-java" % "6.0.5",
 	"org.mariadb.jdbc" % "mariadb-java-client" % "1.5.7",
@@ -49,7 +49,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "indentation-lexical" % "0.7",
 	"xyz.hyperreal" %% "json" % "0.7",
-	"xyz.hyperreal" %% "table" % "0.3",
+	"xyz.hyperreal" %% "table" % "0.4",
 	"xyz.hyperreal" %% "lia" % "0.20",
 	"xyz.hyperreal" %% "options" % "0.2"
 )

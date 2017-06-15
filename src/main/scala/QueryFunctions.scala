@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.Blob
+import java.sql.{Blob, Date, Time}
 
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
@@ -143,12 +143,18 @@ object QueryFunctions {
 									rep match {
 										case 'base64 => attr += (cname -> bytes2base64( array ))
 										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
-										case 'array => attr += (cname -> array.toList)
+										case 'list => attr += (cname -> array.toList)
 									}
-								case Some( Column(cname, MediaType( _, _, _ ), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, MediaType(_, _, _), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> s"/media/${obj.get}")
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj.get ))
+								case Some( Column(cname, EnumType(enum), _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> enum(obj.get.asInstanceOf[Int]))
+								case Some( Column(cname, DateType, _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> obj.get.asInstanceOf[Date].toString)
+								case Some( Column(cname, TimeType, _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> obj.get.asInstanceOf[Time].toString)
 								case Some( Column(cname, _, true, _, _, _) ) =>
 									if (allowsecret)
 										attr += (cname -> obj.get)

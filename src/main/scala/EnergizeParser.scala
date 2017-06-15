@@ -62,7 +62,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
-				"def", "var", "val",
+				"def", "var", "val", "enum",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
 				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
 				"blob", "binary", "boolean",
@@ -102,12 +102,20 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ ExpressionStatement
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
+		enumDefinition |
 		realmDefinition |
 		tablesDefinition |
 		routesDefinition |
 		functionsDefinition |
 		variablesDefinition |
 		valuesDefinition
+
+	lazy val enumDefinition: PackratParser[List[EnumDefinition]] =
+		"enum" ~> pos ~ ident ~ ("(" ~> rep1sep(pos ~ ident, ",") <~ ")") ^^ {
+			case p ~ i ~ e => List( EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)}) )} |
+		"enum" ~> (Indent ~> rep1(pos ~ ident ~ ("(" ~> rep1sep(pos ~ ident, ",") <~ ")")) <~ Dedent) ^^ { l =>
+			l map {case p ~ i ~ e => EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)})}
+		}
 
 	lazy val realmDefinition: PackratParser[List[RealmDefinition]] =
 		"realm" ~> pos ~ stringLit ^^ {case p ~ r => List( RealmDefinition(p.pos, r) )}
@@ -152,11 +160,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
-			primitiveColumnType ~ (("array" ~ "(") ~> pos) ~ (numericLit <~ ")") ^^ {case t ~ p ~ d => ArrayType( t, p.pos, d, -1 )} |
-			primitiveColumnType <~ "array" ^^ (t => ArrayType( t, null, null, 1 )) |
+				"array" ~> ("[" ~> primitiveColumnType <~ "]") ^^ (t => ArrayType( t, null, null, 1 )) |
 			primitiveColumnType |
-			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
-			ident ^^ (SingleReferenceType( _, null ))
+				"array" ~> ("[" ~> ident <~ "]") ^^ (ManyReferenceType( _, null )) |
+			ident ^^ IdentType
 		)
 
 	lazy val mimeType: PackratParser[MimeType] =
