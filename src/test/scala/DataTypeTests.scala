@@ -318,4 +318,45 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //			""".trim.stripMargin )
 	}
 
+	"binary" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource test
+				|	a binary
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString(config), c, s, d, key )
+
+		env.process( "POST", "/test", """{a: ""}""" ) shouldBe (SC_CREATED, "application/json",
+			"""
+				|{
+				|  "data": 1
+				|}
+			""".trim.stripMargin )
+		env.process( "GET", "/test", null ) shouldBe (SC_OK, "application/json",
+			"""
+				|{
+				|  "data": [
+				|    {
+				|      "id": 1,
+				|      "a": ""
+				|    }
+				|  ]
+				|}
+			""".trim.stripMargin )
+//			env.process( "PUT", "/test/1", """{a: "123457"}""" ) shouldBe (SC_NO_CONTENT, null, null)//todo: bug in H2: can't update a binary field
+//		env.process( "GET", "/test", null ) shouldBe (SC_OK, "application/json",
+//			"""
+//				|{
+//				|  "data": [
+//				|    {
+//				|      "id": 1,
+//				|      "a": "123457"
+//				|    }
+//				|  ]
+//				|}
+//			""".trim.stripMargin )
+	}
+
 }

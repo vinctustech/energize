@@ -190,9 +190,9 @@ object CommandFunctions {
 					yield {
 						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
-							case TimeType | DateType | StringType | EnumType(_) if v ne null => s"$k = '$v'"
+							case TimeType | DateType | StringType | BinaryType | EnumType(_) if v ne null => s"$k = '$v'"
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
-							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't yet supported" )
+							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 									s"$k = $v"
