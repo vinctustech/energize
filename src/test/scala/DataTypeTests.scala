@@ -215,6 +215,53 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin )
 	}
 
+	"timestamp" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource lunar
+				|	type string
+				|	eclipse timestamp
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "POST", "/lunar", """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/lunar", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "type": "penumbral",
+					|      "eclipse": "2016-03-23T11:48:21.300Z"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "PUT", "/lunar/1", """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/lunar", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "type": "penumbral",
+					|      "eclipse": "2017-03-23T11:47:11.800Z"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+	}
+
 	"array" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
