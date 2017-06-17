@@ -52,6 +52,7 @@ object H2Database extends Database {
 							(typ match {
 								case EnumType( enum ) => "ENUM(" + enum.map( "'" + _ + "'" ).mkString( "," ) + ")"
 								case StringType => "VARCHAR(255)"
+								case TextType => "TEXT"
 								case BooleanType => "BOOLEAN"
 								case IntegerType => "INT"
 								case LongType => "BIGINT"
@@ -136,6 +137,7 @@ object PostgresDatabase extends Database {
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
 			case StringType => "VARCHAR(255)"
+			case TextType => "TEXT"
 			case BooleanType => "BOOLEAN"
 			case IntegerType => "INT"
 			case LongType => "BIGINT"
@@ -238,6 +240,7 @@ object MySQLDatabase extends Database {
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
 			case StringType => "VARCHAR(255)"
+			case TextType => "LONGTEXT"
 			case BooleanType => "BOOLEAN"
 			case IntegerType => "INT"
 			case LongType => "BIGINT"

@@ -51,6 +51,7 @@ object Energize {
 	def primitive( typ: JSON ): PrimitiveColumnType =
 		typ getString "type" match {
 			case "string" => StringType
+			case "text" => TextType
 			case "boolean" => BooleanType
 			case "integer" => IntegerType
 			case "long" => LongType

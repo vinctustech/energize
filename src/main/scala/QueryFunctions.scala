@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Date, Time}
+import java.sql.{Blob, Clob, Date, Time}
 
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
@@ -145,6 +145,11 @@ object QueryFunctions {
 										case 'hex => attr += (cname -> bytes2hex( array ))
 										case 'list => attr += (cname -> array.toList)
 									}
+								case Some( Column(cname,TextType, _, _, _, _) ) if obj.get ne null =>
+									val clob = obj.get.asInstanceOf[Clob]
+									val s = clob.getSubString( 1L, clob.length.toInt )
+
+									attr += (cname -> s)
 								case Some( Column(cname, MediaType(_, _, _), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> s"/media/${obj.get}")
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj.get ne null =>

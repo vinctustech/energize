@@ -1,7 +1,7 @@
 package xyz.hyperreal.energize
 
 import java.sql.Types
-import javax.sql.rowset.serial.SerialBlob
+import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 
 object CommandFunctionHelpers {
@@ -105,7 +105,8 @@ object CommandFunctions {
 									case 'list => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
 								}
 
-							resource.preparedInsert.setBinaryStream( i + 1, new SerialBlob(array).getBinaryStream )
+							resource.preparedInsert.setBlob( i + 1, new SerialBlob(array) )
+						case TextType => resource.preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed, _, limit ) =>
 							val obj = v.asInstanceOf[OBJ]
 
@@ -188,6 +189,7 @@ object CommandFunctions {
 						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
 							case TimeType | DateType | StringType | BinaryType | EnumType(_) if v ne null => s"$k = '$v'"
+							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case t: SingleReferenceType if v ne null =>

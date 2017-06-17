@@ -121,6 +121,50 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin )
 	}
 
+	"text" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource documents
+				|	document text
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "POST", "/documents", """{document: "this is a document"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/documents", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "document": "this is a document"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+//		env.process( "PUT", "/documents/1", """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+//		env.process( "GET", "/documents", null ) shouldBe
+//			(SC_OK, "application/json",
+//				"""
+//					|{
+//					|  "data": [
+//					|    {
+//					|      "id": 1,
+//					|      "document": "this is a longer document"
+//					|    }
+//					|  ]
+//					|}
+//				""".trim.stripMargin )
+	}
+
 	"date" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )
