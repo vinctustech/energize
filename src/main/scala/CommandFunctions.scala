@@ -62,6 +62,7 @@ object CommandFunctions {
 					c.typ match {
 						case BooleanType => Types.BOOLEAN
 						case StringType => Types.VARCHAR
+						case TextType => Types.CLOB
 						case IntegerType => Types.INTEGER
 						case FloatType => Types.FLOAT
 						case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT

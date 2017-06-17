@@ -64,7 +64,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val", "enum",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
+				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media", "text",
 				"blob", "binary", "boolean",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"realm", "protected", "decimal", "private"
@@ -172,6 +172,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
 		"boolean" ^^^ BooleanType |
 		"string" ^^^ StringType |
+		"text" ^^^ TextType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
