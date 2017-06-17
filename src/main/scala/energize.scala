@@ -53,7 +53,16 @@ package object energize {
 
 	def byte2hex( b: Byte ) = new String( Array(hex charAt ((b&0xFF) >> 4), hex charAt (b&0x0F)) )
 
+	def bytes2hex( a: Array[Byte] ) = a map byte2hex mkString
+
 	def bytes2base64( data: Array[Byte] ) = new String( Base64.getMimeEncoder.encode(data) )
 
 	def base642bytes( data: String ) = Base64.getMimeDecoder.decode( data.getBytes )
+
+//	def pbase642bytes( data: String ) = {
+//		val res = base642bytes( data )
+//
+//		println( bytes2hex(res) )
+//		res
+//	}
 }

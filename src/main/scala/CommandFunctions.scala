@@ -115,11 +115,7 @@ object CommandFunctions {
 								case t => throw new BadRequestException( s"insert: invalid MIME type: $t" )
 							}
 
-							val id = insert( env, env table "_media_", obj )
-
-							resource.preparedInsert.setLong( i + 1, id )
-
-						//						case _ => values += String.valueOf( v )
+							resource.preparedInsert.setLong( i + 1, insert(env, env table "_media_", obj) )
 					}
 			}
 		}

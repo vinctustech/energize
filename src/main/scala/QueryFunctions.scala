@@ -135,14 +135,14 @@ object QueryFunctions {
 									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList)
 //									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
 								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj.get ne null =>
-									attr += (cname -> obj.get.asInstanceOf[Array[Byte]].map( byte2hex ).mkString)
+									attr += (cname -> bytes2hex( obj.get.asInstanceOf[Array[Byte]] ))
 								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj.get ne null =>
 									val blob = obj.get.asInstanceOf[Blob]
 									val array = blob.getBytes( 0L, blob.length.toInt )
 
 									rep match {
 										case 'base64 => attr += (cname -> bytes2base64( array ))
-										case 'hex => attr += (cname -> array.map( byte2hex ).mkString)
+										case 'hex => attr += (cname -> bytes2hex( array ))
 										case 'list => attr += (cname -> array.toList)
 									}
 								case Some( Column(cname, MediaType(_, _, _), _, _, _, _) ) if obj.get ne null =>
@@ -258,9 +258,6 @@ object QueryFunctions {
 		val blob = res.getBlob( 3 )
 
 		(typ, blob.getBytes( 0, blob.length.toInt ))
-//		Map(
-//			"type" -> typ,
-//			"data" -> blob.getBytes( 0, blob.length.toInt ))
 	}
 }
 
