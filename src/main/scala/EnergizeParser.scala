@@ -111,9 +111,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		valuesDefinition
 
 	lazy val enumDefinition: PackratParser[List[EnumDefinition]] =
-		"enum" ~> pos ~ ident ~ ("(" ~> rep1sep(pos ~ ident, ",") <~ ")") ^^ {
+		"enum" ~> pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]") ^^ {
 			case p ~ i ~ e => List( EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)}) )} |
-		"enum" ~> (Indent ~> rep1(pos ~ ident ~ ("(" ~> rep1sep(pos ~ ident, ",") <~ ")")) <~ Dedent) ^^ { l =>
+		"enum" ~> (Indent ~> rep1(pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]")) <~ Dedent) ^^ { l =>
 			l map {case p ~ i ~ e => EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)})}
 		}
 

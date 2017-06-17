@@ -77,7 +77,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 		val key = AUTHORIZATION.getString( "key" )
 		val config =
 			"""
-				|enum suit (clubs, diamonds, hearts, spades)
+				|enum suit [clubs, diamonds, hearts, spades]
 				|
 				|resource cards
 				|	suit suit
@@ -174,7 +174,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|	title string
 				|	event date
 			""".trim.stripMargin
-		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+		val env = Energize.configure( io.Source.fromString(config), c, s, d, key )
 
 		env.process( "POST", "/events", """{title: "finish coding date support", event: "2017-06-14"}""" ) shouldBe
 			(SC_CREATED, "application/json",
