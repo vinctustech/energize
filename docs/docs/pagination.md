@@ -50,10 +50,10 @@ This will sort the result list by the `text` field in ascending order.
 
 ### Size
 
-To return the total number of documents of a resource, use the `count` path parameter on the resource end-point.
+To return the total number of documents of a resource, use the `size` path parameter on the resource end-point.
 
 ```
-curl http://localhost:8080/messages/count
+curl http://localhost:8080/messages/size
 ```
 
 This will return the total number of documents of the specified resource.
