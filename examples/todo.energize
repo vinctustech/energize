@@ -1,5 +1,4 @@
-resource todo
-	name string required unique
-	desc string optional
-
-insert( todo, {name: "finish coding this project"} )
+resource todo /api/v1
+  name        string  required
+  description string  optional
+  status      integer required
