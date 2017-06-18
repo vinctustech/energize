@@ -5,6 +5,8 @@ import prop.PropertyChecks
 
 import org.apache.http.HttpStatus._
 
+import java.util.UUID
+
 
 class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
@@ -163,6 +165,50 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //					|  ]
 //					|}
 //				""".trim.stripMargin )
+	}
+
+	"uuid" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource test
+				|	identifier uuid
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+		env.process( "POST", "/test", """{identifier: "a94cae4a-8bdf-49f3-849b-e7d338f4400a"}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/test", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "identifier": "a94cae4a-8bdf-49f3-849b-e7d338f4400a"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "PUT", "/test/1", """{identifier: "8140d714-7387-486c-ab5b-ef5fc1cc790e"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/test", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "id": 1,
+					|      "identifier": "8140d714-7387-486c-ab5b-ef5fc1cc790e"
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
 	}
 
 	"date" in {

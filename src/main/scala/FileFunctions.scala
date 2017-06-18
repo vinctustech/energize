@@ -1,7 +1,7 @@
 package xyz.hyperreal.energize
 
-import java.io._
 import java.nio.file.{Paths, Files}
+
 
 object FileFunctions {
 
