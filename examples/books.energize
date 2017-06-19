@@ -1,6 +1,6 @@
 resource books
 	title string required
-	authors array[authors]
+	authors [authors]
 	publisher publishers
 
 resource authors

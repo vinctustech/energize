@@ -65,7 +65,7 @@ object Builtins {
 		|  createdTime timestamp
 		|  updatedTime timestamp
 		|  state integer
-		|  groups array[string]
+		|  groups [string]
 		|  password string secret
 		|
 		|routes protected

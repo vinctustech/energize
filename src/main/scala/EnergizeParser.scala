@@ -64,7 +64,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
 				"def", "var", "val", "enum",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "float", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media", "text",
+				"string", "integer", "float", "uuid", "date", "long", "datetime", "time", "timestamp", "with", "timezone", "media", "text",
 				"blob", "binary", "boolean",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
 				"realm", "protected", "decimal", "private"
@@ -160,9 +160,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
-				"array" ~> ("[" ~> primitiveColumnType <~ "]") ^^ (t => ArrayType( t, null, null, 1 )) |
+				"[" ~> primitiveColumnType <~ "]" ^^ (t => ArrayType( t, null, null, 1 )) |
 			primitiveColumnType |
-				"array" ~> ("[" ~> ident <~ "]") ^^ (ManyReferenceType( _, null )) |
+				"[" ~> ident <~ "]" ^^ (ManyReferenceType( _, null )) |
 			ident ^^ IdentType
 		)
 

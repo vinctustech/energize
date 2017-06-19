@@ -405,7 +405,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 		val config =
 			"""
 				|resource arrays
-				|	a array[integer]
+				|	a [integer]
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString(config), c, s, d, key )
 

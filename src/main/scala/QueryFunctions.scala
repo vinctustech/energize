@@ -1,7 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Clob, Date, Time}
-import java.util.UUID
+import java.sql.{Blob, Clob}
 
 import collection.mutable.ListBuffer
 import collection.immutable.ListMap
