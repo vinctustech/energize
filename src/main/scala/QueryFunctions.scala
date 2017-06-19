@@ -14,12 +14,25 @@ object QueryFunctionHelpers {
 	
 	def listQuery( db: Database, resource: Table, fields: Option[String], where: String, page: Option[String], start: Option[String],
 								 limit: Option[String] ) = {
-		val fs =
-			fields match {
-				case None => Nil
-				case Some( f ) =>
-					DELIMITER.split( f ).toList
-			}
+		val fs = {
+			val fs1 =
+				fields match {
+					case None => Nil
+					case Some( f ) =>
+						DELIMITER.split( f ).toList
+				}
+			val exclude = fs1 filter (_ startsWith "-") map (_ substring 1)
+
+			if (exclude nonEmpty) {
+				val include = fs1 filterNot (_ startsWith "-")
+
+				if (include nonEmpty)
+					include filterNot (exclude contains _)
+				else
+					resource.names filterNot (exclude contains _)
+			} else
+				fs1
+		}
 		val fss = fs.toSet
 		val fssmid = fss - "id"
 		
