@@ -94,7 +94,7 @@ object CommandFunctions {
 						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
 						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Double] )
 						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
-						case UUIDType | TimeType | DateType | BinaryType | StringType | EnumType(_) => resource.preparedInsert.setString( i + 1, v.toString )
+						case UUIDType | TimeType | DateType | BinaryType | StringType | EnumType(_, _) => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
 						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
@@ -188,7 +188,7 @@ object CommandFunctions {
 					yield {
 						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
-							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_) if v ne null => s"$k = '$v'"
+							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$k = '$v'"
 							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )

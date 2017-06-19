@@ -50,7 +50,7 @@ object H2Database extends Database {
 						parameters( typ )
 						buf ++=
 							(typ match {
-								case EnumType( enum ) => "ENUM(" + enum.map( "'" + _ + "'" ).mkString( "," ) + ")"
+								case EnumType( _, enum ) => "ENUM(" + enum.map( "'" + _ + "'" ).mkString( "," ) + ")"
 								case StringType => "VARCHAR(255)"
 								case TextType => "TEXT"
 								case BooleanType => "BOOLEAN"
@@ -151,6 +151,7 @@ object PostgresDatabase extends Database {
 	def conflict( error: String ) = sys.error( "not done yet" )
 
 	def create( tables: List[Table] ) = {
+		val enums = new StringBuilder
 		val buf = new StringBuilder
 
 		tables foreach {
@@ -168,6 +169,11 @@ object PostgresDatabase extends Database {
 					parameters( typ )
 					buf ++=
 						(typ match {
+							case EnumType( ename, enum ) =>
+								enums ++= s"CREATE TYPE $ename AS ENUM ("
+								enums ++= enum map (i => s"'$i'") mkString ","
+								enums ++= ");"
+								ename
 							case p: PrimitiveColumnType => primitive( p )
 							case SingleReferenceType( _, _ ) => "BIGINT"
 							case ArrayType( t, _, _, d ) => primitive( t ) + "[]"( d )
@@ -205,7 +211,7 @@ object PostgresDatabase extends Database {
 				}
 		}
 
-		buf.toString
+		enums.toString + buf.toString
 	}
 }
 

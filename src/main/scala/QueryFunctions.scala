@@ -167,7 +167,7 @@ object QueryFunctions {
 									attr += (cname -> s"/media/${obj.get}")
 								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj.get ))
-								case Some( Column(cname, EnumType(enum), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, EnumType(_, enum), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> enum(obj.get.asInstanceOf[Int]))
 								case Some( Column(cname, DateType|TimeType|UUIDType, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.toString)

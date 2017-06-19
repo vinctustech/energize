@@ -67,7 +67,7 @@ object Energize {
 				val List( prec, scale ) = typ.getList[Int]( "parameters" )
 
 				DecimalType( prec, scale )
-			case "enum" => EnumType( typ.getList[String]("parameters").toVector )
+//			case "enum" => EnumType( _, typ.getList[String]("parameters").toVector )
 			case "media" =>
 				val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
 				val allowed1 =
@@ -296,7 +296,7 @@ object Energize {
 								typ match {
 									case IdentType( ident ) =>
 										defines get ident match {
-											case Some( e: Enum ) => EnumType( e.enum.toVector )
+											case Some( e: Enum ) => EnumType( ident, e.enum.toVector )
 											case _ => SingleReferenceType( ident, null )
 										}
 									case t => t
