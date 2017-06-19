@@ -71,7 +71,7 @@ object Builtins {
 		|routes protected
 		|  GET     /users/me                  Ok( me() )
 		|
-		|resource tokens						# should be a table not a resource
+		|table tokens
 		|  token string unique
 		|  created timestamp
 		|  user users
@@ -85,10 +85,10 @@ object Builtins {
 		|  POST    /register                  Created( register($entity) )
 		|
 		|table _media_
-		|	type string
-		|	data blob
+		|  type string
+		|  data blob
 		|
 		|routes
-		|	GET /"media"/id:long                Ok( readMedia(/id) )
+		|  GET /"media"/id:long                Ok( readMedia(/id) )
 		""".stripMargin
 }

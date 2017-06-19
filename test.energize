@@ -1,0 +1,2 @@
+resource r private
+	a integer
