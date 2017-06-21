@@ -243,7 +243,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 			case ApplyExpression( function, pos, args ) =>
 				deref( function ) match {
 					case f: Native =>
-						val list = args map (a => deref( a ))
+						val list = args map deref
 
 						if (f.applicable( list ))
 							f( this, list )

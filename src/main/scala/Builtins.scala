@@ -20,15 +20,16 @@ object Builtins {
 		)
 	
 	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
-	
+
+	val natives =
+		Native(QueryFunctions) ++
+		Native(CommandFunctions) ++
+		Native(ResultFunctions) ++
+		Native(UtilityFunctions) ++
+		Native(AuthorizationFunctions) ++
+		Native(FileFunctions)
 	val map =
-		pairs( Native(QueryFunctions) ) ++
-		pairs( Native(CommandFunctions) ) ++
-		pairs( Native(ResultFunctions) ) ++
-		pairs( Native(UtilityFunctions) ) ++
-		pairs( Native(AuthorizationFunctions) ) ++
-		pairs( Native(FileFunctions) ) ++
-		constants toMap
+		pairs( natives ) ++ constants toMap
 
 	def sys =
 		Map(
