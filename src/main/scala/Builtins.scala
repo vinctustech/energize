@@ -18,18 +18,28 @@ object Builtins {
 			"SC_BAD_REQUEST" -> SC_NOT_FOUND,
 			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
 		)
-	
-	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
-
+	val jsconstants =
+		List(
+			"None" -> None,
+			"SC_OK" -> SC_OK,
+			"SC_CREATED" -> SC_CREATED,
+			"SC_NO_CONTENT" -> SC_NO_CONTENT,
+			"SC_BAD_REQUEST" -> SC_NOT_FOUND,
+			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
+		)
 	val natives =
-		Native(QueryFunctions) ++
-		Native(CommandFunctions) ++
-		Native(ResultFunctions) ++
-		Native(UtilityFunctions) ++
-		Native(AuthorizationFunctions) ++
-		Native(FileFunctions)
+		Native( QueryFunctions ) ++
+		Native( CommandFunctions ) ++
+		Native( ResultFunctions ) ++
+		Native( UtilityFunctions ) ++
+		Native( AuthorizationFunctions ) ++
+		Native( FileFunctions )
 	val map =
 		pairs( natives ) ++ constants toMap
+	val jsmap =
+		pairs( natives ) ++ jsconstants toMap
+
+	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
 
 	def sys =
 		Map(

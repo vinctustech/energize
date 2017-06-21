@@ -2,6 +2,8 @@ package xyz.hyperreal.energize
 
 import java.sql.{Connection, Statement, SQLException, PreparedStatement}
 import java.net.URI
+import javax.script._
+import jdk.nashorn.api.scripting._
 
 import collection.JavaConverters._
 import util.matching.Regex
@@ -20,12 +22,20 @@ object Environment {
 // add RouteTable class to speed up adding variables
 class Environment( val tables: Map[String, Table], croutes: List[Route], val bindings: Map[String, Any],
 									 val sbindings: Map[String, SystemValue], val connection: Connection, val statement: Statement,
-									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, Any],
+									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, String],
 									 val key: String ) {
 
 	private val routeTable = ArrayBuffer( croutes: _* )
 	private var routeList = routeTable.toList
 	private lazy val entityVariable = sbindings( "entity" ).asInstanceOf[SystemVariable]
+
+	val jseng = new ScriptEngineManager( null ).getEngineByName( "nashorn" ).asInstanceOf[NashornScriptEngine]
+
+	for ((k, v) <- Builtins.jsmap)
+		v match {
+			case n: Native => jseng.put( k, new JSWrapper(this, n) )
+			case _ => jseng.put( k, v )
+		}
 
 //	private val URI = """(/(?:[a-zA-Z0-9_-]/)*)(?:\?((?:[a-zA-Z]=.*&?)+))?"""r
 

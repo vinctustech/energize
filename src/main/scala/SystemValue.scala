@@ -2,13 +2,13 @@ package xyz.hyperreal.energize
 
 
 abstract class SystemValue {
-	def value: Any
+	def value: AnyRef
 }
 
 class SystemVariable extends SystemValue {
-	var value: Any = null
+	var value: AnyRef = null
 }
 
-class SystemConstant( const: Any ) extends SystemValue {
+class SystemConstant( const: AnyRef ) extends SystemValue {
 	def value = const
 }
