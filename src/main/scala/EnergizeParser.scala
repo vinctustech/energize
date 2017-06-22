@@ -2,6 +2,7 @@ package xyz.hyperreal.energize
 
 import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
+//import util.parsing.combinator.token.Tokens.Token
 import util.parsing.input.CharArrayReader.EofCh
 import util.parsing.input.{Positional, Reader, CharSequenceReader}
 
@@ -11,10 +12,17 @@ import xyz.hyperreal.lia.Math
 
 class EnergizeParser extends StandardTokenParsers with PackratParsers
 {
-	override val lexical: IndentationLexical =
-		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" )
-		{
-			override def token: Parser[Token] = decimalParser | super.token
+		class EnergizeLexical extends IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" ) {
+			case class ECMAScriptLit( chars: String ) extends Token {
+				override def toString = "<<<" + chars + ">>>"
+			}
+
+			override def token: Parser[Token] = decimalParser | jsexpression | super.token
+
+			def jsexpression: Parser[Token] =
+				'<' ~> '<' ~> '<' ~> rep(chrExcept(EofCh, '<')) <~ '<' <~ '<' <~ '<' ^^ {
+					l => ECMAScriptLit( l.mkString )
+				}
 
 			override def identChar = letter | elem('_')// | elem('$')
 			
@@ -75,6 +83,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 				)
 		}
 
+	override val lexical = new EnergizeLexical
+
 	def parse[T]( grammar: PackratParser[T], r: Reader[Char] ) = phrase( grammar )( lexical.read(r) )
 	
 	def parseFromSource[T]( src: io.Source, grammar: PackratParser[T] ) = parseFromString( src.getLines.map(l => l + '\n').mkString, grammar )
@@ -86,7 +96,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		}
 	}
 
-	import lexical.{Newline, Indent, Dedent}
+	import lexical.{Newline, Indent, Dedent, ECMAScriptLit}
+
+	lazy val ecmascriptLit: Parser[String] =
+		elem("ecma script", _.isInstanceOf[ECMAScriptLit]) ^^ (_.chars)
 
 	lazy val nl = rep1(Newline)
 
@@ -391,7 +404,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val expressionOrBlock = expression | blockExpression
 	
 	lazy val actionExpression: PackratParser[ExpressionAST] =
-		actionCompoundExpression
+		actionCompoundExpression |
+		ecmascriptLit ^^ {e => ECMAScriptExpression( e )}
 		
 	lazy val actionCompoundExpression: PackratParser[ExpressionAST] =
 		(actionCompoundExpression <~ ";") ~ actionApplyExpression ^^ {case left ~ right => CompoundExpression( left, right )} |

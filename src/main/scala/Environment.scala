@@ -348,8 +348,11 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					}
 					
 				block( exprs )
-			case ECMAScriptExpression( expr ) =>
+			case s@ECMAScriptExpression( code, exe ) =>
+				if (exe eq null)
+					s.exe = jseng.compile( code )
 
+				s.exe.eval
 			case _ => sys.error( "error evaluating expression: " + expr )
 		}
 
