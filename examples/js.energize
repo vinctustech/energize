@@ -1,0 +1,6 @@
+resource r
+	a string
+
+routes
+	POST /js	<<< Ok( req.body ) >>>
+	GET /js		<<< Ok( 1 + 2 ) >>>
