@@ -20,7 +20,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 			override def token: Parser[Token] = decimalParser | jsexpression | super.token
 
 			def jsexpression: Parser[Token] =
-				'<' ~> '<' ~> '<' ~> rep(chrExcept(EofCh, '<')) <~ '<' <~ '<' <~ '<' ^^ {
+				('<' ~ '<' ~ '<') ~> rep(chrExcept(EofCh, '>')) <~ ('>' ~ '>' ~ '>') ^^ {
 					l => ECMAScriptLit( l.mkString )
 				}
 
@@ -405,7 +405,7 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	
 	lazy val actionExpression: PackratParser[ExpressionAST] =
 		actionCompoundExpression |
-		ecmascriptLit ^^ {e => ECMAScriptExpression( e )}
+		ecmascriptLit ^^ {e => JavaScriptExpression( e )}
 		
 	lazy val actionCompoundExpression: PackratParser[ExpressionAST] =
 		(actionCompoundExpression <~ ";") ~ actionApplyExpression ^^ {case left ~ right => CompoundExpression( left, right )} |

@@ -94,7 +94,7 @@ case object ContinueExpression extends ExpressionAST
 case class RangeExpression( start: ExpressionAST, end: ExpressionAST ) extends ExpressionAST
 case class AssignmentExpression( v: String, expr: ExpressionAST ) extends ExpressionAST with Positional
 
-case class ECMAScriptExpression( code: String, var exe: CompiledScript = null ) extends ExpressionAST
+case class JavaScriptExpression( code: String, var exe: CompiledScript = null ) extends ExpressionAST
 
 case class GeneratorAST( pattern: String, traversable: ExpressionAST, filter: Option[ExpressionAST] ) extends AST
 // trait PatternAST extends AST

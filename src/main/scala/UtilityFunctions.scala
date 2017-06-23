@@ -35,15 +35,21 @@ object UtilityFunctions {
 
 	def reject( env: Environment ) = throw new RejectRouteThrowable
 
-	def js( env: Environment, code: String ) = {
+	def jsrequest( env: Environment ): Unit = {
 		for ((k, v) <- env.pathMap)
 			env.jseng.put( k, v )
 
 		env.jseng.put( "req", new RequestObject(env) )
-		env.jseng.compile( code ).eval
 	}
 
-	def parm( env: Environment, name: String ) = env.queryMap get name
+	def jscompile( env: Environment, code: String ) = {
+		jsrequest( env )
+		env.jseng.compile( code )
+	}
+
+	def jseval( env: Environment, code: String ) = {
+		jscompile( env, code ).eval
+	}
 }
 
 class RequestObject( env: Environment ) extends AbstractJSObject {

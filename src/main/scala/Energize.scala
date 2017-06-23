@@ -173,8 +173,11 @@ object Energize {
 								yield {
 									val method = HTTPMethod( m getString "method" )
 									val path = parsePath( m getString "path" ).get
-									val action = parseExpression( m getString "action" )
-
+									val action =
+										m getString "language" match {
+											case "ESL" => parseExpression( m getString "action" )
+											case "JavaScript" => JavaScriptExpression( m getString "action" )
+										}
 									URIMapping( method, path, action )
 								}
 
