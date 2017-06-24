@@ -114,7 +114,7 @@
                 "language": {
                   "description": "Action language (only needed if 'action' property present)",
                   "type": "string",
-                  "enum": ["JavaScript", "ESL"]
+                  "enum": ["ECMAScript", "ESL"]
                 },
                 "protection": {
                   "description": "Optional protection applied to implied mapping",

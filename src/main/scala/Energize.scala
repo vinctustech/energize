@@ -176,7 +176,7 @@ object Energize {
 									val action =
 										m getString "language" match {
 											case "ESL" => parseExpression( m getString "action" )
-											case "JavaScript" => JavaScriptExpression( m getString "action" )
+											case "ECMAScript" => JavaScriptExpression( m getString "action" )
 										}
 									URIMapping( method, path, action )
 								}
