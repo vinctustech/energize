@@ -3,4 +3,6 @@ resource r
 
 routes
 	POST /js	<<< Ok( req.body ) >>>
-	GET /js		<<< Ok( 1 + 2 ) >>>
+	GET /js		<<< Ok( r.size ) >>>
+
+insert( r, {a: 'asdf'} )

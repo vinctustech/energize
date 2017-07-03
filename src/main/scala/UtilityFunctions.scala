@@ -1,8 +1,6 @@
 package xyz.hyperreal.energize
 
 import java.time.{Instant, ZoneOffset}
-import javax.script._
-import jdk.nashorn.api.scripting._
 
 import util.Random._
 
@@ -36,10 +34,10 @@ object UtilityFunctions {
 	def reject( env: Environment ) = throw new RejectRouteThrowable
 
 	def jsrequest( env: Environment ): Unit = {
-		for ((k, v) <- env.pathMap)
-			env.jseng.put( k, v )
+		for (t <- env.tables.values)
+			env.jseng.put( t.name, new ResourceJSObject(env, t) )
 
-		env.jseng.put( "req", new RequestObject(env) )
+		env.jseng.put( "req", new RequestJSObject(env) )
 	}
 
 	def jscompile( env: Environment, code: String ) = {
@@ -50,15 +48,4 @@ object UtilityFunctions {
 	def jseval( env: Environment, code: String ) = {
 		jscompile( env, code ).eval
 	}
-}
-
-class RequestObject( env: Environment ) extends AbstractJSObject {
-	override def getMember( name: String ) =
-		name match {
-			case "body" => env.sbindings( "entity" ).value
-			case "query" =>
-				new AbstractJSObject {
-					override def getMember( name: String ) = env.queryMap get name
-				}
-		}
 }
