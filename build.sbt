@@ -1,10 +1,10 @@
 name := "energize"
 
-version := "0.8"
+version := "0.10.1"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
-crossScalaVersions := Seq( "2.11.8" )
+crossScalaVersions := Seq( "2.11.11" )
 
 scalacOptions ++= Seq( "-deprecation", "-feature", "-language:postfixOps", "-language:implicitConversions", "-language:existentials" )
 
@@ -30,14 +30,14 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"com.h2database" % "h2" % "1.4.194",
+	"com.h2database" % "h2" % "1.4.196",
   "org.postgresql" % "postgresql" % "9.4.1212.jre7",
 	"mysql" % "mysql-connector-java" % "6.0.5",
 	"org.mariadb.jdbc" % "mariadb-java-client" % "1.5.7",
 	"org.xerial" % "sqlite-jdbc" % "3.16.1",
 	"org.firebirdsql.jdbc" % "jaybird-jdk16" % "2.2.12",
 	"org.apache.derby" % "derby" % "10.13.1.1",
-	"jline" % "jline" % "2.14.2",
+	"jline" % "jline" % "2.14.3",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
@@ -49,7 +49,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "indentation-lexical" % "0.7",
 	"xyz.hyperreal" %% "json" % "0.7",
-	"xyz.hyperreal" %% "table" % "0.3",
+	"xyz.hyperreal" %% "table" % "0.4",
 	"xyz.hyperreal" %% "lia" % "0.20",
 	"xyz.hyperreal" %% "options" % "0.2"
 )

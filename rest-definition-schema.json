@@ -16,6 +16,16 @@
             "description": "True if this defines a resource; false if it defines a table",
             "type": "boolean"
           },
+          "protection": {
+            "description": "Optional array of user groups who can access the resource",
+            "type": "array",
+            "items": "string"
+          },
+          "base": {
+            "description": "Option base of paths for auto-generated routes",
+            "type": "array",
+            "items": "string"
+          },
           "fields": {
             "title": "Field set",
             "type": "array",
@@ -45,12 +55,12 @@
                     },
                     "parameters": {
                       "description": "Optional type parameters",
-                      "type": "array",
+                      "type": "array"
                     }
                   }
                 },
                 "modifiers": {
-                  "description": "Modifier set",
+                  "description": "Optional modifier set",
                   "type": "array",
                   "items": "string",
                   "enum": [
@@ -67,6 +77,51 @@
             "description": "Access control groups",
             "type": "array",
             "items": "string"
+          }
+        }
+      }
+    },
+    "routes": {
+      "title": "Custom routes set",
+      "type": "array",
+      "items": {
+        "properties": {
+          "base": {
+            "description": "Optional base path",
+            "type": "string"
+          },
+          "protection": {
+            "description": "Optional protection applied to all mappings",
+            "type": "string"
+          },
+          "mappings": {
+            "description": "Route mappings",
+            "type": "array",
+            "items": {
+              "properties": {
+                "method": {
+                  "description": "HTTP method name",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "Request path matcher",
+                  "type": "string"
+                },
+                "action": {
+                  "description": "Optional action expression",
+                  "type": "string"
+                },
+                "language": {
+                  "description": "Action language (only needed if 'action' property present)",
+                  "type": "string",
+                  "enum": ["ECMAScript", "ESL"]
+                },
+                "protection": {
+                  "description": "Optional protection applied to implied mapping",
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

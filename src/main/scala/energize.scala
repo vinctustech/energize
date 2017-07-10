@@ -11,7 +11,7 @@ package object energize {
 	
 	type OBJ = Map[String, AnyRef]
 
-	lazy val VERSION = "0.8"
+	lazy val VERSION = "0.11"
 	lazy val CONFIG = ConfigFactory.load
 	lazy val DATABASE = CONFIG.getConfig( "database" )
 	lazy val SERVER = CONFIG.getConfig( "server" )
@@ -21,7 +21,11 @@ package object energize {
 
 	private val hex = "0123456789ABCDEF"
 
-	def problem( pos: Position, error: String ) = sys.error( pos.line + ": " + error + "\n" + pos.longString )
+	def problem( pos: Position, error: String ) =
+		if (pos eq null)
+			sys.error( error )
+		else
+			sys.error( pos.line + ": " + error + "\n" + pos.longString )
 	
 	def escapeQuotes( s: String ): String = s replace ("'", "''")
 		
@@ -33,15 +37,32 @@ package object energize {
 			})
 		}
 
-	def parseCode( code: String ) = {
+	def parseExpression( expression: String ): ExpressionAST = {
 		val p = new EnergizeParser
 
-		p.parseFromString( code, p.statements )
+		p.parseFromString( expression, p.expressionStatement ).expr
 	}
 
-	def byte2hex( b: Byte ) = new String( Array(hex charAt (b >> 4), hex charAt (b&0x0F)) )
+	def parseStatements( statements: String ) = {
+		val p = new EnergizeParser
+
+		p.parseFromString( statements, p.statements )
+	}
+
+	def hex2array( s: String ) = s grouped 2 map (Integer.parseInt(_, 16).toByte) toList
+
+	def byte2hex( b: Byte ) = new String( Array(hex charAt ((b&0xFF) >> 4), hex charAt (b&0x0F)) )
+
+	def bytes2hex( a: Array[Byte] ) = a map byte2hex mkString
 
 	def bytes2base64( data: Array[Byte] ) = new String( Base64.getMimeEncoder.encode(data) )
 
 	def base642bytes( data: String ) = Base64.getMimeDecoder.decode( data.getBytes )
+
+//	def pbase642bytes( data: String ) = {
+//		val res = base642bytes( data )
+//
+//		println( bytes2hex(res) )
+//		res
+//	}
 }

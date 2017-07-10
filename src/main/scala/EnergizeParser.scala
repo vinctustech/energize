@@ -2,6 +2,7 @@ package xyz.hyperreal.energize
 
 import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
+//import util.parsing.combinator.token.Tokens.Token
 import util.parsing.input.CharArrayReader.EofCh
 import util.parsing.input.{Positional, Reader, CharSequenceReader}
 
@@ -11,10 +12,17 @@ import xyz.hyperreal.lia.Math
 
 class EnergizeParser extends StandardTokenParsers with PackratParsers
 {
-	override val lexical: IndentationLexical =
-		new IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" )
-		{
-			override def token: Parser[Token] = decimalParser | super.token
+		class EnergizeLexical extends IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" ) {
+			case class ECMAScriptLit( chars: String ) extends Token {
+				override def toString = "<<<" + chars + ">>>"
+			}
+
+			override def token: Parser[Token] = decimalParser | jsexpression | super.token
+
+			def jsexpression: Parser[Token] =
+				('<' ~ '<' ~ '<') ~> rep(chrExcept(EofCh, '>')) <~ ('>' ~ '>' ~ '>') ^^ {
+					l => ECMAScriptLit( l.mkString )
+				}
 
 			override def identChar = letter | elem('_')// | elem('$')
 			
@@ -62,18 +70,20 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 
 			reserved += (
 				"if", "then", "else", "elif", "true", "false", "or", "and", "not", "null", "for", "while", "break", "continue",
-				"def", "var", "val",
+				"def", "var", "val", "enum",
 				"table", "resource", "unique", "indexed", "required", "optional", "secret", "routes",
-				"string", "integer", "uuid", "date", "long", "array", "datetime", "time", "timestamp", "with", "timezone", "media",
-				"blob", "binary",
+				"string", "integer", "float", "uuid", "date", "long", "datetime", "time", "timestamp", "with", "timezone", "media", "text",
+				"blob", "binary", "boolean",
 				"GET", "POST", "PUT", "PATCH", "DELETE",
-				"realm", "protected", "float", "decimal"
+				"realm", "protected", "decimal", "private"
 				)
 			delimiters += (
 				"+", "*", "-", "/", "\\", "//", "%", "^", "(", ")", "[", "]", "{", "}", ",", "=", "==", "/=", "<", ">", "<=", ">=",
 				":", "->", ".", ";", "?", "<-", "..", "$"
 				)
 		}
+
+	override val lexical = new EnergizeLexical
 
 	def parse[T]( grammar: PackratParser[T], r: Reader[Char] ) = phrase( grammar )( lexical.read(r) )
 	
@@ -86,7 +96,10 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		}
 	}
 
-	import lexical.{Newline, Indent, Dedent}
+	import lexical.{Newline, Indent, Dedent, ECMAScriptLit}
+
+	lazy val ecmascriptLit: Parser[String] =
+		elem("ecma script", _.isInstanceOf[ECMAScriptLit]) ^^ (_.chars)
 
 	lazy val nl = rep1(Newline)
 
@@ -102,12 +115,20 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val expressionStatement: PackratParser[ExpressionStatement] = expression <~ nl ^^ ExpressionStatement
 	
 	lazy val definitionStatement: PackratParser[List[StatementAST]] =
+		enumDefinition |
 		realmDefinition |
 		tablesDefinition |
 		routesDefinition |
 		functionsDefinition |
 		variablesDefinition |
 		valuesDefinition
+
+	lazy val enumDefinition: PackratParser[List[EnumDefinition]] =
+		"enum" ~> pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]") ^^ {
+			case p ~ i ~ e => List( EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)}) )} |
+		"enum" ~> (Indent ~> rep1(pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]")) <~ Dedent) ^^ { l =>
+			l map {case p ~ i ~ e => EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)})}
+		}
 
 	lazy val realmDefinition: PackratParser[List[RealmDefinition]] =
 		"realm" ~> pos ~ stringLit ^^ {case p ~ r => List( RealmDefinition(p.pos, r) )}
@@ -138,11 +159,12 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val pos = positioned( success(new Positional{}) )
 	
 	lazy val tablesDefinition: PackratParser[List[TableDefinition]] =
-		("table" | "resource") ~ pos ~ ident ~ opt(protection) ~ repsep(basePath, ",") ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
-			case k ~ p ~ name ~ pro ~ bases ~ columns => List( TableDefinition( pro, p.pos, name, bases, columns, k == "resource" ) )}
+		("table" | "resource") ~ pos ~ ident ~ opt(protection) ~ opt(basePath) ~ (Indent ~> rep1(tableColumn) <~ Dedent) ^^ {
+			case k ~ p ~ name ~ pro ~ base ~ columns => List( TableDefinition( pro, p.pos, name, base, columns, k == "resource" ) )}
 
 	lazy val protection: PackratParser[Option[String]] =
-		"protected" ~> opt("(" ~> ident <~ ")")
+		"protected" ~> opt("(" ~> ident <~ ")") |
+		"private" ^^^ Some( null )
 
 	lazy val tableColumn: PackratParser[TableColumn] =
 		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
@@ -151,18 +173,19 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
-			primitiveColumnType ~ (("array" ~ "(") ~> pos) ~ (numericLit <~ ")") ^^ {case t ~ p ~ d => ArrayType( t, p.pos, d, -1 )} |
-			primitiveColumnType <~ "array" ^^ (t => ArrayType( t, null, null, 1 )) |
+				"[" ~> primitiveColumnType <~ "]" ^^ (t => ArrayType( t, null, null, 1 )) |
 			primitiveColumnType |
-			ident <~ "array" ^^ (ManyReferenceType( _, null )) |
-			ident ^^ (SingleReferenceType( _, null ))
+				"[" ~> ident <~ "]" ^^ (ManyReferenceType( _, null )) |
+			ident ^^ IdentType
 		)
 
 	lazy val mimeType: PackratParser[MimeType] =
 		(ident <~ "/") ~ (ident | "*") ^^ {case typ ~ subtype => MimeType( typ, subtype )}
 
 	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
+		"boolean" ^^^ BooleanType |
 		"string" ^^^ StringType |
+		"text" ^^^ TextType |
 		"integer" ^^^ IntegerType |
 		"long" ^^^ LongType |
 		"uuid" ^^^ UUIDType |
@@ -188,19 +211,25 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		
 	lazy val routesDefinition: PackratParser[List[RoutesDefinition]] =
 		"routes" ~> opt(basePath) ~ opt(protection) ~ (Indent ~> rep1(uriMapping) <~ Dedent) ^^ {
-			case Some( base ) ~ pro ~ mappings =>
-				List( RoutesDefinition( base, mappings, pro ) )
-			case None ~ pro ~ mappings =>
-				List( RoutesDefinition( URIPath(Nil), mappings, pro ) )
+			case Some( base ) ~ (pro: Option[Option[String]]) ~ mappings =>
+				List( RoutesDefinition(base, pro, mappings) )
+			case None ~ (pro: Option[Option[String]]) ~ mappings =>
+				List( RoutesDefinition(URIPath(Nil), pro, mappings) )
 		}
 
-	def authorize( group: Option[String] ) = CompoundExpression(ApplyExpression(VariableExpression("authorize"), null, List(LiteralExpression(group))), ApplyExpression(VariableExpression("reject"), null, Nil))
+	def authorize( group: Option[String] ) =
+		if (group contains null)
+			CompoundExpression(ApplyExpression(VariableExpression("access"), null,
+				List(QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
+		else
+			CompoundExpression(ApplyExpression(VariableExpression("authorize"), null,
+				List(LiteralExpression(group), QueryParameterExpression("access_token"))), ApplyExpression(VariableExpression("reject"), null, Nil))
 
 	lazy val uriMapping: PackratParser[URIMapping] =
 		httpMethod ~ "/" ~ actionExpression <~ nl ^^ {case method ~ _ ~ action => URIMapping( method, URIPath(Nil), action )} |
 		httpMethod ~ uriPath ~ actionExpression <~ nl ^^ {case method ~ uri ~ action => URIMapping( method, uri, action )} |
-		httpMethod ~ "/" ~ protection <~ nl ^^ {case method ~ _ ~ group => URIMapping( method, URIPath(Nil), authorize(group) )} |
-		httpMethod ~ uriPath ~ protection <~ nl ^^ {case method ~ uri ~ group => URIMapping( method, uri, authorize(group) )}
+		httpMethod ~ "/" ~ protection <~ nl ^^ {case method ~ _ ~ pro => URIMapping( method, URIPath(Nil), authorize(pro) )} |
+		httpMethod ~ uriPath ~ protection <~ nl ^^ {case method ~ uri ~ pro => URIMapping( method, uri, authorize(pro) )}
 
 	lazy val httpMethod: PackratParser[HTTPMethod] =
 		("GET" | "POST" | "PUT" | "PATCH" | "DELETE") ^^ HTTPMethod
@@ -375,7 +404,8 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 	lazy val expressionOrBlock = expression | blockExpression
 	
 	lazy val actionExpression: PackratParser[ExpressionAST] =
-		actionCompoundExpression
+		actionCompoundExpression |
+		ecmascriptLit ^^ {e => JavaScriptExpression( e )}
 		
 	lazy val actionCompoundExpression: PackratParser[ExpressionAST] =
 		(actionCompoundExpression <~ ";") ~ actionApplyExpression ^^ {case left ~ right => CompoundExpression( left, right )} |

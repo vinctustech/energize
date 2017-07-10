@@ -1,6 +1,7 @@
 package xyz.hyperreal.energize
 
 import java.lang.reflect.InvocationTargetException
+import jdk.nashorn.api.scripting.AbstractJSObject
 
 import collection.mutable.{LinkedHashMap, HashMap}
 
@@ -77,5 +78,13 @@ abstract class Native( val name: String, val classes: List[Class[_]] ) extends (
 			
 	def apply( env: Environment, args: List[Any] ): AnyRef
 	
-	override def toString = name + (classes map (c => c.getSimpleName) mkString ("(", ", ", ")"))
+	override def toString = name + (classes map (_.getSimpleName) mkString ("(", ", ", ")"))
+}
+
+class JSWrapper( env: Environment, n: Native ) extends AbstractJSObject {
+	override def isFunction = true
+
+	override def call( thiz: Any, args: AnyRef* ): AnyRef = {
+		n( env, args.toList )
+	}
 }

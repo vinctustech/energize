@@ -1,23 +1,15 @@
 resource books
-	title string required indexed
-	author authors array
-	publisher publishers array
+	title string required
+	authors [authors]
+	publisher publishers
 
 resource authors
-	name string unique required
+	name string unique
 
 resource publishers
-	name string unique required
+	name string unique
 
-/*
+
 if size( books ) == 0
-	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]] )
-
-	insert( authors, {name: "Fyodor Dostoyevsky"} )
-	insert( authors, {name: "Lewis Carroll"} )
-	insert( authors, {name: "Mark Twain"} )
-
-	insert( books, {title: "The Brothers Karamazov", author: "Fyodor Dostoyevsky", publisher: "North Point Press"} )
-	insert( books, {title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", publisher: "Enhanced Media"} )
-	insert( books, {title: "The Adventures of Huckleberry Finn", author: "Mark Twain", publisher: "Amazon Classics"} )
-*/
+	insert( publishers, {name: "Spectra"} )
+	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	# could also write `publisher: 1`

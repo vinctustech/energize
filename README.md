@@ -1,7 +1,6 @@
-Energize [![CircleCI](https://circleci.com/bb/vinctus/energize.svg?style=shield&circle-token=8d36e9c65cfc8f8b3ca6d14af06301d7eb5512db)](https://circleci.com/bb/vinctus/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-====
+Energize [![Build Status](https://travis-ci.org/vinctustech/energize.svg?branch=master)](https://travis-ci.org/vinctustech/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Mock API Framework
+API Platform
 
 
 Overview
@@ -22,7 +21,7 @@ Documentation
 - [Get Started](http://vinctustech.github.io/energize)
 - [Scaladoc](http://vinctustech.github.io/energize/api)
 - [Example inside this README](http://github.com/vinctustech/energize#example)
-- Type `java -jar energize-0.8.jar --help` for executable options
+- Type `java -jar energize-0.11.jar --help` for executable options
 - Type `help` inside the REPL for commands
 
 
@@ -31,9 +30,9 @@ Usage
 
 ### Executable
 
-If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/energize-0.8.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
+If you just want to download the executable so that you can have an API server for your project or use the REPL, you can download it from [here](https://dl.bintray.com/edadma/generic/energize-0.11.jar). *You do not need* the Scala library for it to work because the JAR already contains all dependencies. You just need Java 8+ installed.
 
-Run it as a normal Java executable JAR with the command `java -jar energize-0.8.jar <config>` in the folder where you downloaded the file, where *config* is the name of the `.energize` file (without the file extension) that defines your API.
+Run it as a normal Java executable JAR with the command `java -jar energize-0.11.jar <config>` in the folder where you downloaded the file, where *config* is the name of the `.energize` file (without the file extension) that defines your API.
 
 ### Library
 
@@ -47,14 +46,14 @@ Use the following definition to use *Energize* in your Maven project:
 	<dependency>
 	  <groupId>xyz.hyperreal</groupId>
 	  <artifactId>energize</artifactId>
-	  <version>0.8</version>
+	  <version>0.11</version>
 	</dependency>
 	
 Add the following to your `build.sbt` file to use *Energize* in your SBT project:
 
     resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
 	 
-    libraryDependencies += "xyz.hyperreal" %% "energize" % "0.8"
+    libraryDependencies += "xyz.hyperreal" %% "energize" % "0.11"
 
 
 Building
@@ -85,7 +84,7 @@ Once the SBT prompt appears, use the following commands.
 Example
 -------
 
-This example shows how to get a simple API to support a "to do list" app working. Start by creating a folder for the example. Now download the [executable](https://dl.bintray.com/edadma/generic/energize-0.8.jar) and place it in the example folder you just created. Now, create a text file called `todo.energize` will the following text in it.
+This example shows how to get a simple API to support a "to do list" app working. Start by creating a folder for the example. Now download the [executable](https://dl.bintray.com/edadma/generic/energize-0.11.jar) and place it in the example folder you just created. Now, create a text file called `todo.energize` with the following text in it.
 
 	resource todo /api/v1
 	  name        string  required
@@ -99,22 +98,21 @@ The executable contains both an HTTP server and a REPL to make it easier to deve
 
 Now, on the command line in the example folder, start the server with the command
 
-    java -jar energize-0.8.jar todo
+    java -jar energize-0.11.jar todo
   
 You should now have a working HTTP server bound to port 8080 that will serve API requests for a todo list. Let's try it out. Using `curl`, let's add an item to our todo list database. To do that, type
 
-	curl --data "{name: \"finish 0.1\", status: 1}" http://localhost:8080/api/v1/todo
+	curl -d "{name: \"finish 0.1\", status: 1}" http://localhost:8080/api/v1/todo
 
 You should see
 
 	{
-	  "status": "ok",
-	  "update": 1
+	  "data": 1
 	}
 
 as the response. This means that the route (URI) was correct and that one row was added to the database. Add another item by typing
 
-	curl --data "{name: \"write readme\", description: \"add example involving finishing 0.1 and writing the readme\", status: 1}" http://localhost:8080/api/v1/todo
+	curl -d "{name: \"write readme\", description: \"add example involving finishing 0.1 and writing the readme\", status: 1}" http://localhost:8080/api/v1/todo
 
 We can see our todo list with the command
 
@@ -123,7 +121,6 @@ We can see our todo list with the command
 getting the response
 
 	{
-	  "status": "ok",
 	  "data": [
 	    {
 	      "id": 1,
@@ -140,14 +137,13 @@ getting the response
 	  ]
 	}
 
-The `description` is `null` in the first one because we marked that column as `optional` and did not provide data for it in our post. Also, notice that the property names are the column names originally provided in the configuration and not the case-insensitive uppercase names that are returned by the database. We can retrieve just the second item with the command
+The `description` is `null` in the first one because we marked that column as `optional` and did not provide data for it in our post. Also, notice that the property names are the column names originally provided in the configuration and not the case-insensitive uppercase names that are returned by the database (H2 by default). We can retrieve just the second item with the command
 
 	curl http://localhost:8080/api/v1/todo/2
   
 to get
 
 	{
-	  "status": "ok",
 	  "data": {
 	    "id": 2,
 	    "name": "write readme",
@@ -167,7 +163,7 @@ Press `Ctrl-C` to stop the server.
 
 To start the REPL, type the following command (while in the same folder where the executable was placed)
 
-	java -cp energize-0.8.jar xyz.hyperreal.energize.REPLMain
+	java -cp energize-0.11.jar xyz.hyperreal.energize.REPLMain
   
 By default, the REPL creates an in-memory H2 database for you and connects to it. Type `help` to see all the REPL commands. Tell the REPL to load the `todo` configuration by typing
 

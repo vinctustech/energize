@@ -1,5 +1,0 @@
-resource r
-	f timestamp
-
-insert( r, {f: "2017-01-25T15:32-05:00"} )
-insert( r, {f: "2017-01-25T15:32:00.123-05:00"} )

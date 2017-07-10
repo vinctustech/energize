@@ -50,9 +50,13 @@ object H2Database extends Database {
 						parameters( typ )
 						buf ++=
 							(typ match {
+								case EnumType( _, enum ) => "ENUM(" + enum.map( "'" + _ + "'" ).mkString( "," ) + ")"
 								case StringType => "VARCHAR(255)"
+								case TextType => "TEXT"
+								case BooleanType => "BOOLEAN"
 								case IntegerType => "INT"
 								case LongType => "BIGINT"
+								case FloatType => "FLOAT"
 								case UUIDType => "UUID"
 								case DateType => "DATE"
 								case DatetimeType => "DATETIME"
@@ -77,15 +81,9 @@ object H2Database extends Database {
 
 				columns foreach {
 					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= ", FOREIGN KEY ("
-						buf ++= fk
-						buf ++= ") REFERENCES "
-						buf ++= ref
-						buf ++= " (id)"
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (id) ON DELETE CASCADE"
 					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
-						buf ++= ", FOREIGN KEY ("
-						buf ++= fk
-						buf ++= ") REFERENCES _media_ (id)"
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (id) ON DELETE CASCADE"
 					case _ =>
 				}
 
@@ -99,8 +97,8 @@ object H2Database extends Database {
 						buf ++= c
 						buf ++= ");\n"
 					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
@@ -133,14 +131,19 @@ object PostgresDatabase extends Database {
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
 			case StringType => "VARCHAR(255)"
+			case TextType => "TEXT"
+			case BooleanType => "BOOLEAN"
 			case IntegerType => "INT"
 			case LongType => "BIGINT"
+			case FloatType => "FLOAT"
 			case UUIDType => "UUID"
 			case DateType => "DATE"
 			case DatetimeType => "TIMESTAMP"
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
 			case TimestamptzType => "TIMESTAMP WITH TIME ZONE"
+			case BLOBType( _ ) => "BLOB"
+			case MediaType( _, _, _ ) => "BIGINT"
 		}
 
 	def desensitize( name: String ) = name.toLowerCase
@@ -148,6 +151,7 @@ object PostgresDatabase extends Database {
 	def conflict( error: String ) = sys.error( "not done yet" )
 
 	def create( tables: List[Table] ) = {
+		val enums = new StringBuilder
 		val buf = new StringBuilder
 
 		tables foreach {
@@ -165,6 +169,11 @@ object PostgresDatabase extends Database {
 					parameters( typ )
 					buf ++=
 						(typ match {
+							case EnumType( ename, enum ) =>
+								enums ++= s"CREATE TYPE $ename AS ENUM ("
+								enums ++= enum map (i => s"'$i'") mkString ","
+								enums ++= ");"
+								ename
 							case p: PrimitiveColumnType => primitive( p )
 							case SingleReferenceType( _, _ ) => "BIGINT"
 							case ArrayType( t, _, _, d ) => primitive( t ) + "[]"( d )
@@ -179,11 +188,9 @@ object PostgresDatabase extends Database {
 
 				columns foreach {
 					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= ", FOREIGN KEY ("
-						buf ++= fk
-						buf ++= ") REFERENCES "
-						buf ++= ref
-						buf ++= "(id)"
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (id) ON DELETE CASCADE"
+					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (id) ON DELETE CASCADE"
 					case _ =>
 				}
 
@@ -197,14 +204,14 @@ object PostgresDatabase extends Database {
 						buf ++= c
 						buf ++= ");\n"
 					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
 		}
 
-		buf.toString
+		enums.toString + buf.toString
 	}
 }
 
@@ -231,8 +238,11 @@ object MySQLDatabase extends Database {
 	def primitive( typ: PrimitiveColumnType ) =
 		typ match {
 			case StringType => "VARCHAR(255)"
+			case TextType => "LONGTEXT"
+			case BooleanType => "BOOLEAN"
 			case IntegerType => "INT"
 			case LongType => "BIGINT"
+			case FloatType => "FLOAT"
 			case UUIDType => "UUID"
 			case DateType => "DATE"
 			case DatetimeType => "DATETIME"
@@ -275,11 +285,9 @@ object MySQLDatabase extends Database {
 
 				columns foreach {
 					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= ", FOREIGN KEY ("
-						buf ++= fk
-						buf ++= ") REFERENCES "
-						buf ++= ref
-						buf ++= "(id)"
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (id) ON DELETE CASCADE"
+					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (id) ON DELETE CASCADE"
 					case _ =>
 				}
 
@@ -293,8 +301,8 @@ object MySQLDatabase extends Database {
 						buf ++= c
 						buf ++= ");\n"
 					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id), "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id), "
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
@@ -326,7 +334,7 @@ abstract class Database {
 
 	def desensitize( name: String ): String
 
-	protected def parameters( typ: ColumnType ) =
+	protected def parameters( typ: ColumnType ) {
 		typ match {
 			case ArrayType( _, _, null, _ ) =>
 			case a@ArrayType( _, p, d, _ ) =>
@@ -341,6 +349,7 @@ abstract class Database {
 					problem( p, "dimension must be an integer" )
 			case _ =>
 		}
+	}
 
 	def readTimestamp( d: String ): Timestamp
 

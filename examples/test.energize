@@ -1,4 +1,0 @@
-resource r
-	f binary
-
-insert( r, {f: "123456"} )

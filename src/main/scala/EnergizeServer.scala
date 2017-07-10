@@ -21,6 +21,7 @@ import spray.json._
 object EnergizeServer {
 	def instance( config: io.Source, json: Boolean, port: Int ) = {
 		val (connection, statement, db) = Energize.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
 
 		sys.addShutdownHook {
 			connection.close
@@ -31,9 +32,9 @@ object EnergizeServer {
 
 		val env =
 			if (json)
-				Energize.configureFromJSON( config, connection, statement, db )
+				Energize.configureFromJSON( config, connection, statement, db, key )
 			else
-				Energize.configure( config, connection, statement, db )
+				Energize.configure( config, connection, statement, db, key )
 
 		println( "starting server on port " + port )
 
@@ -283,8 +284,7 @@ class EnergizeServer( env: Environment, port: Int ) {
 						response.setStatusCode( status )
 
 						if (status == SC_UNAUTHORIZED) {
-							response.setHeader( "WWW-Authenticate", "Basic " + (contents.asInstanceOf[Seq[(String, String)]]
-								map {case (k, v) => s"""$k="$v""""} mkString ",") )
+							response.setHeader( "WWW-Authenticate", s"Basic $contents" )
 						} else if (contents ne null) {
 							val entity =
 								contents match {
@@ -303,7 +303,7 @@ class EnergizeServer( env: Environment, port: Int ) {
 						e.printStackTrace( Console.err )
 						response.setStatusCode( SC_INTERNAL_SERVER_ERROR )
 						response.setEntity(
-							new NStringEntity( s"""{"error": "${e.getMessage}"}""", `application/json` ) )
+							new NStringEntity( s""""error": "${e.getMessage}"""", `application/json` ) )
 				}
 			}
 		}

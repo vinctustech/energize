@@ -1,6 +1,7 @@
 package xyz.hyperreal.energize
 
 import org.apache.http.HttpStatus._
+
 import xyz.hyperreal.numbers.ComplexBigInt
 
 
@@ -17,17 +18,28 @@ object Builtins {
 			"SC_BAD_REQUEST" -> SC_NOT_FOUND,
 			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
 		)
-	
-	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
-	
+	val jsconstants =
+		List(
+			"None" -> None,
+			"SC_OK" -> SC_OK,
+			"SC_CREATED" -> SC_CREATED,
+			"SC_NO_CONTENT" -> SC_NO_CONTENT,
+			"SC_BAD_REQUEST" -> SC_NOT_FOUND,
+			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
+		)
+	val natives =
+		Native( QueryFunctions ) ++
+		Native( CommandFunctions ) ++
+		Native( ResultFunctions ) ++
+		Native( UtilityFunctions ) ++
+		Native( AuthorizationFunctions ) ++
+		Native( FileFunctions )
 	val map =
-		pairs( Native(QueryFunctions) ) ++
-		pairs( Native(CommandFunctions) ) ++
-		pairs( Native(ResultFunctions) ) ++
-		pairs( Native(UtilityFunctions) ) ++
-		pairs( Native(AuthorizationFunctions) ) ++
-		pairs( Native(FileFunctions) ) ++
-		constants toMap
+		pairs( natives ) ++ constants toMap
+	val jsmap =
+		pairs( natives ) ++ jsconstants toMap
+
+	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
 
 	def sys =
 		Map(
@@ -59,18 +71,18 @@ object Builtins {
 
 	val special =
 		"""
-		|resource users protected (admin)
+		|resource users private
 		|  email string unique
 		|  createdTime timestamp
 		|  updatedTime timestamp
 		|  state integer
-		|  groups string array
+		|  groups [string]
 		|  password string secret
 		|
 		|routes protected
 		|  GET     /users/me                  Ok( me() )
 		|
-		|resource tokens						# should be a table not a resource
+		|table tokens
 		|  token string unique
 		|  created timestamp
 		|  user users
@@ -84,10 +96,10 @@ object Builtins {
 		|  POST    /register                  Created( register($entity) )
 		|
 		|table _media_
-		|	type string
-		|	data blob
+		|  type string
+		|  data blob
 		|
 		|routes
-		|	GET /"media"/id:long                Ok( readMedia(/id) )
+		|  GET /"media"/id:long                Ok( readMedia(/id) )
 		""".stripMargin
 }
