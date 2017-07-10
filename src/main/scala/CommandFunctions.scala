@@ -68,6 +68,7 @@ object CommandFunctions {
 						case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT
 						case BLOBType( _ ) => Types.BLOB
 						case TimestampType => Types.TIMESTAMP
+						case ArrayType( _, _, _, _ ) => Types.ARRAY
 					}
 
 				resource.preparedInsert.setNull( i + 1, t )
