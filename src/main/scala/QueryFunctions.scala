@@ -61,7 +61,7 @@ object QueryFunctionHelpers {
 		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
 			tref.columns foreach {
 				case Column(col1, SingleReferenceType(tname1, tref1), _, _, _, _) =>
-					buf ++= s" LEFT OUTER JOIN $tname1 ON $tname.$col1 = $tname1.id"
+					buf ++= s" LEFT OUTER JOIN $tname1 ON $tname.${nameIn(col1)} = $tname1.$idIn"
 					innerReferenceFieldJoin( tname1, tref1 )
 				case _ =>
 			}
@@ -69,7 +69,7 @@ object QueryFunctionHelpers {
 
 		resource.columns foreach {
 			case Column(col, SingleReferenceType(reft, reftref), _, _, _, _) if fssd.isEmpty || fssd(col) =>
-				buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.$col = $reft.id"
+				buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.${nameIn(col)} = $reft.$idIn"
 				innerReferenceFieldJoin( reft, reftref )
 			case _ =>
 		}
@@ -141,7 +141,7 @@ object QueryFunctions {
 									attr += (cname -> mkOBJ( reft, Nil ))
 								case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 									attr += (cname -> query( env, reft,
-										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
+										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.$idIn " +
 											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "id")}" +
 											QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
 								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _) ) if obj.get ne null =>
@@ -209,11 +209,11 @@ object QueryFunctions {
 							val search1 = escapeQuotes( search )
 							
 							if (op == "~")
-								s"$col LIKE '$search1'"
+								s"${nameIn(col)} LIKE '$search1'"
 							else if (QueryFunctionHelpers.numeric( search1 ))
-								s"$col $op $search1"
+								s"${nameIn(col)} $op $search1"
 							else
-								s"$col $op '$search1'"
+								s"${nameIn(col)} $op '$search1'"
 						}
 					} mkString " AND ")
 			}
@@ -227,7 +227,7 @@ object QueryFunctions {
 							val QueryFunctionHelpers.ORDER(col, ordering) = o
 							val ordering1 = ordering.toUpperCase
 							
-							s"$col $ordering1"
+							s"${nameIn(col)} $ordering1"
 						}
 					} mkString ", ")
 			}
@@ -236,15 +236,15 @@ object QueryFunctions {
 	}
 
 	def findID( env: Environment, resource: Table, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.id = $id",
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, fields, s" WHERE ${resource.name}.$idIn = $id",
 			page, start, limit), None, None, None, false )
 
 	def findIDMany( env: Environment, resource: Table, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.id = $id",
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, Some(fields), s" WHERE ${resource.name}.$idIn = $id",
 			None, None, None), page, start, limit, false )
 
 	def findValue( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
-		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.$field = '$value'",
+		query( env, resource, QueryFunctionHelpers.listQuery(env.db, resource, None, s" WHERE ${resource.name}.${nameIn(field)} = '$value'",
 			None, None, None), None, None, None, allowsecret )
 
 	def findOne( env: Environment, resource: Table, field: String, value: Any ) = findValue( env, resource, field, value, false ).head
@@ -256,7 +256,7 @@ object QueryFunctions {
 //		query( env, env.tables(env.db.desensitize(resource)), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
 
 	def readBlob( env: Environment, resource: String, id: Long, field: String ) = {
-		val res = env.statement.executeQuery( s"SELECT $field FROM $resource WHERE id = $id" )
+		val res = env.statement.executeQuery( s"SELECT $field FROM $resource WHERE $idIn = $id" )
 
 		res.next
 
@@ -266,7 +266,7 @@ object QueryFunctions {
 	}
 
 	def readMedia( env: Environment, id: Long ) = {
-		val res = env.statement.executeQuery( s"SELECT * FROM _media_ WHERE id = $id" )
+		val res = env.statement.executeQuery( s"SELECT * FROM _media_ WHERE $idIn = $id" )
 
 		res.next
 

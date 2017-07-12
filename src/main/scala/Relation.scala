@@ -12,7 +12,7 @@ class Relation( env: Environment, rs: ResultSet ) extends Iterable[IndexedSeq[An
 	val columns =
 		for (i <- 1 to columnCount)
 			yield
-				Col( md.getTableName(i), md.getColumnName(i) )
+				Col( md.getTableName(i), nameOut(md.getColumnName(i)) )
 	val columnMap = Map( (for (i <- 0 until columnCount) yield (columns(i), i)): _* )
 	val rows = {
 		val buf = new ListBuffer[IndexedSeq[AnyRef]]

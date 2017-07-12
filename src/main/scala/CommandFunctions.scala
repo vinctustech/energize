@@ -18,7 +18,7 @@ object CommandFunctions {
 
 	def command( env: Environment, sql: String ) = env.statement.executeUpdate( sql )
 	
-	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE id = $id;" )
+	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
 
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
@@ -187,25 +187,27 @@ object CommandFunctions {
 			com ++=
 				(for ((k, v) <- escapeQuotes( json ).toList)
 					yield {
+						val kIn = nameIn( k )
+
 						resource.columnMap(k).typ match {
-							case DatetimeType | TimestampType => k + " = '" + env.db.readTimestamp( v.toString ) + "'"
-							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$k = '$v'"
+							case DatetimeType | TimestampType => kIn + " = '" + env.db.readTimestamp( v.toString ) + "'"
+							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"
 							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
-							case ArrayType( _, _, _, _ ) => k + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+							case ArrayType( _, _, _, _ ) => kIn + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
 							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
-									s"$k = $v"
+									s"$kIn = $v"
 								else {
 									val reft = t.asInstanceOf[SingleReferenceType].ref
-									val refc = CommandFunctionHelpers.uniqueColumn( reft )
+									val refc = nameIn( CommandFunctionHelpers.uniqueColumn(reft) )
 
-									s"$k = (SELECT id FROM ${reft.name} WHERE $refc = '$v')"
+									s"$kIn = (SELECT $idIn FROM ${reft.name} WHERE $refc = '$v')"
 								}
-							case _ => k + " = " + String.valueOf( v )
+							case _ => kIn + " = " + String.valueOf( v )
 						}
 					}) mkString ", "
-			com ++= " WHERE id = "
+			com ++= s" WHERE $idIn = "
 			com ++= id.toString
 			env.statement.executeUpdate( com.toString )
 		}

@@ -21,6 +21,12 @@ package object energize {
 
 	private val hex = "0123456789ABCDEF"
 
+	def nameIn( n: String ) = n + '_'
+
+	def nameOut( n: String ) = n.substring( 0, n.length - 1 )
+
+	def idIn = nameIn( "id" )
+
 	def problem( pos: Position, error: String ) =
 		if (pos eq null)
 			sys.error( error )
