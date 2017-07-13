@@ -78,9 +78,19 @@ object UtilityFunctions {
 					case ArrayType( parm, _, _, _ ) => Map( "category" -> "array", "type" -> primitive(parm) )
 				}
 
-		def table( cs: List[Column] ) =
-			cs map {case Column( name, typ, secret, required, unique, indexed ) => name -> Map("type" -> column(typ))} toMap
+		def modifiers( secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean ) =
+			(if (secret) List("secret") else Nil) ++
+			(if (required) List("required") else Nil) ++
+			(if (unique) List("unique") else Nil) ++
+			(if (indexed) List("indexed") else Nil)
 
-		env.tables.values map {case Table(name, columns, _, resource, mtm, _) => name -> table( columns )} toMap
+		def fields( cs: List[Column] ) =
+			cs map {case Column( name, typ, secret, required, unique, indexed ) =>
+				Map( "name" -> name, "type" -> column(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
+
+		val tables = env.tables.values map {case Table(name, columns, _, resource, mtm, _) =>
+			Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns) )} toList
+
+		Map( "tables" -> tables )
 	}
 }
