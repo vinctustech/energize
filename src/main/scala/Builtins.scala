@@ -88,7 +88,8 @@ object Builtins {
 		|  user users
 		|
 		|routes /meta
-		|  DELETE  /res:                      dataResult( res, deleteResource(res) )
+		|  DELETE  /res:                      Ok( deleteResource(res) )
+		|  GET /schema												Ok( schema() )
 		|
 		|routes <base>
 		|  POST    /login                     Ok( login($entity) )

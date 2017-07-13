@@ -48,4 +48,39 @@ object UtilityFunctions {
 	def jseval( env: Environment, code: String ) = {
 		jscompile( env, code ).eval
 	}
+
+	def schema( env: Environment ) = {
+		val primitive: PartialFunction[ColumnType, String] = {
+				case StringType => "string"
+				case TextType => "text"
+				case BooleanType => "boolean"
+				case IntegerType => "integer"
+				case LongType => "long"
+				case UUIDType => "uuid"
+				case DateType => "date"
+				case DatetimeType => "datetime"
+				case TimeType => "time"
+				case TimestampType => "timestamp"
+				case BinaryType => "binary"
+				case BLOBType( _ ) => "blob"
+				case FloatType => "float"
+				case DecimalType( _, _ ) => "decimal"
+				case MediaType( _, _, _ ) => "media"
+			}
+
+		def column( t: ColumnType ) =
+			if (primitive isDefinedAt t)
+				Map( "category" -> "primitive", "type" -> primitive(t) )
+			else
+				t match {
+					case SingleReferenceType( table, _ ) => Map( "category" -> "one-to-many", "type" -> table )
+					case ManyReferenceType( table, _ ) => Map( "category" -> "many-to-many", "type" -> table )
+					case ArrayType( parm, _, _, _ ) => Map( "category" -> "array", "type" -> primitive(parm) )
+				}
+
+		def table( cs: List[Column] ) =
+			cs map {case Column( name, typ, secret, required, unique, indexed ) => name -> Map("type" -> column(typ))} toMap
+
+		env.tables.values map {case Table(name, columns, _, resource, mtm, _) => name -> table( columns )} toMap
+	}
 }
