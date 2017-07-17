@@ -11,7 +11,27 @@ object QueryFunctionHelpers {
 	val ORDER = """(.+)\:(ASC|asc|DESC|desc)"""r
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
-	
+
+	def filtering( filter: Option[String] ) =
+		if (filter.isEmpty)
+			""
+		else {
+			" WHERE " +
+				(QueryFunctionHelpers.DELIMITER.split( filter.get ) map {
+					f => {
+						val QueryFunctionHelpers.FILTER(col, op, search) = f
+						val search1 = escapeQuotes( search )
+
+						if (op == "~")
+							s"${nameIn(col)} LIKE '$search1'"
+						else if (QueryFunctionHelpers.numeric( search1 ))
+							s"${nameIn(col)} $op $search1"
+						else
+							s"${nameIn(col)} $op '$search1'"
+					}
+				} mkString " AND ")
+		}
+
 	def listQuery( db: Database, resource: Table, fields: Option[String], where: String, page: Option[String], start: Option[String],
 								 limit: Option[String] ) = {
 		val fs = {
@@ -188,35 +208,9 @@ object QueryFunctions {
 		list.toList
 	}
 
-	def size( env: Environment, resource: Table ) = {
-		val res = env.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name}" )
-
-		res.next
-
-		BigInt( res.getLong(1) )
-	}
-
 	def list( env: Environment, resource: Table,
 						fields: Option[String], filter: Option[String], order: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) = {
-		val where =
-			if (filter.isEmpty)
-				""
-			else {
-				" WHERE " +
-					(QueryFunctionHelpers.DELIMITER.split( filter.get ) map {
-						f => {
-							val QueryFunctionHelpers.FILTER(col, op, search) = f
-							val search1 = escapeQuotes( search )
-							
-							if (op == "~")
-								s"${nameIn(col)} LIKE '$search1'"
-							else if (QueryFunctionHelpers.numeric( search1 ))
-								s"${nameIn(col)} $op $search1"
-							else
-								s"${nameIn(col)} $op '$search1'"
-						}
-					} mkString " AND ")
-			}
+		val where = QueryFunctionHelpers.filtering( filter )
 		val orderby =
 			if (order.isEmpty)
 				""

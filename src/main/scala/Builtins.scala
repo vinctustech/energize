@@ -29,6 +29,7 @@ object Builtins {
 		)
 	val natives =
 		Native( QueryFunctions ) ++
+		Native( AggragateFunctions ) ++
 		Native( CommandFunctions ) ++
 		Native( ResultFunctions ) ++
 		Native( UtilityFunctions ) ++
@@ -52,7 +53,11 @@ object Builtins {
 		|routes <base>/<resource> <authorize>
 		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, /id, ?fields, None, None, None), /id )
 		|  GET     /                          Ok( list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
-		|  GET     /size                      Ok( size(<resource>) )
+		|  GET     /count                     Ok( count(<resource>, ?filter) )
+		|  GET     /sum/field	                Ok( sum(<resource>, ?filter, field) )
+		|  GET     /avg/field                 Ok( avg(<resource>, ?filter, field) )
+		|  GET     /min/field                 Ok( min(<resource>, ?filter, field) )
+		|  GET     /max/field                 Ok( max(<resource>, ?filter, field) )
 		|  POST    /                          Created( insert(<resource>, $entity) )
 		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, false), /id )
 		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, true), /id )
