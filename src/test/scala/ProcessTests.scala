@@ -36,13 +36,13 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "data": []
 					|}
 				""".trim.stripMargin )
-		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
+		env.process( "GET", "/api/v1/todo/count", null ) shouldBe
 			(SC_OK, "application/json", """
 								|{
 								|  "data": 0
 								|}
 							""".trim.stripMargin )
-		env.process( "GET", "/api/v1/test/size", null ) shouldBe
+		env.process( "GET", "/api/v1/test/count", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -213,7 +213,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		env.process( "GET", "/api/v1/todo/size", null ) shouldBe
+		env.process( "GET", "/api/v1/todo/count", null ) shouldBe
 			(SC_OK, "application/json", """
 								|{
 								|  "data": 1
@@ -247,7 +247,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		env.process( "GET", "/api/v1/test/size", null ) shouldBe
+		env.process( "GET", "/api/v1/test/count", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -664,7 +664,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	name string unique
 				|
 				|
-				|if size( books ) == 0
+				|if count( books, None ) == 0
 				|	insert( publishers, {name: "Spectra"} )
 				|	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	# could also write `publisher: 1`		""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
@@ -823,7 +823,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	PostalCode string indexed
 				|	Country string indexed
 				|
-				|if size( customers ) == 0
+				|if count( customers, None ) == 0
 				|	batchInsert( customers, [
 				|	 ["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
 				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
@@ -922,7 +922,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	name string unique required
 				|
 				|
-				|if size( books ) == 0
+				|if count( books, None ) == 0
 				|	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]] )
 				|
 				|	insert( authors, {name: "Fyodor Dostoyevsky"} )

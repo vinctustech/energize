@@ -15,6 +15,19 @@ object AggragateFunctionsHelpers {
 			case Some( c ) => c.typ
 		}
 
+	def aggregate( env: Environment, func: String, resource: Table, filter: Option[String], field: String ) = {
+		val typ = AggragateFunctionsHelpers.checkField( resource, field )
+		val where = AggragateFunctionsHelpers.filtering(filter)
+		val res = env.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
+
+		res.next
+
+		typ match {
+			case IntegerType => BigInt( res.getLong(1) )
+			case FloatType => res.getDouble( 1 )
+		}
+	}
+
 }
 
 object AggragateFunctions {
@@ -28,18 +41,19 @@ object AggragateFunctions {
 		BigInt( res.getLong(1) )
 	}
 
-	def sum( env: Environment, resource: Table, filter: Option[String], field: String ) = {
-		val typ = AggragateFunctionsHelpers.checkField( resource, field )
+	def avg( env: Environment, resource: Table, filter: Option[String], field: String ) = {
 		val where = AggragateFunctionsHelpers.filtering(filter)
-		val res = env.statement.executeQuery( s"SELECT SUM(${nameIn(field)}) FROM ${resource.name} $where" )
+		val res = env.statement.executeQuery( s"SELECT AVG(${nameIn(field)}) FROM ${resource.name} $where" )
 
 		res.next
 
-		typ match {
-			case IntegerType => BigInt( res.getLong(1) )
-			case FloatType => res.getDouble( 1 )
-		}
-
+		res.getDouble( 1 )
 	}
+
+	def sum( env: Environment, resource: Table, filter: Option[String], field: String ) = AggragateFunctionsHelpers.aggregate( env, "SUM", resource, filter, field )
+
+	def min( env: Environment, resource: Table, filter: Option[String], field: String ) = AggragateFunctionsHelpers.aggregate( env, "MIN", resource, filter, field )
+
+	def max( env: Environment, resource: Table, filter: Option[String], field: String ) = AggragateFunctionsHelpers.aggregate( env, "MAX", resource, filter, field )
 
 }
