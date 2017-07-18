@@ -4,7 +4,8 @@ import java.util.Base64
 
 import com.typesafe.config.ConfigFactory
 
-import util.parsing.input.Position
+import scala.collection.immutable.PagedSeq
+import util.parsing.input.{CharSequenceReader, PagedSeqReader, Position}
 
 
 package object energize {
@@ -20,6 +21,10 @@ package object energize {
 	lazy val ADMIN = CONFIG.getConfig( "admin" )
 
 	private val hex = "0123456789ABCDEF"
+
+	def stringReader( s: String ) = new CharSequenceReader( s )
+
+	def fileReader( f: String ) = new PagedSeqReader( PagedSeq.fromFile(f) )
 
 	def nameIn( n: String ) = n + '_'
 

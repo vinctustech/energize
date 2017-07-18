@@ -4,8 +4,10 @@ import java.sql._
 
 import collection.mutable.{HashSet, HashMap, LinkedHashMap, ArrayBuffer, ListBuffer}
 import collection.JavaConverters._
+import util.parsing.input.Reader
 
 import xyz.hyperreal.json.{JSON, DefaultJSONReader}
+import xyz.hyperreal.importer.Importer
 
 import org.mindrot.jbcrypt.BCrypt
 
@@ -187,6 +189,38 @@ object Energize {
 
 		configure( SourceAST(decl toList), connection, statement, database, key )
 	}
+
+//	def configureFromDB( src: Reader[Char], connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
+//		val db = new Importer().importFromReader( src )
+//		val decl = new ListBuffer[StatementAST]
+//
+//		for ((name, table) <- db) {
+//			val cols = new ListBuffer[TableColumn]
+//
+//			for (c <- table.header) {
+//				val typ = c getMap "type"
+//				val cat = typ getString "category"
+//				val ctyp =
+//					cat match {
+//						case "primitive" => primitive( typ )
+//						case "array" => ArrayType( primitive(typ), null, null, 1 )
+//						case "one-to-many" => SingleReferenceType( typ getString "type", null )
+//						case "many-to-many" => ManyReferenceType( typ getString "type", null )
+//					}
+//				val modifiers =
+//					if (c contains "modifiers")
+//						c getList[String] "modifiers" map ColumnTypeModifier
+//					else
+//						Nil
+//
+//				cols += TableColumn( c getString "name", ctyp, modifiers )
+//			}
+//
+//			decl += TableDefinition( None, null, name, null, cols toList, true )
+//		}
+//
+//		configure( SourceAST(decl toList), connection, statement, database, key )
+//	}
 
 	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): Environment =
 		configure( ast, connection, statement, db, key, false )
