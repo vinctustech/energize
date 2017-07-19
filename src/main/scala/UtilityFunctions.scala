@@ -51,22 +51,22 @@ object UtilityFunctions {
 
 	def schema( env: Environment ) = {
 		val primitive: PartialFunction[ColumnType, String] = {
-				case StringType => "string"
-				case TextType => "text"
-				case BooleanType => "boolean"
-				case IntegerType => "integer"
-				case LongType => "long"
-				case UUIDType => "uuid"
-				case DateType => "date"
-				case DatetimeType => "datetime"
-				case TimeType => "time"
-				case TimestampType => "timestamp"
-				case BinaryType => "binary"
-				case BLOBType( _ ) => "blob"
-				case FloatType => "float"
-				case DecimalType( _, _ ) => "decimal"
-				case MediaType( _, _, _ ) => "media"
-			}
+			case StringType => "string"
+			case TextType => "text"
+			case BooleanType => "boolean"
+			case IntegerType => "integer"
+			case LongType => "long"
+			case UUIDType => "uuid"
+			case DateType => "date"
+			case DatetimeType => "datetime"
+			case TimeType => "time"
+			case TimestampType => "timestamp"
+			case BinaryType => "binary"
+			case BLOBType( _ ) => "blob"
+			case FloatType => "float"
+			case DecimalType( _, _ ) => "decimal"
+			case MediaType( _, _, _ ) => "media"
+		}
 
 		def column( t: ColumnType ) =
 			if (primitive isDefinedAt t)

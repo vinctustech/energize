@@ -164,9 +164,10 @@ object QueryFunctions {
 										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.$idIn " +
 											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "id")}" +
 											QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
+								case Some( Column(cname, ArrayType(MediaType(_, _, _), _, _, _), _, _, _, _) ) if obj.get ne null =>
+									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList.map( m => s"/media/$m" ))
 								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList)
-//									attr += (cname -> obj.asInstanceOf[java.sql.Array].getArray.asInstanceOf[Array[AnyRef]].toList)
 								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> bytes2hex( obj.get.asInstanceOf[Array[Byte]] ))
 								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj.get ne null =>

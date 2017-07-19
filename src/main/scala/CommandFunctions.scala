@@ -12,6 +12,16 @@ object CommandFunctionHelpers {
 			case Some( uc ) => uc.name
 		}
 
+	def mediaInsert( env: Environment, allowed: List[MimeType], v: OBJ ) = {
+		v( "type" ).asInstanceOf[String] match {
+			case t@Energize.MIME( typ, subtype ) =>
+				if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && asubtype == "*" || subtype == asubtype})
+					throw new BadRequestException( s"insert: MIME type not allowed: $t" )
+			case t => throw new BadRequestException( s"insert: invalid MIME type: $t" )
+		}
+
+		CommandFunctions.insert( env, env table "_media_", v )
+	}
 }
 
 object CommandFunctions {
@@ -97,7 +107,11 @@ object CommandFunctions {
 						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 						case UUIDType | TimeType | DateType | BinaryType | StringType | EnumType(_, _) => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
-						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
+						case ArrayType( MediaType(allowed, _, _), _, _, _ ) =>
+							val s = v.asInstanceOf[Seq[OBJ]] map (CommandFunctionHelpers.mediaInsert(env, allowed, _))
+
+							resource.preparedInsert.setObject( i + 1, s.asInstanceOf[Seq[java.lang.Long]].toArray )
+						case ArrayType( _, _, _, _ ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
 							val array =
 								rep match {
@@ -109,16 +123,7 @@ object CommandFunctions {
 							resource.preparedInsert.setBlob( i + 1, new SerialBlob(array) )
 						case TextType => resource.preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed, _, limit ) =>
-							val obj = v.asInstanceOf[OBJ]
-
-							obj( "type" ).asInstanceOf[String] match {
-								case t@Energize.MIME( typ, subtype ) =>
-									if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && asubtype == "*" || subtype == asubtype})
-										throw new BadRequestException( s"insert: MIME type not allowed: $t" )
-								case t => throw new BadRequestException( s"insert: invalid MIME type: $t" )
-							}
-
-							resource.preparedInsert.setLong( i + 1, insert(env, env table "_media_", obj) )
+							resource.preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(env, allowed, v.asInstanceOf[OBJ]) )
 					}
 			}
 		}
