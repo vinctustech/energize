@@ -92,7 +92,7 @@ object Builtins {
 		|  created timestamp
 		|  user users
 		|
-		|routes /meta
+		|routes /meta private
 		|  DELETE  /res:                      Ok( deleteResource(res) )
 		|  GET /schema												Ok( schema() )
 		|
