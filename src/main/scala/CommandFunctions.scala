@@ -32,8 +32,8 @@ object CommandFunctions {
 
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
-			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE $field = '$s';" )
-			case _ => command( env, s"DELETE FROM ${resource.name} WHERE $field = $value;" )
+			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
+			case _ => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
 		}
 
 	def batchInsert( env: Environment, resource: Table, rows: List[List[AnyRef]] ) {
