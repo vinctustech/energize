@@ -26,7 +26,7 @@ object AggregateFunctionsHelpers {
 
 object AggregateFunctions {
 
-	def count( env: Environment, resource: Table, filter: Option[String] ) = synchronized {
+	def count( env: Environment, resource: Table, filter: Option[String] ) = QueryFunctionHelpers.synchronized {
 		val where = QueryFunctionHelpers.filtering( filter )
 		val res = env.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name} $where" )
 

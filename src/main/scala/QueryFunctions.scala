@@ -116,7 +116,7 @@ object QueryFunctionHelpers {
 object QueryFunctions {
 	def query( env: Environment, resource: Table, sql: Query, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
-		val res = synchronized( new Relation( env, env.statement.executeQuery(sql.query) ) )
+		val res = QueryFunctionHelpers.synchronized( new Relation( env, env.statement.executeQuery(sql.query) ) )
 		val list = new ListBuffer[OBJ]
 
 		def mkOBJ( table: Table, fields: List[String] ): OBJ = {
