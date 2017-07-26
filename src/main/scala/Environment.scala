@@ -19,7 +19,7 @@ object Environment {
 	val varRegex = """\$\$|\$([a-zA-Z][a-zA-Z0-9]*)""".r
 }
 
-// add RouteTable class to speed up adding variables
+// todo: add RouteTable class to speed up adding variables
 class Environment( val tables: Map[String, Table], croutes: List[Route], val bindings: Map[String, Any],
 									 val sbindings: Map[String, SystemValue], val connection: Connection, val statement: Statement,
 									 val db: Database, var pathMap: Map[String, Any], var queryMap: Map[String, String],
@@ -390,7 +390,7 @@ case class Table( name: String, columns: List[Column], columnMap: Map[String, Co
 	def names = columns map (_.name)
 }
 
-case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean )
+case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean, validators: List[ExpressionAST] )
 
 class Variable( var value: Any )
 

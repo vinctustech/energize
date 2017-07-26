@@ -1,0 +1,4 @@
+resource r
+	f [media]
+
+insert( r, {f: [{type: "image/jpeg", data: readFileBase64("examples/media/Peach_flowers.jpg")}, {type: "application/pdf", data: readFileBase64("examples/media/Test.pdf")}]} )

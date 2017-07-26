@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.10.2"
+version := "0.10.3"
 
 scalaVersion := "2.12.2"
 
@@ -47,11 +47,12 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "indentation-lexical" % "0.7",
+	"xyz.hyperreal" %% "indentation-lexical" % "0.8",
 	"xyz.hyperreal" %% "json" % "0.7",
 	"xyz.hyperreal" %% "table" % "0.4",
-	"xyz.hyperreal" %% "lia" % "0.20",
-	"xyz.hyperreal" %% "options" % "0.2"
+	"xyz.hyperreal" %% "lia" % "0.21",
+	"xyz.hyperreal" %% "options" % "0.2",
+	"xyz.hyperreal" %% "importer" % "0.1"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMain" )

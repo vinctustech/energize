@@ -4,8 +4,10 @@ import java.sql._
 
 import collection.mutable.{HashSet, HashMap, LinkedHashMap, ArrayBuffer, ListBuffer}
 import collection.JavaConverters._
+import util.parsing.input.Reader
 
 import xyz.hyperreal.json.{JSON, DefaultJSONReader}
+import xyz.hyperreal.importer.Importer
 
 import org.mindrot.jbcrypt.BCrypt
 
@@ -145,8 +147,13 @@ object Energize {
 									c getList[String] "modifiers" map ColumnTypeModifier
 								else
 									Nil
+							val validators =
+								if (c contains "validators")
+									c getList[String] "validators"
+								else
+									Nil
 
-							cols += TableColumn( c getString "name", ctyp, modifiers )
+							cols += TableColumn( c getString "name", ctyp, modifiers, validators map EnergizeParser.parseValidator )
 						}
 
 						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
@@ -187,6 +194,38 @@ object Energize {
 
 		configure( SourceAST(decl toList), connection, statement, database, key )
 	}
+
+//	def configureFromDB( src: Reader[Char], connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
+//		val db = new Importer().importFromReader( src )
+//		val decl = new ListBuffer[StatementAST]
+//
+//		for ((name, table) <- db) {
+//			val cols = new ListBuffer[TableColumn]
+//
+//			for (c <- table.header) {
+//				val typ = c getMap "type"
+//				val cat = typ getString "category"
+//				val ctyp =
+//					cat match {
+//						case "primitive" => primitive( typ )
+//						case "array" => ArrayType( primitive(typ), null, null, 1 )
+//						case "one-to-many" => SingleReferenceType( typ getString "type", null )
+//						case "many-to-many" => ManyReferenceType( typ getString "type", null )
+//					}
+//				val modifiers =
+//					if (c contains "modifiers")
+//						c getList[String] "modifiers" map ColumnTypeModifier
+//					else
+//						Nil
+//
+//				cols += TableColumn( c getString "name", ctyp, modifiers )
+//			}
+//
+//			decl += TableDefinition( None, null, name, null, cols toList, true )
+//		}
+//
+//		configure( SourceAST(decl toList), connection, statement, database, key )
+//	}
 
 	def configure( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): Environment =
 		configure( ast, connection, statement, db, key, false )
@@ -246,7 +285,7 @@ object Energize {
 					val cols = new LinkedHashMap[String, Column]
 					
 					columns foreach {
-						case col@TableColumn( cname, typ, modifiers ) =>
+						case col@TableColumn( cname, typ, modifiers, validators ) =>
 							if (cols contains db.desensitize( cname ))
 								problem( col.pos, s"column '$cname' defined twice" )
 								
@@ -305,7 +344,7 @@ object Energize {
 									case t => t
 								}
 
-							cols(cname) = Column( cname, typ1, secret, required, unique, indexed )
+							cols(cname) = Column( cname, typ1, secret, required, unique, indexed, validators )
 					}
 
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
@@ -394,9 +433,9 @@ object Energize {
 			tables.values foreach {
 				case Table( _, columns, _, _, _, _ ) =>
 					columns foreach {
-						case Column( _, t@SingleReferenceType(table, _), _, _, _, _ ) =>
+						case Column( _, t@SingleReferenceType(table, _), _, _, _, _, _ ) =>
 							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
-						case Column( _, t@ManyReferenceType(table, _), _, _, _, _ ) =>
+						case Column( _, t@ManyReferenceType(table, _), _, _, _, _, _ ) =>
 							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
 						case _ =>
 					}

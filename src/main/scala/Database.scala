@@ -41,7 +41,7 @@ object H2Database extends Database {
 				buf ++= s" ($idIn IDENTITY NOT NULL PRIMARY KEY"
 
 				columns foreach {
-					case Column( cname, typ, secret, required, unique, indexed ) =>
+					case Column( cname, typ, secret, required, unique, indexed, _ ) =>
 
 					if (!typ.isInstanceOf[ManyReferenceType]) {
 						buf ++= ", "
@@ -80,9 +80,9 @@ object H2Database extends Database {
 				}
 
 				columns foreach {
-					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( fk, SingleReferenceType(ref, _), _, _, _, _, _ ) =>
 						buf ++= s", FOREIGN KEY (${nameIn(fk)}) REFERENCES $ref ($idIn) ON DELETE CASCADE"
-					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
+					case Column( fk, MediaType(_, _, _), _, _, _, _, _ ) =>
 						buf ++= s", FOREIGN KEY (${nameIn(fk)}) REFERENCES _media_ ($idIn) ON DELETE CASCADE"
 					case _ =>
 				}
@@ -90,13 +90,13 @@ object H2Database extends Database {
 				buf ++= ");\n"
 
 				columns foreach {
-					case Column( c, _, _, _, _, true ) =>
+					case Column( c, _, _, _, _, true, _ ) =>
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
 						buf += '('
 						buf ++= nameIn( c )
 						buf ++= ");\n"
-					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
+					case Column( _, ManyReferenceType(ref, _), _, _, _, _, _ ) =>
 						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name ($idIn) ON DELETE CASCADE, "
 						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref ($idIn) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
@@ -158,10 +158,10 @@ object PostgresDatabase extends Database {
 			case Table( name, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
-				buf ++= " (id BIGSERIAL NOT NULL PRIMARY KEY"
+				buf ++= " (_id BIGSERIAL NOT NULL PRIMARY KEY"
 
 				columns foreach {
-					case Column( cname, typ, secret, required, unique, indexed ) =>
+					case Column( cname, typ, secret, required, unique, indexed, _ ) =>
 
 					buf ++= ", "
 					buf ++= cname
@@ -187,25 +187,25 @@ object PostgresDatabase extends Database {
 				}
 
 				columns foreach {
-					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (id) ON DELETE CASCADE"
-					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
-						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (id) ON DELETE CASCADE"
+					case Column( fk, SingleReferenceType(ref, _), _, _, _, _, _ ) =>
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (_id) ON DELETE CASCADE"
+					case Column( fk, MediaType(_, _, _), _, _, _, _, _ ) =>
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (_id) ON DELETE CASCADE"
 					case _ =>
 				}
 
 				buf ++= ");\n"
 
 				columns foreach {
-					case Column( c, _, _, _, _, true ) =>
+					case Column( c, _, _, _, _, true, _ ) =>
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
-					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id) ON DELETE CASCADE, "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id) ON DELETE CASCADE, "
+					case Column( _, ManyReferenceType(ref, _), _, _, _, _, _ ) =>
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (_id) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (_id) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}
@@ -262,10 +262,10 @@ object MySQLDatabase extends Database {
 			case Table( name, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
-				buf ++= " (id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
+				buf ++= " (_id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY"
 
 				columns foreach {
-					case Column( cname, typ, secret, required, unique, indexed ) =>
+					case Column( cname, typ, secret, required, unique, indexed, _ ) =>
 
 					buf ++= ", "
 					buf ++= cname
@@ -284,25 +284,25 @@ object MySQLDatabase extends Database {
 				}
 
 				columns foreach {
-					case Column( fk, SingleReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (id) ON DELETE CASCADE"
-					case Column( fk, MediaType(_, _, _), _, _, _, _ ) =>
-						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (id) ON DELETE CASCADE"
+					case Column( fk, SingleReferenceType(ref, _), _, _, _, _, _ ) =>
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (_id) ON DELETE CASCADE"
+					case Column( fk, MediaType(_, _, _), _, _, _, _, _ ) =>
+						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (_id) ON DELETE CASCADE"
 					case _ =>
 				}
 
 				buf ++= ");\n"
 
 				columns foreach {
-					case Column( c, _, _, _, _, true ) =>
+					case Column( c, _, _, _, _, true, _ ) =>
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
 						buf += '('
 						buf ++= c
 						buf ++= ");\n"
-					case Column( _, ManyReferenceType(ref, _), _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (id) ON DELETE CASCADE, "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (id) ON DELETE CASCADE, "
+					case Column( _, ManyReferenceType(ref, _), _, _, _, _, _ ) =>
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (_id) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (_id) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}

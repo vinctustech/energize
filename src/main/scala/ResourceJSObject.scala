@@ -7,7 +7,7 @@ class ResourceJSObject( env: Environment, resource: Table ) extends AbstractJSOb
 
 	override def getMember( name: String ) =
 		name match {
-			case "size" => QueryFunctions.size( env, resource )
+			case "size" => AggregateFunctions.count( env, resource, None )//todo: this should also be a function that allows filtering
 		}
 
 }

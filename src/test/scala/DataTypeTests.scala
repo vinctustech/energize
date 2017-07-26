@@ -41,12 +41,12 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "statement": "crackers love cheese",
 					|      "veracity": true
 					|    },
 					|    {
-					|      "id": 2,
+					|      "_id": 2,
 					|      "statement": "we only have five senses",
 					|      "veracity": false
 					|    }
@@ -60,12 +60,12 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "statement": "crackers love cheese",
 					|      "veracity": true
 					|    },
 					|    {
-					|      "id": 2,
+					|      "_id": 2,
 					|      "statement": "we only have 5 senses",
 					|      "veracity": false
 					|    }
@@ -100,7 +100,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "suit": "hearts",
 					|      "number": 1
 					|    }
@@ -114,7 +114,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "suit": "clubs",
 					|      "number": 2
 					|    }
@@ -146,7 +146,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "document": "this is a document"
 					|    }
 					|  ]
@@ -159,7 +159,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //					|{
 //					|  "data": [
 //					|    {
-//					|      "id": 1,
+//					|      "_id": 1,
 //					|      "document": "this is a longer document"
 //					|    }
 //					|  ]
@@ -190,7 +190,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "identifier": "a94cae4a-8bdf-49f3-849b-e7d338f4400a"
 					|    }
 					|  ]
@@ -203,7 +203,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "identifier": "8140d714-7387-486c-ab5b-ef5fc1cc790e"
 					|    }
 					|  ]
@@ -235,7 +235,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "finish coding date support",
 					|      "event": "2017-06-14"
 					|    }
@@ -249,7 +249,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "finish coding date support",
 					|      "event": "2017-06-15"
 					|    }
@@ -282,7 +282,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "finish coding time support",
 					|      "alarm": "17:00:00"
 					|    }
@@ -296,7 +296,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "finish coding time support",
 					|      "alarm": "16:45:00"
 					|    }
@@ -329,7 +329,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "type": "penumbral",
 					|      "eclipse": "2016-03-23T11:48:21.300Z"
 					|    }
@@ -343,7 +343,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "type": "penumbral",
 					|      "eclipse": "2017-03-23T11:47:11.800Z"
 					|    }
@@ -376,7 +376,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "type": "penumbral",
 					|      "eclipse": "2016-03-23T11:48:21.300Z"
 					|    }
@@ -390,7 +390,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "type": "penumbral",
 					|      "eclipse": "2017-03-23T11:47:11.800Z"
 					|    }
@@ -420,7 +420,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|{
 				|  "data": [
 				|    {
-				|      "id": 1,
+				|      "_id": 1,
 				|      "a": []
 				|    }
 				|  ]
@@ -432,7 +432,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|{
 				|  "data": [
 				|    {
-				|      "id": 1,
+				|      "_id": 1,
 				|      "a": [
 				|        1,
 				|        2,
@@ -468,7 +468,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|{
 				|  "data": [
 				|    {
-				|      "id": 1,
+				|      "_id": 1,
 				|      "a": "AQID",
 				|      "b": "AQID",
 				|      "c": "010203",
@@ -487,7 +487,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //				|{
 //				|  "data": [
 //				|    {
-//				|      "id": 1,
+//				|      "_id": 1,
 //				|      "a": "AQIE",
 //				|      "b": "AQIE",
 //				|      "c": "010204",
@@ -523,7 +523,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|{
 				|  "data": [
 				|    {
-				|      "id": 1,
+				|      "_id": 1,
 				|      "a": ""
 				|    }
 				|  ]
@@ -535,7 +535,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|{
 				|  "data": [
 				|    {
-				|      "id": 1,
+				|      "_id": 1,
 				|      "a": "123457"
 				|    }
 				|  ]
@@ -564,7 +564,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|{
 				|  "data": [
 				|    {
-				|      "id": 1,
+				|      "_id": 1,
 				|      "a": "/media/1"
 				|    }
 				|  ]
@@ -578,7 +578,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //				|{
 //				|  "data": [
 //				|    {
-//				|      "id": 1,
+//				|      "_id": 1,
 //				|      "a": "123457"
 //				|    }
 //				|  ]

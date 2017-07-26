@@ -6,7 +6,7 @@ resource customers
 	PostalCode string indexed
 	Country string indexed
 
-if size( customers ) == 0
+if count( customers, None ) == 0
 	batchInsert( customers, [
 		["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
 		["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],

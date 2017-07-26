@@ -10,7 +10,7 @@ resource r3s
 resource r4s
 	a string unique
 
-if size( r1s ) == 0
+if count( r1s, None ) == 0
 	insert( r4s, {a: "a"} )
 	insert( r3s, {r4: "a"} )
 	insert( r2s, {r3: 1} )

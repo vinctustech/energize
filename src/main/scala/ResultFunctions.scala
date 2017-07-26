@@ -7,7 +7,7 @@ object ResultFunctions {
 	def Data( env: Environment, code: Int, data: Any ) = (code, "application/json", Map( "data" -> data ))
 	def Ok( env: Environment, data: Any ) =
 		data match {
-			case (mime, data) => (SC_OK, mime, data)
+			case (mime, content) => (SC_OK, mime, content)
 			case _ => Data( env, SC_OK, data )
 		}
 	def Created( env: Environment, data: Any ) = Data( env, SC_CREATED, data )

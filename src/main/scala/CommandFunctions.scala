@@ -12,6 +12,16 @@ object CommandFunctionHelpers {
 			case Some( uc ) => uc.name
 		}
 
+	def mediaInsert( env: Environment, allowed: List[MimeType], v: OBJ ) = {
+		v( "type" ).asInstanceOf[String] match {
+			case t@Energize.MIME( typ, subtype ) =>
+				if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && asubtype == "*" || subtype == asubtype})
+					throw new BadRequestException( s"insert: MIME type not allowed: $t" )
+			case t => throw new BadRequestException( s"insert: invalid MIME type: $t" )
+		}
+
+		CommandFunctions.insert( env, env table "_media_", v )
+	}
 }
 
 object CommandFunctions {
@@ -22,8 +32,8 @@ object CommandFunctions {
 
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
-			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE $field = '$s';" )
-			case _ => command( env, s"DELETE FROM ${resource.name} WHERE $field = $value;" )
+			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
+			case _ => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
 		}
 
 	def batchInsert( env: Environment, resource: Table, rows: List[List[AnyRef]] ) {
@@ -80,7 +90,7 @@ object CommandFunctions {
 				case Some( v ) =>
 					c.typ match {
 						case SingleReferenceType( _, tref ) if !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("id") )
+							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("_id") )
 //								s"SELECT id FROM $tname WHERE " +
 //								(tref.columns.find(c => c.unique ) match {
 //									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
@@ -92,12 +102,16 @@ object CommandFunctions {
 //								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case SingleReferenceType( _, _ ) => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 						case BooleanType => resource.preparedInsert.setBoolean( i + 1, v.asInstanceOf[Boolean] )
-						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Int] )
-						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Double] )
-						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Long] )
+						case IntegerType => resource.preparedInsert.setInt( i + 1, v.asInstanceOf[Number].intValue )
+						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Number].doubleValue )
+						case LongType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 						case UUIDType | TimeType | DateType | BinaryType | StringType | EnumType(_, _) => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, env.db.readTimestamp(v.toString) )
-						case ArrayType( _, dpos, dim, dimint ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
+						case ArrayType( MediaType(allowed, _, _), _, _, _ ) =>
+							val s = v.asInstanceOf[Seq[OBJ]] map (CommandFunctionHelpers.mediaInsert(env, allowed, _))
+
+							resource.preparedInsert.setObject( i + 1, s.asInstanceOf[Seq[java.lang.Long]].toArray )
+						case ArrayType( _, _, _, _ ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
 						case BLOBType( rep ) =>
 							val array =
 								rep match {
@@ -109,23 +123,14 @@ object CommandFunctions {
 							resource.preparedInsert.setBlob( i + 1, new SerialBlob(array) )
 						case TextType => resource.preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed, _, limit ) =>
-							val obj = v.asInstanceOf[OBJ]
-
-							obj( "type" ).asInstanceOf[String] match {
-								case t@Energize.MIME( typ, subtype ) =>
-									if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && asubtype == "*" || subtype == asubtype})
-										throw new BadRequestException( s"insert: MIME type not allowed: $t" )
-								case t => throw new BadRequestException( s"insert: invalid MIME type: $t" )
-							}
-
-							resource.preparedInsert.setLong( i + 1, insert(env, env table "_media_", obj) )
+							resource.preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(env, allowed, v.asInstanceOf[OBJ]) )
 					}
 			}
 		}
 
 		val id =
 //			if (env.db == PostgresDatabase) {
-//				val res = env.statement.executeQuery( com + "RETURNING id" )
+//				val res = env.statement.executeQuery( com + "RETURNING _id" )
 //
 //				res.next
 //				res.getLong( 1 )
@@ -152,7 +157,7 @@ object CommandFunctions {
 					case None =>
 					case Some( vs ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
-							values += (s"(SELECT id FROM $tab WHERE " +
+							values += (s"(SELECT _id FROM $tab WHERE " +
 								CommandFunctionHelpers.uniqueColumn( ref ) + " = '" + String.valueOf( v ) + "')" -> tab)
 				}
 			case _ =>
@@ -227,7 +232,7 @@ object CommandFunctions {
 
 	def append( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) = {
 		resource.columnMap get field match {
-			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
+			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _, _) ) =>
 				val tid = insert( env, ref, json )
 
 				associateIDs( env, resource, id, ref, tid )
@@ -239,7 +244,7 @@ object CommandFunctions {
 
 	def appendIDs( env: Environment, src: Table, sid: Long, field: String, tid: Long ) =
 		src.columnMap get field match {
-			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
+			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _, _) ) =>
 				associateIDs( env, src, sid, ref, tid )
 			case Some( _ ) => throw new BadRequestException( s"appendIDs: field not many-to-many: $field" )
 			case None => throw new BadRequestException( s"appendIDs: field not found: $field" )
@@ -264,7 +269,7 @@ object CommandFunctions {
 		}
 
 	def deleteLinkID( env: Environment, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
-		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
+		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
 
 		deleteLinkIDs( env, src, id, dst, did )
 	}
@@ -273,7 +278,7 @@ object CommandFunctions {
 		command( env, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
 
 	def associateID( env: Environment, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
-		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
+		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
 
 		associateIDs( env, src, id, dst, did )
 	}
@@ -282,7 +287,7 @@ object CommandFunctions {
 		command( env, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($sid, $did)" )
 
 	def associate( env: Environment, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) = {
-		val sobj = QueryFunctions.findOne( env, src, sfield, svalue )( "id" ).asInstanceOf[Long]
+		val sobj = QueryFunctions.findOne( env, src, sfield, svalue )( "_id" ).asInstanceOf[Long]
 
 		associateID( env, src, sobj, dst, dfield, dvalue )
 	}

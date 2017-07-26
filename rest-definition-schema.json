@@ -65,7 +65,6 @@
                   "items": "string",
                   "enum": [
                     "required",
-                    "optional",
                     "unique",
                     "indexed"
                   ]

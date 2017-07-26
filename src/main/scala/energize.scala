@@ -4,7 +4,8 @@ import java.util.Base64
 
 import com.typesafe.config.ConfigFactory
 
-import util.parsing.input.Position
+import scala.collection.immutable.PagedSeq
+import util.parsing.input.{CharSequenceReader, PagedSeqReader, Position}
 
 
 package object energize {
@@ -21,11 +22,15 @@ package object energize {
 
 	private val hex = "0123456789ABCDEF"
 
+	def stringReader( s: String ) = new CharSequenceReader( s )
+
+	def fileReader( f: String ) = new PagedSeqReader( PagedSeq.fromFile(f) )
+
 	def nameIn( n: String ) = n + '_'
 
 	def nameOut( n: String ) = n.substring( 0, n.length - 1 )
 
-	def idIn = nameIn( "id" )
+	def idIn = nameIn( "_id" )
 
 	def problem( pos: Position, error: String ) =
 		if (pos eq null)

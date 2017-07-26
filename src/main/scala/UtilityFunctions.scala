@@ -48,4 +48,49 @@ object UtilityFunctions {
 	def jseval( env: Environment, code: String ) = {
 		jscompile( env, code ).eval
 	}
+
+	def schema( env: Environment ) = {
+		val primitive: PartialFunction[ColumnType, String] = {
+			case StringType => "string"
+			case TextType => "text"
+			case BooleanType => "boolean"
+			case IntegerType => "integer"
+			case LongType => "long"
+			case UUIDType => "uuid"
+			case DateType => "date"
+			case DatetimeType => "datetime"
+			case TimeType => "time"
+			case TimestampType => "timestamp"
+			case BinaryType => "binary"
+			case BLOBType( _ ) => "blob"
+			case FloatType => "float"
+			case DecimalType( _, _ ) => "decimal"
+			case MediaType( _, _, _ ) => "media"
+		}
+
+		def column( t: ColumnType ) =
+			if (primitive isDefinedAt t)
+				Map( "category" -> "primitive", "type" -> primitive(t) )
+			else
+				t match {
+					case SingleReferenceType( table, _ ) => Map( "category" -> "one-to-many", "type" -> table )
+					case ManyReferenceType( table, _ ) => Map( "category" -> "many-to-many", "type" -> table )
+					case ArrayType( parm, _, _, _ ) => Map( "category" -> "array", "type" -> primitive(parm) )
+				}
+
+		def modifiers( secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean ) =
+			(if (secret) List("secret") else Nil) ++
+			(if (required) List("required") else Nil) ++
+			(if (unique) List("unique") else Nil) ++
+			(if (indexed) List("indexed") else Nil)
+
+		def fields( cs: List[Column] ) =
+			cs map {case Column( name, typ, secret, required, unique, indexed, validators ) =>	// todo: add validators support to schema
+				Map( "name" -> name, "type" -> column(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
+
+		val tables = env.tables.values map {case Table(name, columns, _, resource, mtm, _) =>
+			Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns) )} toList
+
+		Map( "tables" -> tables )
+	}
 }
