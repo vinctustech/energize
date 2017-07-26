@@ -9,7 +9,7 @@ object AggregateFunctionsHelpers {
 			case Some( c ) => c.typ
 		}
 
-	def aggregate( env: Environment, func: String, resource: Table, filter: Option[String], field: String ) = {
+	def aggregate( env: Environment, func: String, resource: Table, filter: Option[String], field: String ) = QueryFunctionHelpers.synchronized {
 		val typ = AggregateFunctionsHelpers.checkField( resource, field )
 		val where = QueryFunctionHelpers.filtering( filter )
 		val res = env.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
