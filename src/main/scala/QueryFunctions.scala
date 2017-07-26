@@ -54,7 +54,7 @@ object QueryFunctionHelpers {
 				fs1
 		}
 		val fss = fs.toSet
-		val fssmid = fss - "id"
+		val fssmid = fss - "_id"
 		
 		if (fssmid.intersect( resource.columns map (_.name) toSet ) != fssmid)
 			sys.error( "all fields must be apart of the resource definition" )
@@ -123,7 +123,7 @@ object QueryFunctions {
 			val attr = new ListBuffer[(String, AnyRef)]
 			val cols =
 				if (fields == Nil)
-					"id" +: table.names
+					"_id" +: table.names
 				else
 					fields
 			for (cn <- cols) {
@@ -135,8 +135,8 @@ object QueryFunctions {
 //							attr += (dbcol -> obj)
 //						case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 //							attr += (cname -> query( env, reft,
-//								Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
-//									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "id")}" +
+//								Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref._id " +
+//									s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "_id")}" +
 //									QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
 //						case Some( c ) => sys.error( s"data not from a table: matching column: ${c.name}" )
 //					}
@@ -149,20 +149,20 @@ object QueryFunctions {
 //							case None => attr += (dbcol -> obj)
 //							case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 //								attr += (cname -> query( env, reft,
-//									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.id " +
-//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("id"))}" ))
+//									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref._id " +
+//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(env.db.desensitize("_id"))}" ))
 //							case Some( c ) => attr += (c.name -> obj)
 //						}
 //						case Some( t ) if t == table =>
 							table.columnMap get cn match {
-								case None if cn == "id" => attr += ("id" -> obj.get)
+								case None if cn == "_id" => attr += ("_id" -> obj.get)
 								case None => sys.error( s"data from an unknown column: $cn" )
 								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> mkOBJ( reft, Nil ))
 								case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 									attr += (cname -> query( env, reft,
 										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.$idIn " +
-											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "id")}" +
+											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "_id")}" +
 											QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
 								case Some( Column(cname, ArrayType(MediaType(_, _, _), _, _, _), _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList.map( m => s"/media/$m" ))

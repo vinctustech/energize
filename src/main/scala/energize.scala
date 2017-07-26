@@ -30,7 +30,7 @@ package object energize {
 
 	def nameOut( n: String ) = n.substring( 0, n.length - 1 )
 
-	def idIn = nameIn( "id" )
+	def idIn = nameIn( "_id" )
 
 	def problem( pos: Position, error: String ) =
 		if (pos eq null)

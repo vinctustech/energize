@@ -80,7 +80,7 @@ object AuthorizationFunctions {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
-					AuthorizationFunctionHelpers.performLogin( env, u("id").asInstanceOf[Long] )
+					AuthorizationFunctionHelpers.performLogin( env, u("_id").asInstanceOf[Long] )
 				else
 					denied
 		}

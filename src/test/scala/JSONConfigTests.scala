@@ -46,7 +46,7 @@ class JSONConfigTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "limit": 123
 					|    }
 					|  ]

@@ -152,7 +152,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|{
 			|  "data": [
 			|    {
-			|      "id": 1,
+			|      "_id": 1,
 			|      "name": "do something",
 			|      "description": null,
 			|      "status": 1
@@ -164,7 +164,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
-			|    "id": 1,
+			|    "_id": 1,
 			|    "name": "do something",
 			|    "description": null,
 			|    "status": 1
@@ -194,7 +194,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|{
 																		|  "data": [
 																		|    {
-																		|      "id": 1,
+																		|      "_id": 1,
 																		|      "name": "do something else",
 																		|      "description": null,
 																		|      "status": 1
@@ -206,7 +206,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": {
-																		|    "id": 1,
+																		|    "_id": 1,
 																		|    "name": "do something else",
 																		|    "description": null,
 																		|    "status": 1
@@ -232,7 +232,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|{
 			|  "data": [
 			|    {
-			|      "id": 1,
+			|      "_id": 1,
 			|      "asdf": 1234
 			|    }
 			|  ]
@@ -242,7 +242,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
-			|    "id": 1,
+			|    "_id": 1,
 			|    "asdf": 1234
 			|  }
 			|}
@@ -390,10 +390,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|{
 			|  "data": [
 			|    {
-			|      "id": 1,
+			|      "_id": 1,
 			|      "code": "12345",
 			|      "type": {
-			|        "id": 1,
+			|        "_id": 1,
 			|        "name": "normal"
 			|      }
 			|    }
@@ -404,10 +404,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
-			|    "id": 1,
+			|    "_id": 1,
 			|    "code": "12345",
 			|    "type": {
-			|      "id": 1,
+			|      "_id": 1,
 			|      "name": "normal"
 			|    }
 			|  }
@@ -419,10 +419,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|{
 																		|  "data": [
 																		|    {
-																		|      "id": 1,
+																		|      "_id": 1,
 																		|      "code": "123456",
 																		|      "type": {
-																		|        "id": 3,
+																		|        "_id": 3,
 																		|        "name": "special"
 																		|      }
 																		|    }
@@ -442,11 +442,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|{
 			|  "data": [
 			|    {
-			|      "id": 1,
+			|      "_id": 1,
 			|      "name": "normal"
 			|    },
 			|    {
-			|      "id": 3,
+			|      "_id": 3,
 			|      "name": "special"
 			|    }
 			|  ]
@@ -456,7 +456,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
-			|    "id": 1,
+			|    "_id": 1,
 			|    "name": "normal"
 			|  }
 			|}
@@ -565,7 +565,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|{
 																		|  "data": [
 																		|    {
-																		|      "id": 1,
+																		|      "_id": 1,
 																		|      "lastname": "doe",
 																		|      "firstname": "john",
 																		|      "products": []
@@ -577,7 +577,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": {
-																		|    "id": 1,
+																		|    "_id": 1,
 																		|    "lastname": "doe",
 																		|    "firstname": "john",
 																		|    "products": []
@@ -591,12 +591,12 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|{
 																		|  "data": [
 																		|    {
-																		|      "id": 1,
+																		|      "_id": 1,
 																		|      "lastname": "doe",
 																		|      "firstname": "jane",
 																		|      "products": [
 																		|        {
-																		|          "id": 1,
+																		|          "_id": 1,
 																		|          "name": "savings"
 																		|        }
 																		|      ]
@@ -617,11 +617,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|{
 																		|  "data": [
 																		|    {
-																		|      "id": 1,
+																		|      "_id": 1,
 																		|      "name": "savings"
 																		|    },
 																		|    {
-																		|      "id": 3,
+																		|      "_id": 3,
 																		|      "name": "credit card"
 																		|    }
 																		|  ]
@@ -631,7 +631,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": {
-																		|    "id": 1,
+																		|    "_id": 1,
 																		|    "name": "savings"
 																		|  }
 																		|}
@@ -689,20 +689,20 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "Dune: House Atreides",
 					|      "authors": [
 					|        {
-					|          "id": 1,
+					|          "_id": 1,
 					|          "name": "Brian Herbert"
 					|        },
 					|        {
-					|          "id": 2,
+					|          "_id": 2,
 					|          "name": "Kevin J. Anderson"
 					|        }
 					|      ],
 					|      "publisher": {
-					|        "id": 1,
+					|        "_id": 1,
 					|        "name": "Spectra"
 					|      }
 					|    }
@@ -753,12 +753,12 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config), c, s, d, key )
 
-		env.process( "GET", "/data/20?fields=id,first_name", null ) shouldBe
+		env.process( "GET", "/data/20?fields=_id,first_name", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": {
-					|    "id": 20,
+					|    "_id": 20,
 					|    "first_name": "Ilona"
 					|  }
 					|}
@@ -788,21 +788,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		env.process( "GET", "/data?fields=id,first_name;limit=3;page=2", null ) shouldBe
+		env.process( "GET", "/data?fields=_id,first_name;limit=3;page=2", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": [
 					|    {
-					|      "id": 4,
+					|      "_id": 4,
 					|      "first_name": "Hannah"
 					|    },
 					|    {
-					|      "id": 5,
+					|      "_id": 5,
 					|      "first_name": "Tom"
 					|    },
 					|    {
-					|      "id": 6,
+					|      "_id": 6,
 					|      "first_name": "Queenie"
 					|    }
 					|  ]
@@ -839,7 +839,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "CustomerName": "Alfreds Futterkiste",
 					|      "ContactName": "Maria Anders",
 					|      "Address": "Obere Str. 57",
@@ -848,7 +848,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|      "Country": "Germany"
 					|    },
 					|    {
-					|      "id": 4,
+					|      "_id": 4,
 					|      "CustomerName": "Around the Horn",
 					|      "ContactName": "Thomas Hardy",
 					|      "Address": "120 Hanover Sq.",
@@ -857,7 +857,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|      "Country": "UK"
 					|    },
 					|    {
-					|      "id": 5,
+					|      "_id": 5,
 					|      "CustomerName": "Berglunds snabbköp",
 					|      "ContactName": "Christina Berglund",
 					|      "Address": "Berguvsvägen 8",
@@ -866,7 +866,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|      "Country": "Sweden"
 					|    },
 					|    {
-					|      "id": 3,
+					|      "_id": 3,
 					|      "CustomerName": "Antonio Moreno Taquería",
 					|      "ContactName": "Antonio Moreno",
 					|      "Address": "Mataderos 2312",
@@ -875,7 +875,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|      "Country": "Mexico"
 					|    },
 					|    {
-					|      "id": 2,
+					|      "_id": 2,
 					|      "CustomerName": "Ana Trujillo Emparedados y helados",
 					|      "ContactName": "Ana Trujillo",
 					|      "Address": "Avda. de la Constitución 2222",
@@ -892,7 +892,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "CustomerName": "Alfreds Futterkiste",
 					|      "ContactName": "Maria Anders",
 					|      "Address": "Obere Str. 57",
@@ -941,38 +941,38 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "The Brothers Karamazov",
 					|      "author": {
-					|        "id": 1,
+					|        "_id": 1,
 					|        "name": "Fyodor Dostoyevsky"
 					|      },
 					|      "publisher": {
-					|        "id": 1,
+					|        "_id": 1,
 					|        "name": "North Point Press"
 					|      }
 					|    },
 					|    {
-					|      "id": 2,
+					|      "_id": 2,
 					|      "title": "Alice''s Adventures in Wonderland",
 					|      "author": {
-					|        "id": 2,
+					|        "_id": 2,
 					|        "name": "Lewis Carroll"
 					|      },
 					|      "publisher": {
-					|        "id": 2,
+					|        "_id": 2,
 					|        "name": "Enhanced Media"
 					|      }
 					|    },
 					|    {
-					|      "id": 3,
+					|      "_id": 3,
 					|      "title": "The Adventures of Huckleberry Finn",
 					|      "author": {
-					|        "id": 3,
+					|        "_id": 3,
 					|        "name": "Mark Twain"
 					|      },
 					|      "publisher": {
-					|        "id": 3,
+					|        "_id": 3,
 					|        "name": "Amazon Classics"
 					|      }
 					|    }
@@ -980,20 +980,20 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin)
 
-		env.process( "GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books.id=3", null ) shouldBe
+		env.process( "GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books._id=3", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": [
 					|    {
-					|      "id": 3,
+					|      "_id": 3,
 					|      "title": "The Adventures of Huckleberry Finn",
 					|      "author": {
-					|        "id": 3,
+					|        "_id": 3,
 					|        "name": "Mark Twain"
 					|      },
 					|      "publisher": {
-					|        "id": 3,
+					|        "_id": 3,
 					|        "name": "Amazon Classics"
 					|      }
 					|    }
@@ -1007,38 +1007,38 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|{
 					|  "data": [
 					|    {
-					|      "id": 2,
+					|      "_id": 2,
 					|      "title": "Alice''s Adventures in Wonderland",
 					|      "author": {
-					|        "id": 2,
+					|        "_id": 2,
 					|        "name": "Lewis Carroll"
 					|      },
 					|      "publisher": {
-					|        "id": 2,
+					|        "_id": 2,
 					|        "name": "Enhanced Media"
 					|      }
 					|    },
 					|    {
-					|      "id": 3,
+					|      "_id": 3,
 					|      "title": "The Adventures of Huckleberry Finn",
 					|      "author": {
-					|        "id": 3,
+					|        "_id": 3,
 					|        "name": "Mark Twain"
 					|      },
 					|      "publisher": {
-					|        "id": 3,
+					|        "_id": 3,
 					|        "name": "Amazon Classics"
 					|      }
 					|    },
 					|    {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "title": "The Brothers Karamazov",
 					|      "author": {
-					|        "id": 1,
+					|        "_id": 1,
 					|        "name": "Fyodor Dostoyevsky"
 					|      },
 					|      "publisher": {
-					|        "id": 1,
+					|        "_id": 1,
 					|        "name": "North Point Press"
 					|      }
 					|    }
@@ -1051,14 +1051,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				"""
 					|{
 					|  "data": {
-					|    "id": 1,
+					|    "_id": 1,
 					|    "title": "The Brothers Karamazov",
 					|    "author": {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "name": "Fyodor Dostoyevsky"
 					|    },
 					|    "publisher": {
-					|      "id": 1,
+					|      "_id": 1,
 					|      "name": "North Point Press"
 					|    }
 					|  }

@@ -90,7 +90,7 @@ object CommandFunctions {
 				case Some( v ) =>
 					c.typ match {
 						case SingleReferenceType( _, tref ) if !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("id") )
+							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(env, tref, CommandFunctionHelpers.uniqueColumn(tref), v).asInstanceOf[Map[String, Long]]("_id") )
 //								s"SELECT id FROM $tname WHERE " +
 //								(tref.columns.find(c => c.unique ) match {
 //									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
@@ -130,7 +130,7 @@ object CommandFunctions {
 
 		val id =
 //			if (env.db == PostgresDatabase) {
-//				val res = env.statement.executeQuery( com + "RETURNING id" )
+//				val res = env.statement.executeQuery( com + "RETURNING _id" )
 //
 //				res.next
 //				res.getLong( 1 )
@@ -157,7 +157,7 @@ object CommandFunctions {
 					case None =>
 					case Some( vs ) =>
 						for (v <- vs.asInstanceOf[List[AnyRef]])
-							values += (s"(SELECT id FROM $tab WHERE " +
+							values += (s"(SELECT _id FROM $tab WHERE " +
 								CommandFunctionHelpers.uniqueColumn( ref ) + " = '" + String.valueOf( v ) + "')" -> tab)
 				}
 			case _ =>
@@ -269,7 +269,7 @@ object CommandFunctions {
 		}
 
 	def deleteLinkID( env: Environment, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
-		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
+		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
 
 		deleteLinkIDs( env, src, id, dst, did )
 	}
@@ -278,7 +278,7 @@ object CommandFunctions {
 		command( env, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
 
 	def associateID( env: Environment, src: Table, id: Long, dst: Table, dfield: String, dvalue: AnyRef ) = {
-		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "id" ).asInstanceOf[Long]
+		val did = QueryFunctions.findOne( env, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
 
 		associateIDs( env, src, id, dst, did )
 	}
@@ -287,7 +287,7 @@ object CommandFunctions {
 		command( env, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($sid, $did)" )
 
 	def associate( env: Environment, src: Table, sfield: String, svalue: AnyRef, dst: Table, dfield: String, dvalue: AnyRef ) = {
-		val sobj = QueryFunctions.findOne( env, src, sfield, svalue )( "id" ).asInstanceOf[Long]
+		val sobj = QueryFunctions.findOne( env, src, sfield, svalue )( "_id" ).asInstanceOf[Long]
 
 		associateID( env, src, sobj, dst, dfield, dvalue )
 	}
