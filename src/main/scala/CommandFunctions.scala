@@ -232,7 +232,7 @@ object CommandFunctions {
 
 	def append( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) = {
 		resource.columnMap get field match {
-			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
+			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _, _) ) =>
 				val tid = insert( env, ref, json )
 
 				associateIDs( env, resource, id, ref, tid )
@@ -244,7 +244,7 @@ object CommandFunctions {
 
 	def appendIDs( env: Environment, src: Table, sid: Long, field: String, tid: Long ) =
 		src.columnMap get field match {
-			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _) ) =>
+			case Some( Column(_, ManyReferenceType(_, ref), _, _, _, _, _) ) =>
 				associateIDs( env, src, sid, ref, tid )
 			case Some( _ ) => throw new BadRequestException( s"appendIDs: field not many-to-many: $field" )
 			case None => throw new BadRequestException( s"appendIDs: field not found: $field" )

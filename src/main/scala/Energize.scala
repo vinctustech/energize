@@ -147,8 +147,13 @@ object Energize {
 									c getList[String] "modifiers" map ColumnTypeModifier
 								else
 									Nil
+							val validators =
+								if (c contains "validators")
+									c getList[String] "validators"
+								else
+									Nil
 
-							cols += TableColumn( c getString "name", ctyp, modifiers )
+							cols += TableColumn( c getString "name", ctyp, modifiers, validators map EnergizeParser.parseValidator )
 						}
 
 						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
@@ -280,7 +285,7 @@ object Energize {
 					val cols = new LinkedHashMap[String, Column]
 					
 					columns foreach {
-						case col@TableColumn( cname, typ, modifiers ) =>
+						case col@TableColumn( cname, typ, modifiers, validators ) =>
 							if (cols contains db.desensitize( cname ))
 								problem( col.pos, s"column '$cname' defined twice" )
 								
@@ -339,7 +344,7 @@ object Energize {
 									case t => t
 								}
 
-							cols(cname) = Column( cname, typ1, secret, required, unique, indexed )
+							cols(cname) = Column( cname, typ1, secret, required, unique, indexed, validators )
 					}
 
 					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, null )
@@ -428,9 +433,9 @@ object Energize {
 			tables.values foreach {
 				case Table( _, columns, _, _, _, _ ) =>
 					columns foreach {
-						case Column( _, t@SingleReferenceType(table, _), _, _, _, _ ) =>
+						case Column( _, t@SingleReferenceType(table, _), _, _, _, _, _ ) =>
 							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
-						case Column( _, t@ManyReferenceType(table, _), _, _, _, _ ) =>
+						case Column( _, t@ManyReferenceType(table, _), _, _, _, _, _ ) =>
 							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
 						case _ =>
 					}

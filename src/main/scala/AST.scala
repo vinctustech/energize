@@ -16,7 +16,7 @@ trait StatementAST extends AST
 case class TableDefinition( protection: Option[Option[String]], pos: Position, name: String, base: Option[URIPath],
 														fields: List[TableColumn], resource: Boolean ) extends StatementAST
 
-case class TableColumn( name: String, typ: ColumnType, modifiers: List[ColumnTypeModifier] ) extends Positional
+case class TableColumn( name: String, typ: ColumnType, modifiers: List[ColumnTypeModifier], validators: List[ExpressionAST] ) extends Positional
 
 trait ReferenceType {
 	val table: String

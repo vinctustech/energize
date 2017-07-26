@@ -80,7 +80,7 @@ object QueryFunctionHelpers {
 
 		def innerReferenceFieldJoin( tname: String, tref: Table ): Unit = {
 			tref.columns foreach {
-				case Column(col1, SingleReferenceType(tname1, tref1), _, _, _, _) =>
+				case Column(col1, SingleReferenceType(tname1, tref1), _, _, _, _, _) =>
 					buf ++= s" LEFT OUTER JOIN $tname1 ON $tname.${nameIn(col1)} = $tname1.$idIn"
 					innerReferenceFieldJoin( tname1, tref1 )
 				case _ =>
@@ -88,7 +88,7 @@ object QueryFunctionHelpers {
 		}
 
 		resource.columns foreach {
-			case Column(col, SingleReferenceType(reft, reftref), _, _, _, _) if fssd.isEmpty || fssd(col) =>
+			case Column(col, SingleReferenceType(reft, reftref), _, _, _, _, _) if fssd.isEmpty || fssd(col) =>
 				buf ++= s" LEFT OUTER JOIN $reft ON ${resource.name}.${nameIn(col)} = $reft.$idIn"
 				innerReferenceFieldJoin( reft, reftref )
 			case _ =>
@@ -116,7 +116,7 @@ object QueryFunctionHelpers {
 object QueryFunctions {
 	def query( env: Environment, resource: Table, sql: Query, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
-		val res = new Relation( env, env.statement.executeQuery(sql.query) )
+		val res = synchronized( new Relation( env, env.statement.executeQuery(sql.query) ) )
 		val list = new ListBuffer[OBJ]
 
 		def mkOBJ( table: Table, fields: List[String] ): OBJ = {
@@ -157,20 +157,20 @@ object QueryFunctions {
 							table.columnMap get cn match {
 								case None if cn == "_id" => attr += ("_id" -> obj.get)
 								case None => sys.error( s"data from an unknown column: $cn" )
-								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, SingleReferenceType(_, reft), _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> mkOBJ( reft, Nil ))
-								case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
+								case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _, _) ) =>
 									attr += (cname -> query( env, reft,
 										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.$idIn " +
 											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "_id")}" +
 											QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
-								case Some( Column(cname, ArrayType(MediaType(_, _, _), _, _, _), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, ArrayType(MediaType(_, _, _), _, _, _), _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList.map( m => s"/media/$m" ))
-								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, ArrayType(_, _, _, _), _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList)
-								case Some( Column(cname, BinaryType, _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, BinaryType, _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> bytes2hex( obj.get.asInstanceOf[Array[Byte]] ))
-								case Some( Column(cname, BLOBType(rep), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, BLOBType(rep), _, _, _, _, _) ) if obj.get ne null =>
 									val blob = obj.get.asInstanceOf[Blob]
 									val array = blob.getBytes( 0L, blob.length.toInt )
 
@@ -179,20 +179,20 @@ object QueryFunctions {
 										case 'hex => attr += (cname -> bytes2hex( array ))
 										case 'list => attr += (cname -> array.toList)
 									}
-								case Some( Column(cname,TextType, _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname,TextType, _, _, _, _, _) ) if obj.get ne null =>
 									val clob = obj.get.asInstanceOf[Clob]
 									val s = clob.getSubString( 1L, clob.length.toInt )
 
 									attr += (cname -> s)
-								case Some( Column(cname, MediaType(_, _, _), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, MediaType(_, _, _), _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> s"/media/${obj.get}")
-								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, DatetimeType|TimestampType, _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> env.db.writeTimestamp( obj.get ))
-								case Some( Column(cname, EnumType(_, enum), _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, EnumType(_, enum), _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> enum(obj.get.asInstanceOf[Int]))
-								case Some( Column(cname, DateType|TimeType|UUIDType, _, _, _, _) ) if obj.get ne null =>
+								case Some( Column(cname, DateType|TimeType|UUIDType, _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> obj.get.toString)
-								case Some( Column(cname, _, true, _, _, _) ) =>
+								case Some( Column(cname, _, true, _, _, _, _) ) =>
 									if (allowsecret)
 										attr += (cname -> obj.get)
 								case Some( c ) =>

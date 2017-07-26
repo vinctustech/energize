@@ -85,7 +85,7 @@ object UtilityFunctions {
 			(if (indexed) List("indexed") else Nil)
 
 		def fields( cs: List[Column] ) =
-			cs map {case Column( name, typ, secret, required, unique, indexed ) =>
+			cs map {case Column( name, typ, secret, required, unique, indexed, validators ) =>	// todo: add validators support to schema
 				Map( "name" -> name, "type" -> column(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
 
 		val tables = env.tables.values map {case Table(name, columns, _, resource, mtm, _) =>

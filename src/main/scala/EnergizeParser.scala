@@ -10,8 +10,17 @@ import xyz.hyperreal.indentation_lexical._
 import xyz.hyperreal.lia.Math
 
 
-class EnergizeParser extends StandardTokenParsers with PackratParsers
-{
+object EnergizeParser {
+
+	def parseValidator( expr: String ) = {
+		val p = new EnergizeParser
+
+		p.parseFromString[ExpressionAST]( expr, p.booleanExpression )
+	}
+
+}
+
+class EnergizeParser extends StandardTokenParsers with PackratParsers {
 		class EnergizeLexical extends IndentationLexical( false, true, List("{", "[", "("), List("}", "]", ")"), "#", "/*", "*/" ) {
 			case class ECMAScriptLit( chars: String ) extends Token {
 				override def toString = "<<<" + chars + ">>>"
@@ -167,9 +176,9 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers
 		"private" ^^^ Some( null )
 
 	lazy val tableColumn: PackratParser[TableColumn] =
-		positioned( ident ~ columnType ~ rep(columnModifier) <~ nl ^^ {
-			case name ~ typ ~ modifiers =>
-				TableColumn( name, typ, modifiers )} )
+		positioned( ident ~ columnType ~ rep(columnModifier) ~ opt(Indent ~> rep1(booleanExpression) <~ Dedent) <~ nl ^^ {
+			case name ~ typ ~ modifiers ~ validators =>
+				TableColumn( name, typ, modifiers, validators getOrElse Nil )} )
 
 	lazy val columnType: PackratParser[ColumnType] =
 		positioned(
