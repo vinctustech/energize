@@ -385,7 +385,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 
 case class Route( method: String, path: URIPath, action: ExpressionAST )
 
-case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, mtm: Boolean,
+case class Table( name: String, columns: List[Column], columnMap: Map[String, Column], resource: Boolean, base: Option[URIPath], mtm: Boolean,
 									var preparedInsert: PreparedStatement ) {
 	def names = columns map (_.name)
 }
