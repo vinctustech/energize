@@ -88,8 +88,10 @@ object UtilityFunctions {
 			cs map {case Column( name, typ, secret, required, unique, indexed, validators ) =>	// todo: add validators support to schema
 				Map( "name" -> name, "type" -> column(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
 
-		val tables = env.tables.values map {case Table(name, columns, _, resource, mtm, _) =>
-			Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns) )} toList
+		def uripath( path: URIPath ) = path.segments map {case NameURISegment( n ) => n} mkString ("/", "/", "")
+
+		val tables = env.tables.values map {case Table(name, columns, _, resource, base, mtm, _) =>
+			Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns), "base" -> (base map uripath orNull) )} toList
 
 		Map( "tables" -> tables )
 	}
