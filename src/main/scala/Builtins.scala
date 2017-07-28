@@ -58,6 +58,7 @@ object Builtins {
 		|  GET     /avg/field:                Ok( avg(<resource>, ?filter, /field) )
 		|  GET     /min/field:                Ok( min(<resource>, ?filter, /field) )
 		|  GET     /max/field:                Ok( max(<resource>, ?filter, /field) )
+		|  GET     /schema                    Ok( tableSchema(<resource>) )
 		|  POST    /                          Created( insert(<resource>, $entity) )
 		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, false), /id )
 		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, true), /id )
@@ -94,7 +95,7 @@ object Builtins {
 		|
 		|routes /meta private
 		|  DELETE  /res:                      Ok( deleteResource(res) )
-		|  GET /schema												Ok( schema() )
+		|  GET /schema												Ok( databaseSchema() )
 		|
 		|routes <base>
 		|  POST    /login                     Ok( login($entity) )
