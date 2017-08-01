@@ -49,7 +49,7 @@ object UtilityFunctions {
 		jscompile( env, code ).eval
 	}
 
-	def schema( env: Environment ) = {
+	def tableSchema( env: Environment, table: Table ) = {
 		val primitive: PartialFunction[ColumnType, String] = {
 			case StringType => "string"
 			case TextType => "text"
@@ -90,8 +90,13 @@ object UtilityFunctions {
 
 		def uripath( path: URIPath ) = path.segments map {case NameURISegment( n ) => n} mkString ("/", "/", "")
 
-		val tables = env.tables.values map {case Table(name, columns, _, resource, base, mtm, _) =>
-			Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns), "base" -> (base map uripath orNull) )} toList
+		val Table(name, columns, _, resource, base, mtm, _) = table
+
+		Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns), "base" -> (base map uripath orNull) )
+	}
+
+	def databaseSchema( env: Environment ) = {
+		val tables = env.tables.values map {t => tableSchema( env, t )}
 
 		Map( "tables" -> tables )
 	}
