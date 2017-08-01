@@ -6,14 +6,16 @@ import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 object CommandFunctionHelpers {
 
+	val DATAURL =
+
 	def uniqueColumn( resource: Table ) =
 		resource.columns find (_.unique ) match {
 			case None => throw new BadRequestException( s"insert: no unique column in '${resource.name}'" )
 			case Some( uc ) => uc.name
 		}
 
-	def mediaInsert( env: Environment, allowed: List[MimeType], v: OBJ ) = {
-		v( "type" ).asInstanceOf[String] match {
+	def mediaInsert( env: Environment, allowed: List[MimeType], v: String ) = {
+		v match {
 			case t@Energize.MIME( typ, subtype ) =>
 				if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && asubtype == "*" || subtype == asubtype})
 					throw new BadRequestException( s"insert: MIME type not allowed: $t" )
@@ -123,7 +125,7 @@ object CommandFunctions {
 							resource.preparedInsert.setBlob( i + 1, new SerialBlob(array) )
 						case TextType => resource.preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed, _, limit ) =>
-							resource.preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(env, allowed, v.asInstanceOf[OBJ]) )
+							resource.preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(env, allowed, v.asInstanceOf[String]) )
 					}
 			}
 		}
