@@ -77,7 +77,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 		sys.error( s"route not found: $method $path" )
 	}
 
-	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String, AnyRef) = {
+	def process( reqmethod: String, requri: String, reqbody: String ): (Int, String, AnyRef) = synchronized {
 		def notfound = {
 			val (sc, ctype, obj) = result( "NotFound", "route not found" )
 
