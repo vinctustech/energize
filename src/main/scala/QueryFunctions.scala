@@ -7,7 +7,7 @@ import collection.immutable.ListMap
 
 
 object QueryFunctionHelpers {
-	val FILTER = "(.+)(=|<|>|<=|>=|!=|~)(.+)"r
+	val FILTER = """(.+)(=|<=|>=|<|>|!=|~\*|~)(.+)"""r
 	val ORDER = """(.+)\:(ASC|asc|DESC|desc)"""r
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
@@ -24,6 +24,8 @@ object QueryFunctionHelpers {
 
 						if (op == "~")
 							s"${nameIn(col)} LIKE '$search1'"
+						else if (op == "~*")
+							s"${nameIn(col)} ILIKE '$search1'"
 						else if (QueryFunctionHelpers.numeric( search1 ))
 							s"${nameIn(col)} $op $search1"
 						else

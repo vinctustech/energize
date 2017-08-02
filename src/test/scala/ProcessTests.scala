@@ -772,7 +772,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  }
 					|}
 				""".trim.stripMargin )
-		env.process( "GET", "/data?fields=first_name,city;order=city:asc;filter=first_name~C%25", null ) shouldBe
+		env.process( "GET", "/data?fields=first_name,city;order=city:asc;filter=first_name~*%25C%25", null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -784,6 +784,14 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|    {
 					|      "first_name": "Chandra",
 					|      "city": "Etobicoke"
+					|    },
+					|    {
+					|      "first_name": "Hortencia",
+					|      "city": "New Waterford"
+					|    },
+					|    {
+					|      "first_name": "Francoise",
+					|      "city": "Windsor"
 					|    }
 					|  ]
 					|}
