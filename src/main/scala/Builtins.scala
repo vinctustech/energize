@@ -104,7 +104,7 @@ object Builtins {
 		|
 		|table _media_
 		|  type string
-		|  data blob
+		|  data blob(urlchars)
 		|
 		|routes
 		|  GET /"media"/id:long                Ok( readMedia(/id) )
