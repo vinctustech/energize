@@ -553,7 +553,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
 
-		env.process( "POST", "/test", """{a: {type: "image/gif", data: "R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}}""" ) shouldBe(SC_CREATED, "application/json",
+		env.process( "POST", "/test", """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""" ) shouldBe(SC_CREATED, "application/json",
 			"""
 				|{
 				|  "data": 1
