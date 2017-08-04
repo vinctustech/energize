@@ -88,6 +88,8 @@ object CommandFunctions {
 	
 	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
 
+	def deleteMany( env: Environment, resource: Table, filter: Option[String] ) = command( env, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering(filter)}" )
+
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
 			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )

@@ -63,6 +63,7 @@ object Builtins {
 		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, false), /id )
 		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, true), /id )
 		|  DELETE  /id:long                   OkAtLeastOneOrNotFoundId( delete(<resource>, /id), /id )
+		|  DELETE  /													deleteMany( <resource>, ?filter ); NoContent()
 		""".stripMargin
 
 	val mtmroutes =
