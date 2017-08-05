@@ -347,7 +347,7 @@ object Energize {
 							cols(cname) = Column( cname, typ1, secret, required, unique, indexed, validators )
 					}
 
-					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, base, mtm, null )
+					tables(db.desensitize( name )) = Table( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, base, mtm, null, null )
 
 					if (resource) {
 						val mtm = cols.values exists (c => c.typ.isInstanceOf[ManyReferenceType])
@@ -425,13 +425,13 @@ object Energize {
 
 			for ((k, v) <- e.tables)
 				tables get k match {
-					case Some( Table(name, columns, columnMap, _, _, mtm, _ )) =>
-						tables(k) = Table(name, v.columns ++ columns, v.columnMap ++ columnMap, v.resource, v.base, v.mtm || mtm, null )
+					case Some( Table(name, columns, columnMap, _, _, mtm, _, _ )) =>
+						tables(k) = Table(name, v.columns ++ columns, v.columnMap ++ columnMap, v.resource, v.base, v.mtm || mtm, null, null )
 					case None => tables(k) = v
 				}
 
 			tables.values foreach {
-				case Table( _, columns, _, _, _, _, _ ) =>
+				case Table( _, columns, _, _, _, _, _, _ ) =>
 					columns foreach {
 						case Column( _, t@SingleReferenceType(table, _), _, _, _, _, _ ) =>
 							t.ref = tables.getOrElse( db.desensitize(table), problem(t.pos, s"'$table' not found") )
@@ -450,12 +450,13 @@ object Energize {
 			}
 
 			tables.values foreach {
-				case t@Table( name, cols, _, _, _, _, _ ) =>
+				case t@Table( name, cols, _, _, _, _, _, _ ) =>
 					val cnames1 = cols filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name)
 					val columns = cnames1 map nameIn mkString ","
 					val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 
 					t.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($columns) VALUES ($values)" )
+					t.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $columns) VALUES (?, $values)" )
 			}
 
 			val en = env

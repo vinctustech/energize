@@ -1,0 +1,34 @@
+resource Categories
+	CategoryName string
+	Description string
+	Picture string
+
+resource Shippers
+	CompanyName string
+	Phone string
+
+resource Suppliers
+	CompanyName string
+	ContactName string
+	ContactTitle string
+	Address string
+	City string
+	Region string
+	PostalCode string
+	Country string
+	Phone string
+	Fax string
+	Homepage string
+
+resource Products
+	ProductName string
+	Supplier Suppliers
+	Category Categories
+	QuantityPerUnit string
+	UnitPrice decimal(20, 2)
+	UnitsInStock integer
+	UnitsOnOrder integer
+	ReorderLevel integer
+	Discontinued integer
+
+populateDatabase( "examples/northwind.tab" )
