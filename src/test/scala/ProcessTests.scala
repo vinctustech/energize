@@ -749,7 +749,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	["Crissy","Pacholec","Cgi Systems Inc","85 S State St","Barrie","ON","L4N 6T7","705-477-2307","705-523-6746","crissy@aol.com","http://www.cgisystemsinc.com"],
 				|	["Gianna","Branin","All Brevard Cert Apprsls Inc","100 Main St","Calgary","AB","T2K 4X5","403-337-7162","403-540-5944","gianna@aol.com","http://www.allbrevardcertapprslsinc.com"],
 				|	["Valentin","Billa","General Color Co Inc","6185 Bohn St #72","Pangman","SK","S0C 2C0","306-291-5073","306-316-7477","vbilla@yahoo.com","http://www.generalcolorcoinc.com"],
-				|	["Ilona","Dudash","Adams Balcom & Larose Pc","2 Sutton Pl S #5727","Rouyn-Noranda","QC","J9X 3V4","819-536-7034","819-413-1530","idudash@dudash.com","http://www.adamsbalcomlarosepc.com"]])
+				|	["Ilona","Dudash","Adams Balcom & Larose Pc","2 Sutton Pl S #5727","Rouyn-Noranda","QC","J9X 3V4","819-536-7034","819-413-1530","idudash@dudash.com","http://www.adamsbalcomlarosepc.com"]], false )
 				""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config), c, s, d, key )
 
@@ -837,7 +837,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
 				|	 ["Antonio Moreno Taquería",            "Antonio Moreno",     "Mataderos 2312",                "México D.F.", "05023",    "Mexico"],
 				|	 ["Around the Horn",                    "Thomas Hardy",       "120 Hanover Sq.",               "London",      "WA1 1DP",  "UK"],
-				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]] )
+				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]], false )
 			""".trim.stripMargin
 		val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
 
@@ -931,7 +931,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|
 				|
 				|if count( books, None ) == 0
-				|	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]] )
+				|	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]], false )
 				|
 				|	insert( authors, {name: "Fyodor Dostoyevsky"} )
 				|	insert( authors, {name: "Lewis Carroll"} )

@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.Types
+import java.sql.{PreparedStatement, Types}
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 
@@ -80,6 +80,25 @@ object CommandFunctionHelpers {
 
 				CommandFunctions.insert( env, env table "_media_", Map("type" -> s"$typ/$subtype$parameter", "data" -> data) )
 		}
+
+	def setNull( preparedStatement: PreparedStatement, col: Int, typ: ColumnType ): Unit = {
+		val t =
+			typ match {
+				case BooleanType => Types.BOOLEAN
+				case StringType => Types.VARCHAR
+				case TextType => Types.CLOB
+				case IntegerType => Types.INTEGER
+				case FloatType => Types.FLOAT
+				case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT
+				case BLOBType( _ ) => Types.BLOB
+				case TimestampType => Types.TIMESTAMP
+				case ArrayType( _, _, _, _ ) => Types.ARRAY
+				case DecimalType( _, _ ) => Types.DECIMAL
+			}
+
+		preparedStatement.setNull( col, t )
+	}
+
 }
 
 object CommandFunctions {
@@ -88,30 +107,39 @@ object CommandFunctions {
 	
 	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
 
+	def deleteMany( env: Environment, resource: Table, filter: Option[String] ) = command( env, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering(filter)}" )
+
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
 			case s: String => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
 			case _ => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
 		}
 
-	def batchInsert( env: Environment, resource: Table, rows: List[List[AnyRef]] ) {
-		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
-			
+	def batchInsert( env: Environment, resource: Table, rows: List[Seq[AnyRef]], full: Boolean ) {
+		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + (if (full) 2 else 1), c.typ)
+		val preparedStatement = if (full) resource.preparedFullInsert else resource.preparedInsert
+
 		for (r <- rows) {
-			for (((i, t), v) <- types zip r) {
+			if (full)
+				preparedStatement.setInt( 1, r.head.asInstanceOf[java.lang.Integer] )
+
+			for (((i, t), v) <- types zip (if (full) r.tail else r)) {
 				(t, v) match {
-					case (StringType, a: String) => resource.preparedInsert.setString( i, a )
-					case (IntegerType, a: java.lang.Integer) => resource.preparedInsert.setInt( i, a )
-					case (LongType, a: java.lang.Long) => resource.preparedInsert.setLong( i, a )
-					case _ => throw new BadRequestException( s"missing support for '$t'" )
+					case (_, null) => CommandFunctionHelpers.setNull( preparedStatement, i, t )
+					case (StringType, a: String) => preparedStatement.setString( i, a )
+					case (IntegerType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
+					case (_: SingleReferenceType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
+					case (LongType, a: java.lang.Long) => preparedStatement.setLong( i, a )
+					case (DecimalType( _, _ ), a: BigDecimal) => preparedStatement.setBigDecimal( i, a.underlying )
+					case x => throw new BadRequestException( s"don't know what to do with $x" )
 				}
 			}
 				
-			resource.preparedInsert.addBatch
+			preparedStatement.addBatch
 		}
 		
-		resource.preparedInsert.executeBatch
-		resource.preparedInsert.clearParameters
+		preparedStatement.executeBatch
+		preparedStatement.clearParameters
 	}
 	
 	def insert( env: Environment, resource: Table, json: OBJ ): Long = {
@@ -125,26 +153,9 @@ object CommandFunctions {
 		val mtms = resource.columns filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
 
 		for ((c, i) <- cols zipWithIndex) {
-			def setNull: Unit = {
-				val t =
-					c.typ match {
-						case BooleanType => Types.BOOLEAN
-						case StringType => Types.VARCHAR
-						case TextType => Types.CLOB
-						case IntegerType => Types.INTEGER
-						case FloatType => Types.FLOAT
-						case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT
-						case BLOBType( _ ) => Types.BLOB
-						case TimestampType => Types.TIMESTAMP
-						case ArrayType( _, _, _, _ ) => Types.ARRAY
-					}
-
-				resource.preparedInsert.setNull( i + 1, t )
-			}
-
 			json1 get c.name match {
-				case None => setNull
-				case Some( null ) => setNull
+				case None => CommandFunctionHelpers.setNull( resource.preparedInsert, i + 1, c.typ )
+				case Some( null ) => CommandFunctionHelpers.setNull( resource.preparedInsert, i + 1, c.typ )
 				case Some( v ) =>
 					c.typ match {
 						case SingleReferenceType( _, tref ) if !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
