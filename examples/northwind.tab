@@ -1,5 +1,5 @@
 Categories
- _id_:integer, pk 	  CategoryName  	                        Description                         	 Picture
+ _id:integer, pk 	  CategoryName  	                        Description                         	 Picture
                       1 	 Beverages      	 Soft drinks, coffees, teas, beers, and ales                	 pic1.jpg 
                       2 	 Condiments     	 Sweet and savory sauces, relishes, spreads, and seasonings 	 pic2.jpg 
                       3 	 Confections    	 Desserts, candies, and sweet breads                        	 pic3.jpg 
@@ -10,7 +10,7 @@ Categories
                       8 	 Seafood        	 Seaweed and fish                                           	 pic8.jpg 
 
 Customers
- _id_:integer, pk 	             CompanyName              	       ContactName       	          ContactTitle          	                    Address                     	      City       	    Region     	 PostalCode 	   Country   	       Phone       	        Fax
+ _id:integer, pk 	             CompanyName              	       ContactName       	          ContactTitle          	                    Address                     	      City       	    Region     	 PostalCode 	   Country   	       Phone       	        Fax
                       1 	 Alfreds Futterkiste                  	 Maria Anders            	 Sales Representative           	 Obere Str. 57                                  	 Berlin          	 NULL          	 12209      	 Germany     	 030-0074321       	 030-0076545       
                       2 	 Ana Trujillo Emparedados y helados   	 Ana Trujillo            	 Owner                          	 Avda. de la Constitución 2222                  	 México D.F.     	 NULL          	 05021      	 Mexico      	 (5) 555-4729      	 (5) 555-3745      
                       3 	 Antonio Moreno Taquería              	 Antonio Moreno          	 Owner                          	 Mataderos  2312                                	 México D.F.     	 NULL          	 05023      	 Mexico      	 (5) 555-3932      	 NULL              
@@ -104,7 +104,7 @@ Customers
                      91 	 Wolski  Zajazd                       	 Zbyszek Piestrzeniewicz 	 Owner                          	 ul. Filtrowa 68                                	 Warszawa        	 NULL          	 01-012     	 Poland      	 (26) 642-7012     	 (26) 642-7012     
 
 Employees
- _id_:integer, pk 	 LastName  	 FirstName 	          Title           	 TitleOfCourtesy 	 BirthDate:date 	 HireDate:date 	            Address             	   City   	 Region 	 PostalCode 	 Country 	   HomePhone    	 Extension 	                                                                                                                                                                                                                              Notes                                                                                                                                                                                                                               	 ReportsTo 	               Photopath
+ _id:integer, pk 	 LastName  	 FirstName 	          Title           	 TitleOfCourtesy 	 BirthDate:date 	 HireDate:date 	            Address             	   City   	 Region 	 PostalCode 	 Country 	   HomePhone    	 Extension 	                                                                                                                                                                                                                              Notes                                                                                                                                                                                                                               	 ReportsTo 	               Photopath
                       1 	 Davolio   	 Nancy     	 Sales Representative     	 Ms.             	 1948-12-08     	 1992-05-01    	 507 - 20th Ave. E.\nApt. 2A    	 Seattle  	 WA     	 98122      	 USA     	 (206) 555-9857 	 5467      	 Education includes a BA in psychology from Colorado State University in 1970.  She also completed The Art of the Cold Call.  Nancy is a member of Toastmasters International.                                                                                                                                                                                                                                                                                    	         2 	 http://accweb/emmployees/davolio.bmp   
                       2 	 Fuller    	 Andrew    	 Vice President, Sales    	 Dr.             	 1952-02-19     	 1992-08-14    	 908 W. Capital Way             	 Tacoma   	 WA     	 98401      	 USA     	 (206) 555-9482 	 3457      	 Andrew received his BTS commercial in 1974 and a Ph.D. in international marketing from the University of Dallas in 1981.  He is fluent in French and Italian and reads German.  He joined the company as a sales representative, was promoted to sales manager in January 1992 and to vice president of sales in March 1993.  Andrew is a member of the Sales Management Roundtable, the Seattle Chamber of Commerce, and the Pacific Rim Importers Association. 	      NULL 	 http://accweb/emmployees/fuller.bmp    
                       3 	 Leverling 	 Janet     	 Sales Representative     	 Ms.             	 1963-08-30     	 1992-04-01    	 722 Moss Bay Blvd.             	 Kirkland 	 WA     	 98033      	 USA     	 (206) 555-3412 	 3355      	 Janet has a BS degree in chemistry from Boston College (1984).  She has also completed a certificate program in food retailing management.  Janet was hired as a sales associate in 1991 and promoted to sales representative in February 1992.                                                                                                                                                                                                                  	         2 	 http://accweb/emmployees/leverling.bmp 
@@ -116,14 +116,14 @@ Employees
                       9 	 Dodsworth 	 Anne      	 Sales Representative     	 Ms.             	 1966-01-27     	 1994-11-15    	 7 Houndstooth Rd.              	 London   	 NULL   	 WG2 7LT    	 UK      	 (71) 555-4444  	 452       	 Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.                                                                                                                                                                                                                                                                                                                                                                  	         5 	 http://accweb/emmployees/davolio.bmp   
 
 Regions
- _id_:integer, pk 	 RegionDescription
+ _id:integer, pk 	 RegionDescription
                     1 	 Eastern           
                     2 	 Western           
                     3 	 Northern          
                     4 	 Southern          
 
 Territories
- _id_:integer, pk 	 Territory 	 TerritoryDescription 	 RegionID:integer, fk, Regions, _id_
+ _id:integer, pk 	 Territory 	 TerritoryDescription 	 RegionID:integer, fk, Regions, _id
                        1 	 01581     	 Westboro             	                                       1 
                        2 	 01730     	 Bedford              	                                       1 
                        3 	 01833     	 Georgetow            	                                       1 
@@ -179,7 +179,7 @@ Territories
                       53 	 98104     	 Seattle              	                                       2 
 
 EmployeeTerritories
- _id_:integer, pk 	 EmployeeID:integer, fk, Employees, _id_ 	 TerritoryID:integer, fk, Territories, _id_
+ _id:integer, pk 	 EmployeeID:integer, fk, Employees, _id 	 TerritoryID:integer, fk, Territories, _id
                                1 	                                             1 	                                                10 
                                2 	                                             1 	                                                18 
                                3 	                                             2 	                                                 1 
@@ -231,7 +231,7 @@ EmployeeTerritories
                               49 	                                             9 	                                                35 
 
 Shippers
- _id_:integer, pk 	    CompanyName    	     Phone
+ _id:integer, pk 	    CompanyName    	     Phone
                      1 	 Speedy Express    	 (503) 555-9831 
                      2 	 United Package    	 (503) 555-3199 
                      3 	 Federal Shipping  	 (503) 555-9931 
@@ -240,7 +240,7 @@ Shippers
                      6 	 DHL               	 1-800-225-5345 
 
 Orders
- _id_:integer, pk 	 CustomerID:integer, fk, Customers, _id_ 	 EmployeeID:integer, fk, Employees, _id_ 	 OrderDate:date 	 RequiredDate:date 	 ShippedDate:date 	 ShipVia:integer, fk, Shippers, _id_ 	 Freight:decimal 	              ShipName              	                  ShipAddress                   	    ShipCity     	  ShipRegion   	 ShipPostalCode 	 ShipCountry
+ _id:integer, pk 	 CustomerID:integer, fk, Customers, _id 	 EmployeeID:integer, fk, Employees, _id 	 OrderDate:date 	 RequiredDate:date 	 ShippedDate:date 	 ShipVia:integer, fk, Shippers, _id 	 Freight:decimal 	              ShipName              	                  ShipAddress                   	    ShipCity     	  ShipRegion   	 ShipPostalCode 	 ShipCountry
                10248 	                                            85 	                                             5 	 1996-07-04     	 1996-08-01        	 1996-07-16       	                                        3 	           32.38 	 Vins et alcools Chevalier          	 59 rue de l'Abbaye                             	 Reims           	 NULL          	 51100          	 France      
                10249 	                                            79 	                                             6 	 1996-07-05     	 1996-08-16        	 1996-07-10       	                                        1 	           11.61 	 Toms Spezialitäten                 	 Luisenstr. 48                                  	 Münster         	 NULL          	 44087          	 Germany     
                10250 	                                            34 	                                             4 	 1996-07-08     	 1996-08-05        	 1996-07-12       	                                        2 	           65.83 	 Hanari Carnes                      	 Rua do Paço, 67                                	 Rio de Janeiro  	 RJ            	 05454-876      	 Brazil      
@@ -1073,7 +1073,7 @@ Orders
                11077 	                                            65 	                                             1 	 1998-05-06     	 1998-06-03        	 NULL             	                                        2 	            8.53 	 Rattlesnake Canyon Grocery         	 2817 Milton Dr.                                	 Albuquerque     	 NM            	 87110          	 USA         
 
 Suppliers
- _id_:integer, pk 	              CompanyName               	        ContactName         	         ContactTitle         	                    Address                    	     City      	  Region  	 PostalCode 	   Country   	      Phone      	       Fax       	                                            Homepage
+ _id:integer, pk 	              CompanyName               	        ContactName         	         ContactTitle         	                    Address                    	     City      	  Region  	 PostalCode 	   Country   	      Phone      	       Fax       	                                            Homepage
                       1 	 Exotic Liquids                         	 Charlotte Cooper           	 Purchasing Manager           	 49 Gilbert St.                                	 London        	 NULL     	 EC1 4SD    	 UK          	 (171) 555-2222  	 NULL            	 NULL                                                                                           
                       2 	 New Orleans Cajun Delights             	 Shelley Burke              	 Order Administrator          	 P.O. Box 78934                                	 New Orleans   	 LA       	 70117      	 USA         	 (100) 555-4822  	 NULL            	 #CAJUN.HTM#                                                                                    
                       3 	 Grandma Kelly's Homestead              	 Regina Murphy              	 Sales Representative         	 707 Oxford Rd.                                	 Ann Arbor     	 MI       	 48104      	 USA         	 (313) 555-5735  	 (313) 555-3349  	 NULL                                                                                           
@@ -1105,7 +1105,7 @@ Suppliers
                      29 	 Forêts d'érables                       	 Chantal Goulet             	 Accounting Manager           	 148 rue Chasseur                              	 Ste-Hyacinthe 	 Québec   	 J2S 7S8    	 Canada      	 (514) 555-2955  	 (514) 555-2921  	 NULL                                                                                           
 
 Products
- _id_:integer, pk 	           ProductName            	 SupplierID:integer, fk, Suppliers, _id_ 	 CategoryID:integer, fk, Categories, _id_ 	   QuantityPerUnit    	 UnitPrice:decimal 	 UnitsInStock:integer 	 UnitsOnOrder:integer 	 ReorderLevel:integer 	 Discontinued:integer
+ _id:integer, pk 	           ProductName            	 SupplierID:integer, fk, Suppliers, _id 	 CategoryID:integer, fk, Categories, _id 	   QuantityPerUnit    	 UnitPrice:decimal 	 UnitsInStock:integer 	 UnitsOnOrder:integer 	 ReorderLevel:integer 	 Discontinued:integer
                      1 	 Chai                             	                                             8 	                                              1 	   10 boxes x 30 bags 	                18 	                   39 	                    0 	                   10 	 1                    
                      2 	 Chang                            	                                             1 	                                              1 	   24 - 12 oz bottles 	                19 	                   17 	                   40 	                   25 	 1                    
                      3 	 Aniseed Syrup                    	                                             1 	                                              2 	  12 - 550 ml bottles 	                10 	                   13 	                   70 	                   25 	 0                    
@@ -1185,7 +1185,7 @@ Products
                     77 	 Original Frankfurter grüne Soße  	                                            12 	                                              2 	             12 boxes 	                13 	                   32 	                    0 	                   15 	 0                    
 
 OrderDetails
- _id_:integer, pk 	 OrderID:integer, fk, Orders, _id_ 	 ProductID:integer, fk, Products, _id_ 	 UnitPrice:decimal 	 Quantity:integer 	 Discount:decimal
+ _id:integer, pk 	 OrderID:integer, fk, Orders, _id 	 ProductID:integer, fk, Products, _id 	 UnitPrice:decimal 	 Quantity:integer 	 Discount:decimal
                          1 	                                10248 	                                         11 	                14 	               12 	                0 
                          2 	                                10248 	                                         42 	              9.80 	               10 	                0 
                          3 	                                10248 	                                         72 	             34.80 	                5 	                0 
