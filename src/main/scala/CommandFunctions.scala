@@ -309,6 +309,13 @@ object CommandFunctions {
 		}
 	}
 
+	def arrayInsert( env: Environment, resource: Table, id: Long, field: String, idx: Int, json: OBJ ): Unit = {
+		json get "data" match {
+			case None => throw new BadRequestException( "arrayInsert: 'data' field not found" )
+			case Some( data ) =>
+		}
+	}
+
 	def insertLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
 			case None => throw new BadRequestException( s"insertLinks: field not found: $field" )

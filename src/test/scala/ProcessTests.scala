@@ -584,7 +584,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		env.process( "POST", "/customers/1/products/1", null ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "POST", "/customers/1/products/target/1", null ) shouldBe (SC_NO_CONTENT, null, null)
 		env.process( "PUT", "/customers/1", """{"lastname": "doe", "firstname": "jane"}""" ) shouldBe (SC_NO_CONTENT, null, null)
 		env.process( "GET", "/customers", null ) shouldBe
 			(SC_OK, "application/json", """

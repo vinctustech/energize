@@ -50,64 +50,72 @@ object Builtins {
 
 	val routes =
 		"""
-		|routes <base>/<resource> <authorize>
-		|  GET     /id:long                   OkSingleOrNotFound( findID(<resource>, /id, ?fields, None, None, None), /id )
-		|  GET     /                          Ok( list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
-		|  GET     /count                     Ok( count(<resource>, ?filter) )
-		|  GET     /sum/field:                Ok( sum(<resource>, ?filter, /field) )
-		|  GET     /avg/field:                Ok( avg(<resource>, ?filter, /field) )
-		|  GET     /min/field:                Ok( min(<resource>, ?filter, /field) )
-		|  GET     /max/field:                Ok( max(<resource>, ?filter, /field) )
-		|  GET     /schema                    Ok( tableSchema(<resource>) )
-		|  POST    /                          Created( insert(<resource>, $entity) )
-		|  PATCH   /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, false), /id )
-		|  PUT     /id:long                   OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, true), /id )
-		|  DELETE  /id:long                   OkAtLeastOneOrNotFoundId( delete(<resource>, /id), /id )
-		|  DELETE  /													deleteMany( <resource>, ?filter ); NoContent()
+			|routes <base>/<resource> <authorize>
+			|  GET     /id:long                          OkSingleOrNotFound( findID(<resource>, /id, ?fields, None, None, None), /id )
+			|  GET     /                                 Ok( list(<resource>, ?fields, ?filter, ?order, ?page, ?start, ?limit) )
+			|  GET     /count                            Ok( count(<resource>, ?filter) )
+			|  GET     /sum/field:                       Ok( sum(<resource>, ?filter, /field) )
+			|  GET     /avg/field:                       Ok( avg(<resource>, ?filter, /field) )
+			|  GET     /min/field:                       Ok( min(<resource>, ?filter, /field) )
+			|  GET     /max/field:                       Ok( max(<resource>, ?filter, /field) )
+			|  GET     /schema                           Ok( tableSchema(<resource>) )
+			|  POST    /                                 Created( insert(<resource>, $entity) )
+			|  PATCH   /id:long                          OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, false), /id )
+			|  PUT     /id:long                          OkAtLeastOneOrNotFoundId( update(<resource>, /id, $entity, true), /id )
+			|  DELETE  /id:long                          OkAtLeastOneOrNotFoundId( delete(<resource>, /id), /id )
+			|  DELETE  /													       deleteMany( <resource>, ?filter ); NoContent()
 		""".stripMargin
 
 	val mtmroutes =
 		"""
-		|routes <base>/<resource> <authorize>
-		|  GET     /id:long/field:            OkSingleOrNotFound( findIDMany(<resource>, /id, /field, ?page, ?start, ?limit), /id )
-		|  POST    /id:long/field:            Created( append(<resource>, /id, /field, $entity) )
-		|  POST    /sid:long/field:/tid:long  appendIDs( <resource>, /sid, /field, /tid ); NoContent()
-		|  DELETE  /id:long/field:            deleteLinks( <resource>, /id, /field, $entity ); NoContent()
-		|  DELETE  /id:long/field:/tid:long   OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, /id, /field, /tid), /id )
+			|routes <base>/<resource> <authorize>
+			|  GET     /id:long/field:                   OkSingleOrNotFound( findIDMany(<resource>, /id, /field, ?page, ?start, ?limit), /id )
+			|  POST    /id:long/field:                   Created( append(<resource>, /id, /field, $entity) )
+			|  POST    /sid:long/field:/target/tid:long  appendIDs( <resource>, /sid, /field, /tid ); NoContent()
+			|  DELETE  /id:long/field:                   deleteLinks( <resource>, /id, /field, $entity ); NoContent()
+			|  DELETE  /id:long/field:/target/tid:long   OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, /id, /field, /tid), /id )
+		""".stripMargin
+
+	val arrayroutes =
+		"""
+			|routes <base>/<resource> <authorize>
+			|  POST    /id:long/field:/idx:int           Created( arrayInsert(<resource>, /id, /field, /idx, $entity) )
+			|  PUT     /id:long/field:/idx:int           arrayUpdate( <resource>, /id, /field, /idx, $entity ); NoContent()
+			|  DELETE  /id:long/field:/idx:int           OkAtLeastOneOrNotFoundId( arrayDelete(<resource>, /id, /field, /idx), /id )
 		""".stripMargin
 
 	val special =
 		"""
-		|resource users private
-		|  email string unique
-		|  createdTime timestamp
-		|  updatedTime timestamp
-		|  state integer
-		|  groups [string]
-		|  password string secret
-		|
-		|routes protected
-		|  GET     /users/me                  Ok( me() )
-		|
-		|table tokens
-		|  token string unique
-		|  created timestamp
-		|  user users
-		|
-		|routes /meta private
-		|  DELETE  /res:                      Ok( deleteResource(res) )
-		|  GET /schema												Ok( databaseSchema() )
-		|
-		|routes <base>
-		|  POST    /login                     Ok( login($entity) )
-		|  GET     /logout                    OkAtLeastOneOrNotFound( logout(), "token not found" )
-		|  POST    /register                  Created( register($entity) )
-		|
-		|table _media_
-		|  type string
-		|  data blob(urlchars)
-		|
-		|routes
-		|  GET /"media"/id:long                Ok( readMedia(/id) )
+			|resource users private
+			|  email string unique
+			|  createdTime timestamp
+			|  updatedTime timestamp
+			|  state integer
+			|  groups [string]
+			|  password string secret
+			|
+			|routes protected
+			|  GET     /users/me                         Ok( me() )
+			|
+			|table tokens
+			|  token string unique
+			|  created timestamp
+			|  user users
+			|
+			|routes /meta private
+			|  DELETE  /res:                             Ok( deleteResource(res) )
+			|  GET /schema												       Ok( databaseSchema() )
+			|
+			|routes <base>
+			|  POST    /login                            Ok( login($entity) )
+			|  GET     /logout                           OkAtLeastOneOrNotFound( logout(), "token not found" )
+			|  POST    /register                         Created( register($entity) )
+			|
+			|table _media_
+			|  type string
+			|  data blob(urlchars)
+			|
+			|routes
+			|  GET /"media"/id:long                      Ok( readMedia(/id) )
 		""".stripMargin
 }
