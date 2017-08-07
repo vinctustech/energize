@@ -249,11 +249,18 @@ object QueryFunctions {
 	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
 		findValue( env, resource, field, value, allowsecret ).headOption
 
-//	def findField( env: Environment, resource: String, id: Long, field: String ) =
-//		query( env, env.tables(env.db.desensitize(resource)), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
+	def findField( env: Environment, resource: Table, id: Long, field: String ) =
+		query( env, resource, Query(s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
+
+	def readID( env: Environment, resource: Table, id: Long, field: String ) = {
+		val res = env.statement.executeQuery( s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id" )
+
+		res.next
+		res.getLong( 1 )
+	}
 
 	def readBlob( env: Environment, resource: String, id: Long, field: String ) = {
-		val res = env.statement.executeQuery( s"SELECT $field FROM $resource WHERE $idIn = $id" )
+		val res = env.statement.executeQuery( s"SELECT ${nameIn(field)} FROM $resource WHERE $idIn = $id" )
 
 		res.next
 
