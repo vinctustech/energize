@@ -3,6 +3,8 @@ package xyz.hyperreal.energize
 import java.sql.{PreparedStatement, Types}
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
+import scala.collection.mutable.ListBuffer
+
 
 object CommandFunctionHelpers {
 
@@ -253,6 +255,7 @@ object CommandFunctions {
 	
 	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) = {
 		val fields = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet
+		val mediaDeletes = new ListBuffer[Long]
 
 		if (all && json.keySet != fields)
 			if ((fields -- json.keySet) nonEmpty)
@@ -275,7 +278,13 @@ object CommandFunctions {
 							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"
 							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _, _, _, _ ) => kIn + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
-							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )
+							case BLOBType( _ ) => throw new BadRequestException( "updating a blob field isn't supported yet" )
+							case MediaType( allowed, _, _ ) =>
+								val oldid = QueryFunctions.readID( env, resource, id, k )
+								val newid = CommandFunctionHelpers.mediaInsert( env, allowed, v.asInstanceOf[String] )
+
+								mediaDeletes += oldid
+								kIn + " = " + String.valueOf( newid )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 									s"$kIn = $v"
@@ -290,7 +299,13 @@ object CommandFunctions {
 					}) mkString ", "
 			com ++= s" WHERE $idIn = "
 			com ++= id.toString
-			env.statement.executeUpdate( com.toString )
+
+			val res = env.statement.executeUpdate( com.toString )
+
+			for (id <- mediaDeletes)
+				delete( env, env table "_media_", id )//todo: put the Table object for _media_ somewhere so it doesn't have to be looked up
+
+			res
 		}
 	}
 

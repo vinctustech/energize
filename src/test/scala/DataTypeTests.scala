@@ -572,18 +572,20 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin)
 		(env.process( "GET", "/media/1", null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
 			(SC_OK, "image/gif", base642bytes("R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==").toList)
-//		env.process( "PUT", "/test/1", """{a: "123457"}""" ) shouldBe(SC_NO_CONTENT, null, null)
-//		env.process( "GET", "/test", null ) shouldBe(SC_OK, "application/json",
-//			"""
-//				|{
-//				|  "data": [
-//				|    {
-//				|      "_id": 1,
-//				|      "a": "123457"
-//				|    }
-//				|  ]
-//				|}
-//			""".trim.stripMargin)
+		env.process( "PUT", "/test/1", """{a: "data:,Hello, World!"}""" ) shouldBe(SC_NO_CONTENT, null, null)
+		env.process( "GET", "/test", null ) shouldBe(SC_OK, "application/json",
+			"""
+				|{
+				|  "data": [
+				|    {
+				|      "_id": 1,
+				|      "a": "/media/2"
+				|    }
+				|  ]
+				|}
+			""".trim.stripMargin)
+		(env.process( "GET", "/media/2", null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
+			(SC_OK, "text/plain", "Hello, World!" map (_.toInt) toList)
 	}
 
 }
