@@ -1,6 +1,7 @@
 package xyz.hyperreal.energize
 
-import java.sql.{PreparedStatement, Types}
+import java.sql.{Date, PreparedStatement, Types}
+import java.time.LocalDate
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 import scala.collection.mutable.ListBuffer
@@ -96,6 +97,7 @@ object CommandFunctionHelpers {
 				case TimestampType => Types.TIMESTAMP
 				case ArrayType( _, _, _, _ ) => Types.ARRAY
 				case DecimalType( _, _ ) => Types.DECIMAL
+				case DateType => Types.DATE
 			}
 
 		preparedStatement.setNull( col, t )
@@ -128,15 +130,16 @@ object CommandFunctions {
 			for (((i, t), v) <- types zip (if (full) r.tail else r)) {
 				(t, v) match {
 					case (_, null) => CommandFunctionHelpers.setNull( preparedStatement, i, t )
-					case (StringType, a: String) => preparedStatement.setString( i, a )
+					case (StringType|TextType, a: String) => preparedStatement.setString( i, a )
 					case (IntegerType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
 					case (_: SingleReferenceType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
 					case (LongType, a: java.lang.Long) => preparedStatement.setLong( i, a )
 					case (DecimalType( _, _ ), a: BigDecimal) => preparedStatement.setBigDecimal( i, a.underlying )
-					case x => throw new BadRequestException( s"don't know what to do with $x" )
+					case (DateType, a: LocalDate) => preparedStatement.setDate( i, Date.valueOf(a) )
+					case x => throw new BadRequestException( s"don't know what to do with $x, ${v.getClass}" )
 				}
 			}
-				
+
 			preparedStatement.addBatch
 		}
 		
@@ -306,6 +309,13 @@ object CommandFunctions {
 				delete( env, env table "_media_", id )//todo: put the Table object for _media_ somewhere so it doesn't have to be looked up
 
 			res
+		}
+	}
+
+	def arrayInsert( env: Environment, resource: Table, id: Long, field: String, idx: Int, json: OBJ ): Unit = {
+		json get "data" match {
+			case None => throw new BadRequestException( "arrayInsert: 'data' field not found" )
+			case Some( data ) =>
 		}
 	}
 

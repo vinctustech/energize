@@ -336,10 +336,14 @@ object Energize {
 
 							val typ1 =
 								typ match {
-									case IdentType( ident ) =>
+									case t@IdentType( ident ) =>
 										defines get ident match {
 											case Some( e: Enum ) => EnumType( ident, e.enum.toVector )
-											case _ => SingleReferenceType( ident, null )
+											case _ =>
+												val res = SingleReferenceType( ident, null )
+
+												res.pos = t.pos
+												res
 										}
 									case t => t
 								}

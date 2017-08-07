@@ -1,4 +1,4 @@
-Energize [![Build Status](https://travis-ci.org/vinctustech/energize.svg?branch=master)](https://travis-ci.org/vinctustech/energize) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+Energize [![Build Status](https://travis-ci.org/vinctustech/energize.svg?branch=master)](https://travis-ci.org/vinctustech/energize) [![License](https://img.shields.io/badge/license-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
 API Platform
 
@@ -123,13 +123,13 @@ getting the response
 	{
 	  "data": [
 	    {
-	      "id": 1,
+	      "_id": 1,
 	      "name": "finish 0.1",
 	      "description": null,
 	      "status": 1
 	    },
 	    {
-	      "id": 2,
+	      "_id": 2,
 	      "name": "write readme",
 	      "description": "add example involving finishing 0.1 and writing the readme",
 	      "status": 1
@@ -145,7 +145,7 @@ to get
 
 	{
 	  "data": {
-	    "id": 2,
+	    "_id": 2,
 	    "name": "write readme",
 	    "description": "add example involving finishing 0.1 and writing the readme",
 	    "status": 1
@@ -161,7 +161,7 @@ Press `Ctrl-C` to stop the server.
 
 ### REPL
 
-To start the REPL, type the following command (while in the same folder where the executable was placed)
+To start the REPL (read, execute, print, loop), type the following command (while in the same folder where the executable was placed)
 
 	java -cp energize-0.11.jar xyz.hyperreal.energize.REPLMain
   
