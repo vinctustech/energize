@@ -103,7 +103,10 @@ object Builtins {
 			|  user users
 			|
 			|routes /meta private
-			|  DELETE  /res:                             Ok( deleteResource(res) )
+			|  POST /resourse:/field:                    Ok( createField(/resourse, /field, $entity) )
+			|  PUT /resourse:/field:/newname:            Ok( renameField(/resourse, /field, /newname) )
+			|  DELETE /resourse:/field:                  Ok( deleteField(/resourse, /field) )
+			|  DELETE /resourse:                         Ok( deleteResource(/resourse) )
 			|  GET /schema												       Ok( databaseSchema() )
 			|
 			|routes <base>
