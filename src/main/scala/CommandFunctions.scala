@@ -319,7 +319,7 @@ object CommandFunctions {
 
 	def arrayInsert( env: Environment, resource: Table, id: Long, field: String, idx: Int, json: OBJ ): Unit = {
 		json get "data" match {
-			case None => throw new BadRequestException( "arrayInsert: 'data' field not found" )
+			case None => throw new BadRequestException( "arrayInsert: 'data' not found in JSON body" )
 			case Some( data ) =>
 				val oldarray = QueryFunctions.readField( env, resource, id, field ).asInstanceOf[Array[Any]]
 
@@ -327,8 +327,16 @@ object CommandFunctions {
 					throw new BadRequestException( s"arrayInsert: array index is out of range: $idx" )
 
 				val newarray = ListBuffer[Any]( oldarray.view(0, idx): _* )
+				val item =
+					resource.columnMap get field match {
+						case None => throw new NotFoundException( s"arrayInsert: '$field' not found" )
+						case Some( Column(_, ArrayType(MediaType(allowed, _, _),_, _, _), _, _, _, _, _) ) =>
+							println( 123)
+							CommandFunctionHelpers.mediaInsert( env, allowed, data.toString )
+						case _ => data
+					}
 
-				newarray += data
+				newarray += item
 				newarray ++= oldarray.view( idx, oldarray.length )
 				update( env, resource, id, Map(field -> newarray), false )
 		}
