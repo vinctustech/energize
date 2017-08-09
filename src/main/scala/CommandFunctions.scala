@@ -367,6 +367,29 @@ object CommandFunctions {
 		}
 	}
 
+	def arrayDelete( env: Environment, resource: Table, id: Long, field: String, idx: Int ): Unit = {
+		val oldarray = QueryFunctions.readField( env, resource, id, field ).asInstanceOf[Array[Any]]
+
+		if (idx < 0 || idx > oldarray.length)
+			throw new BadRequestException( s"arrayDelete: array index is out of range: $idx" )
+
+		val newarray = ListBuffer[Any]( oldarray: _* )
+		val todelete =
+			resource.columnMap get field match {
+				case None => throw new NotFoundException( s"arrayDelete: '$field' not found" )
+				case Some( Column(_, ArrayType(MediaType(_, _, _),_, _, _), _, _, _, _, _) ) =>
+					println( oldarray(idx) )
+					Some( oldarray(idx).asInstanceOf[Long] )
+				case _ => None
+			}
+
+		newarray remove idx
+		update( env, resource, id, Map(field -> newarray), false )
+
+		if (todelete isDefined)
+			delete( env, env table "_media_", todelete get )
+	}
+
 	def insertLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =
 		json get field match {
 			case None => throw new BadRequestException( s"insertLinks: field not found: $field" )
