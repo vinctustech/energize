@@ -250,11 +250,11 @@ object QueryFunctions {
 	def findField( env: Environment, resource: Table, id: Long, field: String ) =
 		query( env, resource, Query(s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
 
-	def readID( env: Environment, resource: Table, id: Long, field: String ) = {
+	def readField( env: Environment, resource: Table, id: Long, field: String ) = {
 		val res = env.statement.executeQuery( s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id" )
 
 		res.next
-		res.getLong( 1 )
+		res.getObject( 1 )
 	}
 
 	def readBlob( env: Environment, resource: String, id: Long, field: String ) = {

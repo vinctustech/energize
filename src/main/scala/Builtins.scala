@@ -79,9 +79,9 @@ object Builtins {
 	val arrayroutes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  POST    /id:long/field:/idx:int           Created( arrayInsert(<resource>, /id, /field, /idx, $entity) )
-			|  PUT     /id:long/field:/idx:int           arrayUpdate( <resource>, /id, /field, /idx, $entity ); NoContent()
-			|  DELETE  /id:long/field:/idx:int           OkAtLeastOneOrNotFoundId( arrayDelete(<resource>, /id, /field, /idx), /id )
+			|  POST    /id:long/field:/idx:integer       arrayInsert( <resource>, /id, /field, /idx, $entity ); NoContent()
+			|  PUT     /id:long/field:/idx:integer       arrayUpdate( <resource>, /id, /field, /idx, $entity ); NoContent()
+			|  DELETE  /id:long/field:/idx:integer       OkAtLeastOneOrNotFoundId( arrayDelete(<resource>, /id, /field, /idx), /id )
 		""".stripMargin
 
 	val special =

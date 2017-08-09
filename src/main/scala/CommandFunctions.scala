@@ -278,12 +278,17 @@ object CommandFunctions {
 
 						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => kIn + " = '" + env.db.readTimestamp( v.toString ) + "'"
-							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"
+							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
 							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
-							case ArrayType( _, _, _, _ ) => kIn + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
+							case ArrayType( _, _, _, _ ) =>
+								kIn + " = " + v.asInstanceOf[Seq[Any]].
+									map {
+										case e: String => s"'$e'"//todo: escape string (taylored for database)
+										case e => String.valueOf( e )
+									}.mkString( "(", ", ", ")" )
 							case BLOBType( _ ) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case MediaType( allowed, _, _ ) =>
-								val oldid = QueryFunctions.readID( env, resource, id, k )
+								val oldid = QueryFunctions.readField( env, resource, id, k ).asInstanceOf[Long]
 								val newid = CommandFunctionHelpers.mediaInsert( env, allowed, v.asInstanceOf[String] )
 
 								mediaDeletes += oldid
@@ -316,6 +321,16 @@ object CommandFunctions {
 		json get "data" match {
 			case None => throw new BadRequestException( "arrayInsert: 'data' field not found" )
 			case Some( data ) =>
+				val oldarray = QueryFunctions.readField( env, resource, id, field ).asInstanceOf[Array[Any]]
+
+				if (idx < 0 || idx > oldarray.length)
+					throw new BadRequestException( s"arrayInsert: array index is out of range: $idx" )
+
+				val newarray = ListBuffer[Any]( oldarray.view(0, idx): _* )
+
+				newarray += data
+				newarray ++= oldarray.view( idx, oldarray.length )
+				update( env, resource, id, Map(field -> newarray), false )
 		}
 	}
 
