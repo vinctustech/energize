@@ -2,7 +2,7 @@ name := "energize"
 
 version := "0.10.8"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
 crossScalaVersions := Seq( "2.11.11" )
 
@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
 	"org.xerial" % "sqlite-jdbc" % "3.16.1",
 	"org.firebirdsql.jdbc" % "jaybird-jdk16" % "2.2.12",
 	"org.apache.derby" % "derby" % "10.13.1.1",
-	"jline" % "jline" % "2.14.3",
+	"jline" % "jline" % "2.14.4",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
@@ -73,7 +73,7 @@ pomIncludeRepository := { _ => false }
 
 licenses := Seq("ISC" -> url("https://opensource.org/licenses/ISC"))
 
-homepage := Some(url("https://github.com/vinctustech/" + name.value))
+homepage := Some(url("https://github.com/edadma/" + name.value))
 
 pomExtra :=
   <scm>
