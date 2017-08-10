@@ -59,10 +59,6 @@ mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMai
 
 mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".ServerMain" )
 
-//Revolver.settings
-//
-//mainClass in Revolver.reStart := Some("xyz.hyperreal." + name.value + ".ServerMain" )
-
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 
 publishMavenStyle := true
@@ -73,12 +69,12 @@ pomIncludeRepository := { _ => false }
 
 licenses := Seq("ISC" -> url("https://opensource.org/licenses/ISC"))
 
-homepage := Some(url("https://github.com/edadma/" + name.value))
+homepage := Some(url("https://github.com/vinctustech/" + name.value))
 
 pomExtra :=
   <scm>
     <url>git@github.com:edadma/{name.value}.git</url>
-    <connection>scm:git:git@github.com:edadma/{name.value}.git</connection>
+    <connection>scm:git:git@github.com:vinctustech/{name.value}.git</connection>
   </scm>
   <developers>
     <developer>
@@ -91,8 +87,3 @@ pomExtra :=
     </developer>
   </developers>
 
-//enablePlugins(HugoPlugin)
-
-//ghpages.settings
-
-//git.remoteRepo := s"git@github.com:edadma/${name.value}.git"
