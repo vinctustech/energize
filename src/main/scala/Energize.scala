@@ -370,15 +370,26 @@ object Energize {
 							if (mtm)
 								routes ++= configure_( Builtins.mtmroutes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
 									connection, statement, db ).routes
+
+							if (cols exists {case (_, c) => c.typ.isInstanceOf[ArrayType]})
+								routes ++= configure_( Builtins.arrayroutes.replaceAll("<base>", "").replaceAll("<resource>", name).replaceAll("<authorize>", authorize),
+									connection, statement, db ).routes
 						} else
-							for (URIPath( base ) <- base) {
-								routes ++= configure_( Builtins.routes.replaceAll( "<resource>", name ).
-									replaceAll( "<base>", base map {case NameURISegment( segment ) => segment} mkString("/", "/", "") ).replaceAll("<authorize>", authorize),
+							for (URIPath( path ) <- base) {
+								val basepath = path map {case NameURISegment( segment ) => segment} mkString("/", "/", "")
+
+								routes ++= configure_( Builtins.routes.replaceAll("<resource>", name).
+									replaceAll("<base>", basepath ).replaceAll("<authorize>", authorize),
 									connection, statement, db ).routes
 
 								if (mtm)
-									routes ++= configure_( Builtins.mtmroutes.replaceAll( "<resource>", name ).
-										replaceAll( "<base>", base map {case NameURISegment( segment ) => segment} mkString("/", "/", "") ).replaceAll("<authorize>", authorize),
+									routes ++= configure_( Builtins.mtmroutes.replaceAll("<resource>", name).
+										replaceAll("<base>", basepath).replaceAll("<authorize>", authorize),
+										connection, statement, db ).routes
+
+								if (cols exists { case (_, c) => c.typ.isInstanceOf[ArrayType] })
+									routes ++= configure_( Builtins.arrayroutes.replaceAll("<resource>", name).
+										replaceAll("<base>", basepath).replaceAll("<authorize>", authorize),
 										connection, statement, db ).routes
 							}
 					}
