@@ -91,7 +91,7 @@ object UtilityFunctions {
 
 		def uripath( path: URIPath ) = path.segments map {case NameURISegment( n ) => n} mkString ("/", "/", "")
 
-		val Table(name, columns, _, resource, base, mtm, _, _) = table
+		val Table(name, columns, _, resource, base, _, _, _, _) = table
 
 		Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns), "base" -> (base map uripath orNull) )
 	}
