@@ -109,9 +109,24 @@ object CommandFunctions {
 
 	def command( env: Environment, sql: String ) = env.statement.executeUpdate( sql )
 	
-	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
+	def delete( env: Environment, resource: Table, id: Long ): Int = {
+		if (resource.ma)
+			resource.columns foreach {
+				case Column( name, ArrayType(MediaType(_, _, _), _, _, _),_, _, _, _, _ ) =>
+					for (mid <- QueryFunctions.readField( env, resource, id, name ).asInstanceOf[Array[Long]])
+						deleteMedia( env, mid )
+				case _ =>
+			}
 
-	def deleteMany( env: Environment, resource: Table, filter: Option[String] ) = command( env, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering(filter)}" )
+		command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
+	}
+
+	//todo: deal with resources that have media arrays as in delete()
+	def deleteMany( env: Environment, resource: Table, filter: Option[String] ) = {
+		command( env, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering( filter )}" )
+	}
+
+	def deleteMedia( env: Environment, id: Long ) = delete( env, env table "_media_", id )//todo: put the Table object for _media_ somewhere so it doesn't have to be looked up
 
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
@@ -311,7 +326,7 @@ object CommandFunctions {
 			val res = env.statement.executeUpdate( com.toString )
 
 			for (id <- mediaDeletes)
-				delete( env, env table "_media_", id )//todo: put the Table object for _media_ somewhere so it doesn't have to be looked up
+				deleteMedia( env, id )
 
 			res
 		}
@@ -378,7 +393,6 @@ object CommandFunctions {
 			resource.columnMap get field match {
 				case None => throw new NotFoundException( s"arrayDelete: '$field' not found" )
 				case Some( Column(_, ArrayType(MediaType(_, _, _),_, _, _), _, _, _, _, _) ) =>
-					println( oldarray(idx) )
 					Some( oldarray(idx).asInstanceOf[Long] )
 				case _ => None
 			}
