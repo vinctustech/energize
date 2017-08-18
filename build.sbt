@@ -72,7 +72,7 @@ homepage := Some(url("https://github.com/vinctustech/" + name.value))
 
 pomExtra :=
   <scm>
-    <url>git@github.com:edadma/{name.value}.git</url>
+    <url>git@github.com:vinctustech/{name.value}.git</url>
     <connection>scm:git:git@github.com:vinctustech/{name.value}.git</connection>
   </scm>
   <developers>
