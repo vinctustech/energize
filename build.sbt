@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.10.8"
+version := "0.10.9"
 
 scalaVersion := "2.12.3"
 
@@ -42,8 +42,7 @@ libraryDependencies ++= Seq(
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
 	"org.mindrot" % "jbcrypt" % "0.3m",
-	"com.typesafe.akka" %% "akka-http-spray-json" % "10.0.5"
-	//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
+	"org.parboiled" %% "parboiled" % "2.1.4"
 )
 
 libraryDependencies ++= Seq(
