@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.10.9"
+version := "0.10.10"
 
 scalaVersion := "2.12.3"
 
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
 	"org.scala-lang.modules" %% "scala-xml" % "1.0.6"
 //	"org.scala-lang.modules" %% "scala-swing" % "1.0.2"
 )
@@ -46,10 +46,10 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "indentation-lexical" % "0.8",
+	"xyz.hyperreal" %% "indentation-lexical" % "0.8.1",
 	"xyz.hyperreal" %% "json" % "0.7",
 	"xyz.hyperreal" %% "table" % "0.9",
-	"xyz.hyperreal" %% "lia" % "0.21",
+	"xyz.hyperreal" %% "lia" % "0.21.1",
 	"xyz.hyperreal" %% "options" % "0.2",
 	"xyz.hyperreal" %% "importer" % "0.4"
 )
