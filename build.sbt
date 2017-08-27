@@ -1,8 +1,8 @@
 name := "energize"
 
-version := "0.10.7"
+version := "0.10.10"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.3"
 
 crossScalaVersions := Seq( "2.11.11" )
 
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
 	"org.scala-lang.modules" %% "scala-xml" % "1.0.6"
 //	"org.scala-lang.modules" %% "scala-swing" % "1.0.2"
 )
@@ -37,31 +37,26 @@ libraryDependencies ++= Seq(
 	"org.xerial" % "sqlite-jdbc" % "3.16.1",
 	"org.firebirdsql.jdbc" % "jaybird-jdk16" % "2.2.12",
 	"org.apache.derby" % "derby" % "10.13.1.1",
-	"jline" % "jline" % "2.14.3",
+	"jline" % "jline" % "2.14.4",
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
 	"org.mindrot" % "jbcrypt" % "0.3m",
-	"com.typesafe.akka" %% "akka-http-spray-json" % "10.0.5"
-	//	"org.msgpack" %% "msgpack-scala" % "0.6.11"
+	"org.parboiled" %% "parboiled" % "2.1.4"
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "indentation-lexical" % "0.8",
+	"xyz.hyperreal" %% "indentation-lexical" % "0.8.1",
 	"xyz.hyperreal" %% "json" % "0.7",
-	"xyz.hyperreal" %% "table" % "0.4",
-	"xyz.hyperreal" %% "lia" % "0.21",
+	"xyz.hyperreal" %% "table" % "0.9",
+	"xyz.hyperreal" %% "lia" % "0.21.1",
 	"xyz.hyperreal" %% "options" % "0.2",
-	"xyz.hyperreal" %% "importer" % "0.1"
+	"xyz.hyperreal" %% "importer" % "0.4"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value + ".ServerMain" )
 
 mainClass in assembly := Some( "xyz.hyperreal." + name.value + ".ServerMain" )
-
-//Revolver.settings
-//
-//mainClass in Revolver.reStart := Some("xyz.hyperreal." + name.value + ".ServerMain" )
 
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 
@@ -71,14 +66,14 @@ publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
+licenses := Seq("ISC" -> url("https://opensource.org/licenses/ISC"))
 
-homepage := Some(url("https://github.com/edadma/" + name.value))
+homepage := Some(url("https://github.com/vinctustech/" + name.value))
 
 pomExtra :=
   <scm>
-    <url>git@github.com:edadma/{name.value}.git</url>
-    <connection>scm:git:git@github.com:edadma/{name.value}.git</connection>
+    <url>git@github.com:vinctustech/{name.value}.git</url>
+    <connection>scm:git:git@github.com:vinctustech/{name.value}.git</connection>
   </scm>
   <developers>
     <developer>
@@ -91,8 +86,3 @@ pomExtra :=
     </developer>
   </developers>
 
-//enablePlugins(HugoPlugin)
-
-//ghpages.settings
-
-//git.remoteRepo := s"git@github.com:edadma/${name.value}.git"

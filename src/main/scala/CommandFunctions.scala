@@ -1,7 +1,10 @@
 package xyz.hyperreal.energize
 
-import java.sql.Types
+import java.sql.{Date, PreparedStatement, Types}
+import java.time.LocalDate
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
+
+import scala.collection.mutable.ListBuffer
 
 
 object CommandFunctionHelpers {
@@ -80,13 +83,50 @@ object CommandFunctionHelpers {
 
 				CommandFunctions.insert( env, env table "_media_", Map("type" -> s"$typ/$subtype$parameter", "data" -> data) )
 		}
+
+	def setNull( preparedStatement: PreparedStatement, col: Int, typ: ColumnType ): Unit = {
+		val t =
+			typ match {
+				case BooleanType => Types.BOOLEAN
+				case StringType => Types.VARCHAR
+				case TextType => Types.CLOB
+				case IntegerType => Types.INTEGER
+				case FloatType => Types.FLOAT
+				case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT
+				case BLOBType( _ ) => Types.BLOB
+				case TimestampType => Types.TIMESTAMP
+				case ArrayType( _, _, _, _ ) => Types.ARRAY
+				case DecimalType( _, _ ) => Types.DECIMAL
+				case DateType => Types.DATE
+			}
+
+		preparedStatement.setNull( col, t )
+	}
+
 }
 
 object CommandFunctions {
 
 	def command( env: Environment, sql: String ) = env.statement.executeUpdate( sql )
 	
-	def delete( env: Environment, resource: Table, id: Long ) = command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
+	def delete( env: Environment, resource: Table, id: Long ): Int = {
+		if (resource.ma)
+			resource.columns foreach {
+				case Column( name, ArrayType(MediaType(_, _, _), _, _, _),_, _, _, _, _ ) =>
+					for (mid <- QueryFunctions.readField( env, resource, id, name ).asInstanceOf[Array[Long]])
+						deleteMedia( env, mid )
+				case _ =>
+			}
+
+		command( env, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
+	}
+
+	//todo: deal with resources that have media arrays as in delete()
+	def deleteMany( env: Environment, resource: Table, filter: Option[String] ) = {
+		command( env, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering( filter )}" )
+	}
+
+	def deleteMedia( env: Environment, id: Long ) = delete( env, env table "_media_", id )//todo: put the Table object for _media_ somewhere so it doesn't have to be looked up
 
 	def deleteValue( env: Environment, resource: Table, field: String, value: Any ) =
 		value match {
@@ -94,24 +134,32 @@ object CommandFunctions {
 			case _ => command( env, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
 		}
 
-	def batchInsert( env: Environment, resource: Table, rows: List[List[AnyRef]] ) {
-		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + 1, c.typ)
-			
+	def batchInsert( env: Environment, resource: Table, rows: List[Seq[AnyRef]], full: Boolean ) {
+		val types = for ((c, i) <- resource.columns zipWithIndex) yield (i + (if (full) 2 else 1), c.typ)
+		val preparedStatement = if (full) resource.preparedFullInsert else resource.preparedInsert
+
 		for (r <- rows) {
-			for (((i, t), v) <- types zip r) {
+			if (full)
+				preparedStatement.setInt( 1, r.head.asInstanceOf[java.lang.Integer] )
+
+			for (((i, t), v) <- types zip (if (full) r.tail else r)) {
 				(t, v) match {
-					case (StringType, a: String) => resource.preparedInsert.setString( i, a )
-					case (IntegerType, a: java.lang.Integer) => resource.preparedInsert.setInt( i, a )
-					case (LongType, a: java.lang.Long) => resource.preparedInsert.setLong( i, a )
-					case _ => throw new BadRequestException( s"missing support for '$t'" )
+					case (_, null) => CommandFunctionHelpers.setNull( preparedStatement, i, t )
+					case (StringType|TextType, a: String) => preparedStatement.setString( i, a )
+					case (IntegerType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
+					case (_: SingleReferenceType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
+					case (LongType, a: java.lang.Long) => preparedStatement.setLong( i, a )
+					case (DecimalType( _, _ ), a: BigDecimal) => preparedStatement.setBigDecimal( i, a.underlying )
+					case (DateType, a: LocalDate) => preparedStatement.setDate( i, Date.valueOf(a) )
+					case x => throw new BadRequestException( s"don't know what to do with $x, ${v.getClass}" )
 				}
 			}
-				
-			resource.preparedInsert.addBatch
+
+			preparedStatement.addBatch
 		}
 		
-		resource.preparedInsert.executeBatch
-		resource.preparedInsert.clearParameters
+		preparedStatement.executeBatch
+		preparedStatement.clearParameters
 	}
 	
 	def insert( env: Environment, resource: Table, json: OBJ ): Long = {
@@ -125,26 +173,9 @@ object CommandFunctions {
 		val mtms = resource.columns filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
 
 		for ((c, i) <- cols zipWithIndex) {
-			def setNull: Unit = {
-				val t =
-					c.typ match {
-						case BooleanType => Types.BOOLEAN
-						case StringType => Types.VARCHAR
-						case TextType => Types.CLOB
-						case IntegerType => Types.INTEGER
-						case FloatType => Types.FLOAT
-						case LongType|SingleReferenceType( _, _ )|MediaType( _, _, _ ) => Types.BIGINT
-						case BLOBType( _ ) => Types.BLOB
-						case TimestampType => Types.TIMESTAMP
-						case ArrayType( _, _, _, _ ) => Types.ARRAY
-					}
-
-				resource.preparedInsert.setNull( i + 1, t )
-			}
-
 			json1 get c.name match {
-				case None => setNull
-				case Some( null ) => setNull
+				case None => CommandFunctionHelpers.setNull( resource.preparedInsert, i + 1, c.typ )
+				case Some( null ) => CommandFunctionHelpers.setNull( resource.preparedInsert, i + 1, c.typ )
 				case Some( v ) =>
 					c.typ match {
 						case SingleReferenceType( _, tref ) if !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
@@ -242,6 +273,7 @@ object CommandFunctions {
 	
 	def update( env: Environment, resource: Table, id: Long, json: OBJ, all: Boolean ) = {
 		val fields = resource.columns filterNot (c => c.typ.isInstanceOf[ManyReferenceType]) map (c => c.name) toSet
+		val mediaDeletes = new ListBuffer[Long]
 
 		if (all && json.keySet != fields)
 			if ((fields -- json.keySet) nonEmpty)
@@ -261,10 +293,21 @@ object CommandFunctions {
 
 						resource.columnMap(k).typ match {
 							case DatetimeType | TimestampType => kIn + " = '" + env.db.readTimestamp( v.toString ) + "'"
-							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"
+							case UUIDType | TimeType | DateType | StringType | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
 							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
-							case ArrayType( _, _, _, _ ) => kIn + " = " + v.asInstanceOf[Seq[Any]].mkString( "(", ", ", ")" )
-							case BLOBType(_) => throw new BadRequestException( "updating a blob field isn't supported yet" )
+							case ArrayType( _, _, _, _ ) =>
+								kIn + " = " + v.asInstanceOf[Seq[Any]].
+									map {
+										case e: String => s"'$e'"//todo: escape string (taylored for database)
+										case e => String.valueOf( e )
+									}.mkString( "(", ", ", ")" )
+							case BLOBType( _ ) => throw new BadRequestException( "updating a blob field isn't supported yet" )
+							case MediaType( allowed, _, _ ) =>
+								val oldid = QueryFunctions.readField( env, resource, id, k ).asInstanceOf[Long]
+								val newid = CommandFunctionHelpers.mediaInsert( env, allowed, v.asInstanceOf[String] )
+
+								mediaDeletes += oldid
+								kIn + " = " + String.valueOf( newid )
 							case t: SingleReferenceType if v ne null =>
 								if (v.isInstanceOf[Int] || v.isInstanceOf[Long])
 									s"$kIn = $v"
@@ -279,8 +322,86 @@ object CommandFunctions {
 					}) mkString ", "
 			com ++= s" WHERE $idIn = "
 			com ++= id.toString
-			env.statement.executeUpdate( com.toString )
+
+			val res = env.statement.executeUpdate( com.toString )
+
+			for (id <- mediaDeletes)
+				deleteMedia( env, id )
+
+			res
 		}
+	}
+
+	def arrayInsert( env: Environment, resource: Table, id: Long, field: String, idx: Int, json: OBJ ): Unit = {
+		json get "data" match {
+			case None => throw new BadRequestException( "arrayInsert: 'data' not found in JSON body" )
+			case Some( data ) =>
+				val oldarray = QueryFunctions.readField( env, resource, id, field ).asInstanceOf[Array[Any]]
+
+				if (idx < 0 || idx > oldarray.length)
+					throw new BadRequestException( s"arrayInsert: array index is out of range: $idx" )
+
+				val newarray = ListBuffer[Any]( oldarray.view(0, idx): _* )
+				val item =
+					resource.columnMap get field match {
+						case None => throw new NotFoundException( s"arrayInsert: '$field' not found" )
+						case Some( Column(_, ArrayType(MediaType(allowed, _, _),_, _, _), _, _, _, _, _) ) =>
+							CommandFunctionHelpers.mediaInsert( env, allowed, data.toString )
+						case _ => data
+					}
+
+				newarray += item
+				newarray ++= oldarray.view( idx, oldarray.length )
+				update( env, resource, id, Map(field -> newarray), false )
+		}
+	}
+
+	def arrayUpdate( env: Environment, resource: Table, id: Long, field: String, idx: Int, json: OBJ ): Unit = {
+		json get "data" match {
+			case None => throw new BadRequestException( "arrayUpdate: 'data' not found in JSON body" )
+			case Some( data ) =>
+				val oldarray = QueryFunctions.readField( env, resource, id, field ).asInstanceOf[Array[Any]]
+
+				if (idx < 0 || idx > oldarray.length)
+					throw new BadRequestException( s"arrayUpdate: array index is out of range: $idx" )
+
+				val newarray = ListBuffer[Any]( oldarray: _* )
+				val (item, todelete) =
+					resource.columnMap get field match {
+						case None => throw new NotFoundException( s"arrayUpdate: '$field' not found" )
+						case Some( Column(_, ArrayType(MediaType(allowed, _, _),_, _, _), _, _, _, _, _) ) =>
+							(CommandFunctionHelpers.mediaInsert( env, allowed, data.toString ), Some( oldarray(idx).asInstanceOf[Long] ))
+						case _ => (data, None)
+					}
+
+				newarray(idx) = item
+				update( env, resource, id, Map(field -> newarray), false )
+
+				if (todelete isDefined)
+					delete( env, env table "_media_", todelete get )
+		}
+	}
+
+	def arrayDelete( env: Environment, resource: Table, id: Long, field: String, idx: Int ): Unit = {
+		val oldarray = QueryFunctions.readField( env, resource, id, field ).asInstanceOf[Array[Any]]
+
+		if (idx < 0 || idx > oldarray.length)
+			throw new BadRequestException( s"arrayDelete: array index is out of range: $idx" )
+
+		val newarray = ListBuffer[Any]( oldarray: _* )
+		val todelete =
+			resource.columnMap get field match {
+				case None => throw new NotFoundException( s"arrayDelete: '$field' not found" )
+				case Some( Column(_, ArrayType(MediaType(_, _, _),_, _, _), _, _, _, _, _) ) =>
+					Some( oldarray(idx).asInstanceOf[Long] )
+				case _ => None
+			}
+
+		newarray remove idx
+		update( env, resource, id, Map(field -> newarray), false )
+
+		if (todelete isDefined)
+			delete( env, env table "_media_", todelete get )
 	}
 
 	def insertLinks( env: Environment, resource: Table, id: Long, field: String, json: OBJ ) =

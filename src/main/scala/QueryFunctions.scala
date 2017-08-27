@@ -7,7 +7,7 @@ import collection.immutable.ListMap
 
 
 object QueryFunctionHelpers {
-	val FILTER = "(.+)(=|<|>|<=|>=|!=|~)(.+)"r
+	val FILTER = """(.+)(=|<=|>=|<|>|!=|~\*|~)(.+)"""r
 	val ORDER = """(.+)\:(ASC|asc|DESC|desc)"""r
 	val DELIMITER = ","r
 	val NUMERIC = """[+-]?\d*\.?\d+(?:[eE][-+]?[0-9]+)?"""r
@@ -24,6 +24,8 @@ object QueryFunctionHelpers {
 
 						if (op == "~")
 							s"${nameIn(col)} LIKE '$search1'"
+						else if (op == "~*")
+							s"${nameIn(col)} ILIKE '$search1'"
 						else if (QueryFunctionHelpers.numeric( search1 ))
 							s"${nameIn(col)} $op $search1"
 						else
@@ -247,11 +249,18 @@ object QueryFunctions {
 	def findOption( env: Environment, resource: Table, field: String, value: Any, allowsecret: Boolean ) =
 		findValue( env, resource, field, value, allowsecret ).headOption
 
-//	def findField( env: Environment, resource: String, id: Long, field: String ) =
-//		query( env, env.tables(env.db.desensitize(resource)), s"SELECT $field FROM $resource WHERE id = $id", None, None, None, false ).head( field )
+	def findField( env: Environment, resource: Table, id: Long, field: String ) =
+		query( env, resource, Query(s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
+
+	def readField( env: Environment, resource: Table, id: Long, field: String ) = {
+		val res = env.statement.executeQuery( s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id" )
+
+		res.next
+		res.getObject( 1 )
+	}
 
 	def readBlob( env: Environment, resource: String, id: Long, field: String ) = {
-		val res = env.statement.executeQuery( s"SELECT $field FROM $resource WHERE $idIn = $id" )
+		val res = env.statement.executeQuery( s"SELECT ${nameIn(field)} FROM $resource WHERE $idIn = $id" )
 
 		res.next
 

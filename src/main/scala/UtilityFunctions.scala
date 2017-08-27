@@ -5,6 +5,7 @@ import java.time.{Instant, ZoneOffset}
 import util.Random._
 
 import xyz.hyperreal.table.TextTable
+import xyz.hyperreal.importer.Importer
 
 
 object UtilityFunctions {
@@ -90,7 +91,7 @@ object UtilityFunctions {
 
 		def uripath( path: URIPath ) = path.segments map {case NameURISegment( n ) => n} mkString ("/", "/", "")
 
-		val Table(name, columns, _, resource, base, mtm, _) = table
+		val Table(name, columns, _, resource, base, _, _, _, _) = table
 
 		Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns), "base" -> (base map uripath orNull) )
 	}
@@ -99,5 +100,14 @@ object UtilityFunctions {
 		val tables = env.tables.values map {t => tableSchema( env, t )}
 
 		Map( "tables" -> tables )
+	}
+
+	def populateDatabase( env: Environment, file: String ): Unit = {
+		new Importer().importFromFile( file, false ) foreach { table =>
+			env.tables get env.db.desensitize(table.name) match {
+				case None =>
+				case Some( t ) => CommandFunctions.batchInsert( env, t, table.data, true )
+			}
+		}
 	}
 }
