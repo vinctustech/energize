@@ -2,13 +2,12 @@
 
 [![Build Status](https://travis-ci.org/vinctustech/energize.svg?branch=master)](https://travis-ci.org/vinctustech/energize) [![License](https://img.shields.io/badge/license-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-API Framework
-
+Create a Rest API in Seconds
 
 Overview
 --------
 
-*Energize* allows you to get your REST API server and database up and running in very little time.
+*Energize* allows you to get your Rest API server and database up and running in very little time.
 
 
 License

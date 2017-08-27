@@ -3,14 +3,14 @@ layout: default
 title: Energize
 ---
 
-## Automated
+## Production Ready
 
-Simply define your resource using the basic [Energize Scripting Language](/energize/docs/action-script), and Energize will handle the rest for you. From creating the relational database, to generating all the routes and CRUD operations, every layer is automated.
+Use Energize to build a mock API in seconds. Your mock is also production ready, so let your users consume your API right away. Every feature you would need your API to have is baked-in and optimized.
 
-## Flexible
+## Database Generation
 
-Energize automates a lot for you, but it's also designed to be flexible enough for a wide range of requirements. That is why it's easy to override prebuilt resource endpoints with your own code, since Energize allows you to choose between JavaScript or ESL (Energize Scripting Language) for executing server-side code.
+Without having to write a single line of SQL, your database schema, tables, and queries are automatically constructed from your API design. Never worry about learning another database management system again. 
 
-## Secured
+## Endpoints
 
-Energize implements both Basic Authentication and Bearer Token Authentication across your API for you. Users are built-in with the customizable `users` resource, which allows you to secure your resources and manage access control in seconds.
+Simply define a resource and let Energize generate all the CRUD endpoints for you. It will also create routes to handle common features like filters, pagination, fields, etc.
