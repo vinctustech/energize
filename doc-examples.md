@@ -113,3 +113,53 @@ the *products* resource is defined as
         unit string
         price decimal(20, 2)
 
+the `enum` data type
+
+    "enum" in {
+        val (c, s, d) = Test.dbconnect
+        val key = AUTHORIZATION.getString( "key" )
+        val config =
+            """
+                |enum suit [clubs, diamonds, hearts, spades]
+                |
+                |resource cards
+                |	suit suit
+                |	number integer
+            """.trim.stripMargin
+        val env = Energize.configure( io.Source.fromString( config ), c, s, d, key )
+
+        env.process( "POST", "/cards", """{suit: "hearts", number: 1}""" ) shouldBe
+            (SC_CREATED, "application/json",
+                """
+                    |{
+                    |  "data": 1
+                    |}
+                """.trim.stripMargin )
+        env.process( "GET", "/cards", null ) shouldBe
+            (SC_OK, "application/json",
+                """
+                    |{
+                    |  "data": [
+                    |    {
+                    |      "_id": 1,
+                    |      "suit": "hearts",
+                    |      "number": 1
+                    |    }
+                    |  ]
+                    |}
+                """.trim.stripMargin )
+        env.process( "PUT", "/cards/1", """{number: 2, suit: "clubs"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+        env.process( "GET", "/cards", null ) shouldBe
+            (SC_OK, "application/json",
+                """
+                    |{
+                    |  "data": [
+                    |    {
+                    |      "_id": 1,
+                    |      "suit": "clubs",
+                    |      "number": 2
+                    |    }
+                    |  ]
+                    |}
+                """.trim.stripMargin )
+    }
