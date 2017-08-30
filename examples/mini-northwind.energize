@@ -22,8 +22,8 @@ resource shippers
 	phone string
 
 resource orders
-	customer integer
-	employee integer
+	customer customers
+	employee employees
 	orderDate date
 	shipVia shippers
 
