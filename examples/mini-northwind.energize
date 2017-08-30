@@ -1,0 +1,51 @@
+resource categories
+	categoryName string
+	description string
+
+resource customers
+	customerName string
+	contactName string
+	address string
+	city string
+	postalCode string
+	country string
+
+resource employees
+	lastName string
+	firstName string
+	birthDate date
+	photo string
+	notes text
+
+resource shippers
+	shipperName string
+	phone string
+
+resource orders
+	customer integer
+	employee integer
+	orderDate date
+	shipVia shippers
+
+resource suppliers
+	supplierName string
+	contactName string
+	address string
+	city string
+	postalCode string
+	country string
+	phone string
+
+resource products
+	productName string
+	supplier suppliers
+	category categories
+	unit string
+	price decimal(20, 2)
+
+resource orderDetails
+	order orders
+	product products
+	quantity integer
+
+populateDatabase( "examples/mini-northwind.tab" )
