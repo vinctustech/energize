@@ -3,7 +3,7 @@ id: default-routes
 title: Default Routes
 permalink: docs/default-routes.html
 prev: hello-world.html
-next: pagination.html
+next: query-parameters.html
 ---
 
 ## Default Routes

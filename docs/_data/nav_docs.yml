@@ -35,14 +35,14 @@
           title: User onboarding
         - id: protecting-resources
           title: Protecting resources
-- title: Advanced Guides
-  items:
-    - id: action-script
-      title: Action Script
-      subitems: 
-        - id: introduction
-          title: Introduction
-        - id: grammar
-          title: Grammar
-        - id: function-reference
-          title: Function Reference
+#- title: Advanced Guides
+#  items:
+#    - id: action-script
+#      title: Action Script
+#      subitems: 
+#        - id: introduction
+#          title: Introduction
+#        - id: grammar
+#          title: Grammar
+#        - id: function-reference
+#          title: Function Reference

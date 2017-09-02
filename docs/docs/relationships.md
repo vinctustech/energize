@@ -32,7 +32,7 @@ resource books
   // ...
 ```
 
-To create the relationship, create a document and use the `id` of a related document as the value of the field.
+To create the relationship, create a document and use the `_id` of a related document as the value of the field.
 
 ```
 curl http://localhost:8080/books \
@@ -41,19 +41,19 @@ curl http://localhost:8080/books \
   -d '{"title": "Dune: House Atreides", "publisher": 1}'
 ```
 
-Here, the `publisher` field has a value of `1` (the `id` of the related document).
+Here, the `publisher` field has a value of `1` (the `_id` of the related document).
 
 ### Many-to-many
 
-A many-to-many relationship is defined by using a resource's name as the data type, followed by the `array` modifier.
+A many-to-many relationship is defined by using a resource's name as the data type enclosed in square brackets.
 
 ```
 resource books
-  authors authors array
+  authors [authors]
   // ...
 ```
 
-To create the relationships, first create a document, and then populate it's relationships. The URI should be that of the resource end-point, followed by the `id`, and then the name of the resource we are creating relationships for.
+To create the relationships, first create a document, and then populate it's relationships. The URI should be that of the resource end-point, followed by the `_id`, and then the name of the resource we are creating relationships for.
 
 ```
 curl http://localhost:8080/books/1/authors \
@@ -71,7 +71,7 @@ curl http://localhost:8080/books/1/authors \
   -d '{"name": "Kevin J. Anderson"}'
 ```
 
-Now retrieve our book by `id`, to get all related data.
+Now retrieve our book by `_id`, to get all related data.
 
 ```
 curl http://localhost:8080/books/1
@@ -86,19 +86,19 @@ If successful, this should return a `200 OK` with the following json.
     "description": null,
     "authors": [
       {
-        "id": 1,
+        "_id": 1,
         "name": "Brian Herbert"
       },
       {
-        "id": 2,
+        "_id": 2,
         "name": "Kevin J. Anderson"
       }
     ],
     "publisher": {
-      "id": 1,
+      "_id": 1,
       "name": "Spectra"
     },
-    "id": 1
+    "_id": 1
   }
 }
 ```
