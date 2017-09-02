@@ -1,12 +1,12 @@
 ---
-id: pagination
-title: Pagination
-permalink: docs/pagination.html
+id: query-parameters
+title: Query Parameters
+permalink: docs/query-parameters.html
 prev: default-routes.html
 next: relationships.html
 ---
 
-## Pagination
+## Query Parameters
 
 Let's say we have defined a `messages` resource.
 

@@ -5,12 +5,16 @@
 
 .nav-docs ul>ul {
 	padding-left: 20px;
-	font-size: 20px;
 }
 
 .page-header {
 	background: none;
 	background-color: #ff9933;
+}
+
+.main-content {
+	max-width: 1040px;
+	padding: 20px;
 }
 
 .main-content h1, 
@@ -26,21 +30,31 @@ a {
 	color: #16339D;
 }
 
+td {
+	font-size: 14px;
+}
+
+.highlighter {
+	overflow-x: scroll;
+}
+
 .docs-prevnext {
 	display: flex;
 	justify-content: space-between;
 }
 
 .docs-body {
-	display: flex;
+	display: inline-block;
 }
 
 .docs-left {
-	margin-right: 60px;
+	display: inline-block;
+	width: 250px;
 }
 
 .docs-right {
-	flex: 1;
+	float: right;
+	max-width: 650px;
 }
 
 .btn {

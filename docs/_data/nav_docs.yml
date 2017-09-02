@@ -17,8 +17,8 @@
           title: Delete a document
         - id: list-all-documents
           title: List all documents
-    - id: pagination
-      title: Pagination
+    - id: query-parameters
+      title: Query Parameters
     - id: relationships
       title: Relationships
       subitems:
