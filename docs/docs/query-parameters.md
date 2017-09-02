@@ -19,6 +19,7 @@ resource messages
 There are default query parameters that can be used on resources.
 
 ### Pagination
+
 To paginate over a list of documents use the `page` and `limit` query parameters.
 
 ```
@@ -28,6 +29,20 @@ curl http://localhost:8080/messages?page=2&limit=5
 This will retrieve 5 documents on the second page of results.
 
 > Note: If you only pass the `page` query parameter, `limit` will be set to 10 by default.
+
+### Filters
+
+To filter results, we can pass the `filter` query parameter, which can take different comparison methods.
+
+```
+<, >, =, !=, <=, >=, ~%25, ~_
+```
+
+To retrieve all documents where the `text` field equals `hello`.
+
+```
+curl http://localhost:8080/messages?filter=text=hello
+```
 
 ### Fields
 

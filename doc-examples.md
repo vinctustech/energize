@@ -92,44 +92,6 @@ we could find the category that includes pasta
 
 	get /categories?filter=description~%25pasta%25
 
-# query parameters
-
-filter =age<
-        age>
-        age=
-        age!=
-        age<=
-        age>=
-
-description~%25pasta%25
-description~_
-
-fields=age,description
-(in order)
-
-order=field:asc,fiedl2:desc
-
-page=num&limit=num (default to 10)
-
-# data types
-
-boolean true, false
-string ".*"
-text ".*"
-integer
-long
-uuid "xxxx-xxxx-4xxx-xxxx"
-date ISODate
-datetime ISODatetime
-time ISO Time
-timestamp ISO Timestamp
-binary "313241"
-blob  base64 encoded data
-float java double IEEE 754
-decimal (1,3)
-media data url
-enum
-
 to get
 
     {
