@@ -2,7 +2,7 @@
 id: relationships
 title: Relationships
 permalink: docs/relationships.html
-prev: pagination.html
+prev: query-parameters.html
 next: access-control.html
 ---
 
