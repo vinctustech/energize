@@ -3,7 +3,7 @@ id: default-routes
 title: Default Routes
 permalink: docs/default-routes.html
 prev: hello-world.html
-next: pagination.html
+next: query-parameters.html
 ---
 
 ## Default Routes
@@ -30,7 +30,7 @@ curl http://localhost:8080/messages \
   -d '{"text": "Hello world!"}'
 ```
 
-If successful, this will respond with a `201 Created` and include a `JSON` body with the created document's `id`.
+If successful, this will respond with a `201 Created` and include a `JSON` body with the created document's `_id`.
 
 ```
 HTTP/1.1 201 Created
@@ -43,7 +43,7 @@ Content-Type: application/json
 
 ### Retrieve a document
 
-To retrieve a document, make a `GET` request at the resources end-point followed by the `id` of the required document.
+To retrieve a document, make a `GET` request at the resources end-point followed by the `_id` of the required document.
 
 ```
 curl http://localhost:8080/messages/1
@@ -54,7 +54,7 @@ If the document exists, you will recieve a `200 OK` with the document's data inc
 ```
 {
   "data": {
-    "id": 1,
+    "_id": 1,
     "text": "Hello World!"
   }
 }
@@ -62,7 +62,7 @@ If the document exists, you will recieve a `200 OK` with the document's data inc
 
 ### Update a document
 
-To update a document, make a `PUT` request at the resources end-point followed by the `id` of the document to be updated, and include all the required fields to be updated as `JSON`.
+To update a document, make a `PUT` request at the resources end-point followed by the `_id` of the document to be updated, and include all the required fields to be updated as `JSON`.
 
 ```
 curl http://localhost:8080/messages/1 \
@@ -73,11 +73,11 @@ curl http://localhost:8080/messages/1 \
 
 If successful, you will receive a `204 No Content`, meaning it has successfully updated the document, but there is no data in the response body.
 
-> Note: `id` values are immutable and should not be in the `JSON` body of an update request.
+> Note: `_id` values are immutable and should not be in the `JSON` body of an update request.
 
 ### Delete a document
 
-To delete a document, make a `DELETE` request at the resources end-point followed by the `id` of the document you want to delete.
+To delete a document, make a `DELETE` request at the resources end-point followed by the `_id` of the document you want to delete.
 
 ```
 curl http://localhost:8080/messages/1 \
@@ -102,15 +102,15 @@ HTTP/1.1 200 OK
 {
   "data": [
   {
-    "id": 2,
+    "_id": 2,
     "text": "Hey Mary"
   },
   {
-    "id": 3,
+    "_id": 3,
     "text": "Hi John, how are you?"
   },
   {
-    "id": 4,
+    "_id": 4,
     "text": "Not bad, just learning Energize!"
   }
   ]

@@ -13,7 +13,7 @@ Overview
 License
 -------
 
-*Energize* is distributed under the MIT License, meaning that you are free to use it in your free or proprietary software.
+*Energize* is distributed under the ISC License, meaning that you are free to use it in your free or proprietary software.
 
 
 Documentation

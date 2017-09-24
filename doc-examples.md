@@ -91,7 +91,7 @@ returning
 we could find the category that includes pasta
 
 	get /categories?filter=description~%25pasta%25
-	
+
 to get
 
     {

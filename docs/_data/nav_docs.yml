@@ -17,8 +17,8 @@
           title: Delete a document
         - id: list-all-documents
           title: List all documents
-    - id: pagination
-      title: Pagination
+    - id: query-parameters
+      title: Query Parameters
     - id: relationships
       title: Relationships
       subitems:
@@ -35,14 +35,14 @@
           title: User onboarding
         - id: protecting-resources
           title: Protecting resources
-- title: Advanced Guides
-  items:
-    - id: action-script
-      title: Action Script
-      subitems: 
-        - id: introduction
-          title: Introduction
-        - id: grammar
-          title: Grammar
-        - id: function-reference
-          title: Function Reference
+#- title: Advanced Guides
+#  items:
+#    - id: action-script
+#      title: Action Script
+#      subitems: 
+#        - id: introduction
+#          title: Introduction
+#        - id: grammar
+#          title: Grammar
+#        - id: function-reference
+#          title: Function Reference
