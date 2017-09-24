@@ -25,6 +25,13 @@ class JSONConfigTests extends FreeSpec with PropertyChecks with Matchers {
 				|            "category": "primitive",
 				|            "type": "integer"
 				|          }
+				|        },
+				|        {
+				|          "name": "asdf",
+				|          "type": {
+				|            "category": "primitive",
+				|            "type": "boolean"
+				|          }
 				|        }
 				|      ]
 				|    }
@@ -33,7 +40,7 @@ class JSONConfigTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val env = Energize.configureFromJSON( io.Source.fromString( config ), c, s, d, key )
 
-		env.process( "POST", "/r", """{"limit": 123}""" ) shouldBe
+		env.process( "POST", "/r", """{"limit": 123, "asdf": true}""" ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					 |{
@@ -47,7 +54,8 @@ class JSONConfigTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "data": [
 					|    {
 					|      "_id": 1,
-					|      "limit": 123
+					|      "limit": 123,
+					|      "asdf": true
 					|    }
 					|  ]
 					|}
