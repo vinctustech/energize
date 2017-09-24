@@ -57,7 +57,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 			case res => res
 		}
 
-	def table( name: String ) = tables(db.desensitize(name)).asInstanceOf[Table]
+	def table( name: String ) = tables(db.desensitize(name))
 
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
@@ -68,7 +68,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 	def add( route: Route ) = routeTable += route
 
 	def remove( method: String, path: URIPath ): Unit = {
-		for (i <- 0 until routeTable.length)
+		for (i <- routeTable.indices)
 			if (routeTable(i).method == method && routeTable(i).path == path) {
 				routeTable.remove( i )
 				return
