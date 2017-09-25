@@ -211,6 +211,84 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin )
 	}
 
+	"float" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHORIZATION.getString( "key" )
+		val config =
+			"""
+				|resource r
+				|	f float
+				|
+				|resource r1
+				|	f float
+				|
+				|for a <- [1.3, .3, 1.3e3, .3e3, 1e3]
+				| insert( r1, {f: a} )
+			""".trim.stripMargin
+		val env = Energize.configure( io.Source.fromString(config), c, s, d, key )
+
+		env.process( "POST", "/r", """{f: 1.5}""" ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/r", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "_id": 1,
+					|      "f": 1.5
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "PUT", "/r/1", """{f: 2.7}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		env.process( "GET", "/r", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "_id": 1,
+					|      "f": 2.7
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		env.process( "GET", "/r1", null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "_id": 1,
+					|      "f": 1.3
+					|    },
+					|    {
+					|      "_id": 2,
+					|      "f": 0.3
+					|    },
+					|    {
+					|      "_id": 3,
+					|      "f": 1300.0
+					|    },
+					|    {
+					|      "_id": 4,
+					|      "f": 300.0
+					|    },
+					|    {
+					|      "_id": 5,
+					|      "f": 1000.0
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+	}
+
 	"date" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHORIZATION.getString( "key" )

@@ -41,8 +41,7 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
-	"org.mindrot" % "jbcrypt" % "0.3m",
-	"org.parboiled" %% "parboiled" % "2.1.4"
+	"org.mindrot" % "jbcrypt" % "0.3m"
 )
 
 libraryDependencies ++= Seq(
