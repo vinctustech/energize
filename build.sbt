@@ -2,9 +2,7 @@ name := "energize"
 
 version := "0.10.11"
 
-scalaVersion := "2.12.3"
-
-crossScalaVersions := Seq( "2.11.11" )
+scalaVersion := "2.12.4"
 
 scalacOptions ++= Seq( "-deprecation", "-feature", "-language:postfixOps", "-language:implicitConversions", "-language:existentials" )
 
