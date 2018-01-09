@@ -1,10 +1,8 @@
 name := "energize"
 
-version := "0.10.11"
+version := "0.12"
 
-scalaVersion := "2.12.3"
-
-crossScalaVersions := Seq( "2.11.11" )
+scalaVersion := "2.12.4"
 
 scalacOptions ++= Seq( "-deprecation", "-feature", "-language:postfixOps", "-language:implicitConversions", "-language:existentials" )
 
@@ -41,8 +39,7 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.5",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.2",
-	"org.mindrot" % "jbcrypt" % "0.3m",
-	"org.parboiled" %% "parboiled" % "2.1.4"
+	"org.mindrot" % "jbcrypt" % "0.3m"
 )
 
 libraryDependencies ++= Seq(

@@ -57,7 +57,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 			case res => res
 		}
 
-	def table( name: String ) = tables(db.desensitize(name)).asInstanceOf[Table]
+	def table( name: String ) = tables(db.desensitize(name))
 
 	def lookup( name: String ) = get( name ) getOrElse sys.error( "variable not found: " + name )
 
@@ -68,7 +68,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 	def add( route: Route ) = routeTable += route
 
 	def remove( method: String, path: URIPath ): Unit = {
-		for (i <- 0 until routeTable.length)
+		for (i <- routeTable.indices)
 			if (routeTable(i).method == method && routeTable(i).path == path) {
 				routeTable.remove( i )
 				return
@@ -305,22 +305,33 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 					
 				condition( cond )
 			case ForExpression( gen, body, e ) =>
-				def forloop( env: Environment, gs: List[GeneratorAST] ) {
+				val gvs = gen zip List.fill(gen.length)(new ForVariable( 0 ))
+				val forenv = {
+					var fe = this
+
+					for ((GeneratorAST(pattern, _, _), forvar: ForVariable) <- gvs)
+						fe = fe.add( pattern -> forvar )
+
+					fe
+				}
+
+				def forloop( env: Environment, gs: List[(GeneratorAST, ForVariable)] ) {
 					gs match {
-						case List( g ) =>
-							val GeneratorAST( pattern, traversable, filter ) = g
+						case (GeneratorAST(_, traversable, _), forvar: ForVariable) :: tl =>
 							val tr = evalt( traversable )
-							
-							tr foreach (item => env.add( pattern -> item ).eval( body ))
-						case hd :: tl =>
-							val GeneratorAST( pattern, traversable, filter ) = hd
-							val tr = evalt( traversable )
-							
-							tr foreach (item => forloop( env.add(pattern -> item), tl ))
+
+							tr foreach { item =>
+								forvar.value = item
+
+								if (tl == Nil)
+									forenv.eval( body )
+								else
+									forloop( forenv, tl )
+							}
 					}
 				}
 
-				forloop( this, gen )
+				forloop( this, gvs )
 			case WhileExpression( cond, body, e ) =>
 				while (evalb( cond ))
 					eval( body )
@@ -360,6 +371,7 @@ class Environment( val tables: Map[String, Table], croutes: List[Route], val bin
 	def deref( expr: ExpressionAST ) =
 		eval( expr ) match {
 			case h: Variable => h.value
+			case h: ForVariable => h.value
 			case v => v
 		}
 
@@ -393,6 +405,8 @@ case class Table( var name: String, columns: List[Column], columnMap: Map[String
 case class Column( name: String, typ: ColumnType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean, validators: List[ExpressionAST] )
 
 class Variable( var value: Any )
+
+class ForVariable( var value: Any )
 
 class Enum( val enum: List[String] ) {
 	private val map = Map( enum.zipWithIndex: _* )

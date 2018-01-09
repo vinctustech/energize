@@ -2,7 +2,6 @@ package xyz.hyperreal.energize
 
 import util.parsing.combinator.PackratParsers
 import util.parsing.combinator.syntactical.StandardTokenParsers
-//import util.parsing.combinator.token.Tokens.Token
 import util.parsing.input.CharArrayReader.EofCh
 import util.parsing.input.{Positional, Reader, CharSequenceReader}
 
@@ -43,38 +42,22 @@ class EnergizeParser extends StandardTokenParsers with PackratParsers {
 				)
 			
 			private def decimalParser: Parser[Token] =
-				rep1(digit) ~ optFraction ~ optExponent ^^
-					{case intPart ~ frac ~ exp =>
-						NumericLit( (intPart mkString "") :: frac :: exp :: Nil mkString)} //|
-// 				fraction ~ optExponent ^^
-// 					{case frac ~ exp => NumericLit( frac + exp )}
+				digits ~ '.' ~ digits ~ optExponent ^^ { case intPart ~ _ ~ fracPart ~ exp => NumericLit( intPart + '.' + fracPart + exp ) } |
+				'.' ~ digits ~ optExponent ^^ { case _ ~ fracPart ~ exp => NumericLit( '.' + fracPart + exp ) } |
+				digits ~ optExponent ^^ { case intPart ~ exp => NumericLit( intPart + exp ) }
+
+			private def digits = rep1(digit) ^^ {_ mkString}
 
 			private def chr( c: Char ) = elem( "", ch => ch == c )
 
-			private def sign = chr( '+' ) | chr( '-' )
+			private def exponent = (chr('e') | 'E') ~ opt(chr('+') | '-') ~ digits ^^ {
+				case e ~ None ~ exp => List(e, exp) mkString
+				case e ~ Some(s) ~ exp => List(e, s, exp) mkString
+			}
 
-			private def optSign = opt( sign ) ^^
-				{
+			private def optExponent = opt( exponent ) ^^ {
 					case None => ""
-					case Some(sign) => sign
-				}
-
-			private def fraction = ('.' <~ not('.')) ~ rep( digit ) ^^
-				{case dot ~ ff => dot :: (ff mkString "") :: Nil mkString ""}
-
-			private def optFraction = opt( fraction ) ^^
-				{
-					case None => ""
-					case Some( fraction ) => fraction
-				}
-
-			private def exponent = (chr( 'e' ) | chr( 'E' )) ~ optSign ~ rep1( digit ) ^^
-				{case e ~ optSign ~ exp => e :: optSign :: (exp mkString "") :: Nil mkString ""}
-
-			private def optExponent = opt( exponent ) ^^
-				{
-					case None => ""
-					case Some( exponent ) => exponent
+					case Some( e ) => e
 				}
 
 			reserved += (
