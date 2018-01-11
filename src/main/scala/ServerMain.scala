@@ -11,7 +11,7 @@ object ServerMain extends App {
 	if (!options.set( "--" ) && arg.length != 1 || options.set( "--" ) && arg.nonEmpty) {
 		"""
 			|Energize version $VERSION.
-			|Usage: java -jar energize-0.12.jar [-j -c] <config>
+			|Usage: java -jar energize-0.11.jar [-j -c] <config>
 			|  where <config> is either a file name (without .energize),
 			|                           a configuration string (is -c was used), or
 			|                           -- to read the configuration from standard input
