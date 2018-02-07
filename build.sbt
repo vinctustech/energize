@@ -59,7 +59,7 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "importer" % "0.4"
 )
 
-mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".REPLMain" )
+mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
 
 mainClass in assembly := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
 
