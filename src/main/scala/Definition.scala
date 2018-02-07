@@ -2,17 +2,85 @@ package xyz.hyperreal.energize2
 
 import java.sql._
 
-import collection.mutable.{ArrayBuffer, HashMap}
+import collection.mutable.{ArrayBuffer, HashMap, ListBuffer}
 import collection.JavaConverters._
-
 import org.mindrot.jbcrypt.BCrypt
+import xyz.hyperreal.bvm._
+import xyz.hyperreal.json.{DefaultJSONReader, JSON}
 
-import xyz.hyperreal.bvm.{AST, Compilation, ExpressionAST, SourceAST}
+import scala.util.parsing.input.Position
 
 
 object Definition {
 
 	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
+
+	def dbtype( pos: Position, name: String, args: List[Any], array: Boolean ) = {
+		val args1 =
+			args map {
+				case a: String if a forall (_.isDigit) => a.toInt
+				case a => a
+			}
+
+		val basic =
+			name match {
+				case "boolean" if args nonEmpty => problem( pos, "the 'boolean' type doesn't take parameters" )
+				case "boolean" => BooleanType
+				case "char" if args.isEmpty || args.length > 1 || !integer( args.head.toString ) =>
+					problem( pos, "the 'char' type takes a positve integer parameter" )
+				case "char" => CharType( args.head.toString.toInt )
+				case "string" if args.length > 1 || args.nonEmpty && !integer( args.head.toString ) =>
+					problem( pos, "the 'string' type takes a positve integer size parameter, or else the size defaults to 128" )
+				case "string" => StringType( if (args nonEmpty) args.head.toString.toInt else 128 )
+				case "tinytext" if args nonEmpty => problem( pos, "the 'tinytext' type doesn't take parameters" )
+				case "tinytext" => TinytextType
+				case "shorttext" if args nonEmpty => problem( pos, "the 'shorttext' type doesn't take parameters" )
+				case "shorttext" => ShorttextType
+				case "text" if args nonEmpty => problem( pos, "the 'text' type doesn't take parameters" )
+				case "text" => TextType
+				case "longtext" if args nonEmpty => problem( pos, "the 'longtext' type doesn't take parameters" )
+				case "longtext" => LongtextType
+				case "tinyint" if args nonEmpty => problem( pos, "the 'tinyint' type doesn't take parameters" )
+				case "tinyint" => TinyintType
+				case "smallint" if args nonEmpty => problem( pos, "the 'smallint' type doesn't take parameters" )
+				case "smallint" => SmallintType
+				case "integer"|"int" if args nonEmpty => problem( pos, "the 'integer' type doesn't take parameters" )
+				case "integer"|"int" => IntegerType
+				case "bigint" if args nonEmpty => problem( pos, "the 'bigint' type doesn't take parameters" )
+				case "bigint" => BigintType
+				case "UUID"|"uuid" if args nonEmpty => problem( pos, "the 'UUID' type doesn't take parameters" )
+				case "UUID"|"uuid" => UUIDType
+				case "date" if args nonEmpty => problem( pos, "the 'date' type doesn't take parameters" )
+				case "date" => DateType
+				case "datetime" if args nonEmpty => problem( pos, "the 'datetime' type doesn't take parameters" )
+				case "datetime" => DatetimeType
+				case "time" if args nonEmpty => problem( pos, "the 'time' type doesn't take parameters" )
+				case "time" => TimeType
+				case "timestamp" if args nonEmpty => problem( pos, "the 'timestamp' type doesn't take parameters" )
+				case "timestamp" => TimestampType
+				case "binary" if args nonEmpty => problem( pos, "the 'binary' type doesn't take parameters" )
+				case "binary" => BinaryType
+				case "float" if args nonEmpty => problem( pos, "the 'float' type doesn't take parameters" )
+				case "float" => FloatType
+				case "blob" if args.length > 1 || args.length == 1 && !(List("base64", "hex", "list", "urlchars") contains args.head.toString)  =>
+					problem( pos, """the 'blob' type takes an option blob type parameter: "base64", "hex", "list", or "urlchars"""" )
+				case "blob" if args nonEmpty => BLOBType( Symbol(args.head.toString) )
+				case "blob" => BLOBType( 'base64 )
+				case "media" if args exists (!_.isInstanceOf[MimeType]) =>
+					problem( pos, "the 'media' type takes zero or more media (MIME) type parameters" )
+				case "media" => MediaType( args.asInstanceOf[List[MimeType]] )
+				case r =>	//todo: could be EnumType if previously defined as such
+					if (array)
+						ManyReferenceType( pos, r )
+					else
+						SingleReferenceType( pos, r )
+			}
+
+		if (array && !basic.isInstanceOf[ManyReferenceType])
+			ArrayType( basic.asInstanceOf[PrimitiveFieldType] )
+		else
+			basic
+	}
 
 	def dbconnect: (Connection, Statement, Database) = {
 		val url = DATABASE.getString( "url" )
@@ -51,7 +119,7 @@ object Definition {
 		define( p.parseFromSource(src, p.source), connection, statement, database, key )
 	}
 
-//	def primitive( typ: JSON ): PrimitiveColumnType =
+//	def primitive( typ: JSON ): PrimitiveFieldType =
 //		typ getString "type" match {
 //			case "string" => StringType
 //			case "text" => TextType
@@ -86,27 +154,27 @@ object Definition {
 //				else
 //					MediaType( allowed1, null, limit.asInstanceOf[Int] )
 //		}
-//
-//	def parsePath( path: String ): Option[URIPath] =
-//		if (path endsWith "/")
-//			None
-//		else
-//			path split "/" toList match {
-//				case Nil|List( "" ) => None
-//				case a =>
-//					if (a.head != "")
-//						None
-//					else {
-//						val tail = a.tail
-//
-//						if (tail contains "")
-//							None
-//						else
-//							Some( URIPath(tail map NameURISegment) )
-//					}
-//			}
-//
-//	def defineFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Environment = {
+
+	def parsePath( path: String ): Option[PathSegment] =
+		if (path endsWith "/")
+			None
+		else
+			path split "/" toList match {
+				case Nil|List( "" ) => None
+				case a =>
+					if (a.head != "")
+						None
+					else {
+						val tail = a.tail
+
+						if (tail contains "")
+							None
+						else
+							Some( if (tail.length == 1) LiteralPathSegment(tail.head) else ConcatenationPathSegment(tail map LiteralPathSegment) )
+					}
+			}
+
+//	def defineFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Processor = {
 //		val s = src mkString
 //		val json = DefaultJSONReader.fromString( s )
 //		val decl = new ListBuffer[StatementAST]
@@ -131,21 +199,21 @@ object Definition {
 //								parsePath( tab getString "base" )
 //							else
 //								None
-//						val cols = new ListBuffer[TableColumn]
+//						val cols = new ListBuffer[ResourceField]
 //
 //						for (c <- tab.getList[JSON]( "fields" )) {
 //							val typ = c getMap "type"
 //							val cat = typ getString "category"
 //							val ctyp =
 //								cat match {
-//									case "primitive" => primitive( typ )
-//									case "array" => ArrayType( primitive(typ), null, null, 1 )
-//									case "one-to-many" => SingleReferenceType( typ getString "type", null )
-//									case "many-to-many" => ManyReferenceType( typ getString "type", null )
+//									case "primitive" => Definition.dbtype( null, typ getString "type", typ getList[AnyRef] "parameters", false )
+//									case "array" => Definition.dbtype( null, typ getString "type", typ getList[AnyRef] "parameters", true )
+//									case "one-to-many" => SingleReferenceType( null, typ getString "type", null )
+//									case "many-to-many" => ManyReferenceType( null, typ getString "type", null )
 //								}
 //							val modifiers =
 //								if (c contains "modifiers")
-//									c getList[String] "modifiers" map ColumnTypeModifier
+//									c getList[String] "modifiers" map (m => (null, m))
 //								else
 //									Nil
 //							val validators =
@@ -154,7 +222,7 @@ object Definition {
 //								else
 //									Nil
 //
-//							cols += TableColumn( c getString "name", ctyp, modifiers, validators map EnergizeParser.parseValidator )
+//							cols += ResourceField( c getString "name", ctyp, modifiers, false )
 //						}
 //
 //						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )

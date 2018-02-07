@@ -183,58 +183,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					if (cols contains db.desensitize( cname ))
 						problem( col.pos, s"field '$cname' defined twice" )
 
-					val fieldType =
-						tname match {
-							case "boolean" if args nonEmpty => problem( tpos, "the 'boolean' type doesn't take parameters" )
-							case "boolean" => BooleanType
-							case "char" if args.isEmpty || args.length > 1 || !integer( args.head.toString ) =>
-								problem( tpos, "the 'char' type takes a positve integer parameter" )
-							case "char" => CharType( args.head.toString.toInt )
-							case "string" if args.length > 1 || args.nonEmpty && !integer( args.head.toString ) =>
-								problem( tpos, "the 'string' type takes a positve integer size parameter, or else the size defaults to 128" )
-							case "string" => StringType( if (args nonEmpty) args.head.toString.toInt else 128 )
-							case "tinytext" if args nonEmpty => problem( tpos, "the 'tinytext' type doesn't take parameters" )
-							case "tinytext" => TinytextType
-							case "shorttext" if args nonEmpty => problem( tpos, "the 'shorttext' type doesn't take parameters" )
-							case "shorttext" => ShorttextType
-							case "text" if args nonEmpty => problem( tpos, "the 'text' type doesn't take parameters" )
-							case "text" => TextType
-							case "longtext" if args nonEmpty => problem( tpos, "the 'longtext' type doesn't take parameters" )
-							case "longtext" => LongtextType
-							case "tinyint" if args nonEmpty => problem( tpos, "the 'tinyint' type doesn't take parameters" )
-							case "tinyint" => TinyintType
-							case "smallint" if args nonEmpty => problem( tpos, "the 'smallint' type doesn't take parameters" )
-							case "smallint" => SmallintType
-							case "integer"|"int" if args nonEmpty => problem( tpos, "the 'integer' type doesn't take parameters" )
-							case "integer"|"int" => IntegerType
-							case "bigint" if args nonEmpty => problem( tpos, "the 'bigint' type doesn't take parameters" )
-							case "bigint" => BigintType
-							case "UUID"|"uuid" if args nonEmpty => problem( tpos, "the 'UUID' type doesn't take parameters" )
-							case "UUID"|"uuid" => UUIDType
-							case "date" if args nonEmpty => problem( tpos, "the 'date' type doesn't take parameters" )
-							case "date" => DateType
-							case "datetime" if args nonEmpty => problem( tpos, "the 'datetime' type doesn't take parameters" )
-							case "datetime" => DatetimeType
-							case "time" if args nonEmpty => problem( tpos, "the 'time' type doesn't take parameters" )
-							case "time" => TimeType
-							case "timestamp" if args nonEmpty => problem( tpos, "the 'timestamp' type doesn't take parameters" )
-							case "timestamp" => TimestampType
-							case "binary" if args nonEmpty => problem( tpos, "the 'binary' type doesn't take parameters" )
-							case "binary" => BinaryType
-							case "float" if args nonEmpty => problem( tpos, "the 'float' type doesn't take parameters" )
-							case "float" => FloatType
-							case "blob" if args.isEmpty || args.length > 1 || !(List("base64", "hex", "list", "urlchars") contains args.head.toString)  =>
-								problem( tpos, "the 'blob' type takes a blob type parameter" )
-							case "blob" => BLOBType( Symbol(args.head.toString) )
-							case "media" if args exists (!_.isInstanceOf[MimeType]) =>
-								problem( tpos, "the 'media' type takes zero or more media (MIME) type parameters" )
-							case "media" => MediaType( args.asInstanceOf[List[MimeType]] )
-							case r =>	//todo: could be EnumType if previously defined as such
-								if (array)
-									ManyReferenceType( tpos, r )
-								else
-									SingleReferenceType( tpos, r )
-						}
+					val fieldType = Definition.dbtype( tpos, tname, args, array )
 
 					var secret = false
 					var required = false
