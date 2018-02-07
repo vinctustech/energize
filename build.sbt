@@ -43,8 +43,8 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= Seq(
 	"jline" % "jline" % "2.14.4",
-	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.8",
-	"org.apache.httpcomponents" % "httpclient" % "4.5.4",
+	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.9",
+	"org.apache.httpcomponents" % "httpclient" % "4.5.5",
 	"org.mindrot" % "jbcrypt" % "0.3m"
 )
 
@@ -59,9 +59,9 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "importer" % "0.4"
 )
 
-mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".Main" )
+mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".REPLMain" )
 
-mainClass in assembly := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".Main" )
+mainClass in assembly := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
 
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 

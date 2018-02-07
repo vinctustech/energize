@@ -8,8 +8,8 @@
 //resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/content/repositories/releases"
 //
 //resolvers += Resolver.url("untyped", url("http://ivy.untyped.com"))(Resolver.ivyStylePatterns)
-//
-//addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0")
+
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 
 //addSbtPlugin( "me.lessis" % "bintray-sbt" % "0.3.0" )
 

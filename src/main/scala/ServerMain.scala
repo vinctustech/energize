@@ -9,11 +9,11 @@ object ServerMain extends App {
 	val arg = options parse args
 
 	if (!options.set( "--" ) && arg.length != 1 || options.set( "--" ) && arg.nonEmpty) {
-		"""
-			|Energize version $VERSION.
-			|Usage: java -jar energize-0.11.jar [-j -c] <config>
+		s"""
+			|Energize2 v0.1
+			|Usage: java -jar energize2-0.1.jar [-j -c] <config>
 			|  where <config> is either a file name (without .energize),
-			|                           a configuration string (is -c was used), or
+			|                           a configuration string (if -c was used), or
 			|                           -- to read the configuration from standard input
 		""".trim.stripMargin.lines foreach println
 
