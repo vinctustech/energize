@@ -5,10 +5,8 @@ import java.time.{Instant, ZoneOffset}
 import java.util.Base64
 
 import scala.util.parsing.input.Position
-
 import com.typesafe.config.ConfigFactory
-
-import xyz.hyperreal.bvm.{AST, VM}
+import xyz.hyperreal.bvm.{AST, ExpressionAST, VM}
 
 
 package object energize2 {
@@ -45,12 +43,12 @@ package object energize2 {
 			})
 		}
 
-	//	def parseExpression( expression: String ): ExpressionAST = {
-	//		val p = new EnergizeParser
-	//
-	//		p.parseFromString( expression, p.expressionStatement ).expr
-	//	}
-	//
+	def parseExpression( expression: String ): ExpressionAST = {
+		val p = new EnergizeParser
+
+		p.parseFromString( expression, p.expressionStatement )
+	}
+
 	//	def parseStatements( statements: String ) = {
 	//		val p = new EnergizeParser
 	//

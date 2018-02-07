@@ -174,95 +174,100 @@ object Definition {
 					}
 			}
 
-//	def defineFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Processor = {
-//		val s = src mkString
-//		val json = DefaultJSONReader.fromString( s )
-//		val decl = new ListBuffer[StatementAST]
-//
-//		for ((k, v) <- json)
-//			k match {
-//				case "tables" =>
-//					for (tab <- v.asInstanceOf[List[JSON]]) {
-//						val pro =
-//							tab get "protection" match {
-//								case None => None
-//								case Some( groups: List[_] ) => Some( groups.asInstanceOf[List[String]].headOption )
-//								case Some( _ ) => sys.error( "protection expected to be a list" )
-//							}
-//						val priv =
-//							tab get "private" match {
-//								case None => false
-//								case Some( _ ) => true
-//							}
-//						val base =
-//							if (tab contains "base")
-//								parsePath( tab getString "base" )
-//							else
-//								None
-//						val cols = new ListBuffer[ResourceField]
-//
-//						for (c <- tab.getList[JSON]( "fields" )) {
-//							val typ = c getMap "type"
-//							val cat = typ getString "category"
-//							val ctyp =
-//								cat match {
-//									case "primitive" => Definition.dbtype( null, typ getString "type", typ getList[AnyRef] "parameters", false )
-//									case "array" => Definition.dbtype( null, typ getString "type", typ getList[AnyRef] "parameters", true )
-//									case "one-to-many" => SingleReferenceType( null, typ getString "type", null )
-//									case "many-to-many" => ManyReferenceType( null, typ getString "type", null )
-//								}
-//							val modifiers =
-//								if (c contains "modifiers")
-//									c getList[String] "modifiers" map (m => (null, m))
-//								else
-//									Nil
-//							val validators =
-//								if (c contains "validators")
-//									c getList[String] "validators"
-//								else
-//									Nil
-//
-//							cols += ResourceField( c getString "name", ctyp, modifiers, false )
-//						}
-//
-//						decl += TableDefinition( pro, null, tab getString "name", base, cols toList, tab.getBoolean("resource") )
-//					}
-//				case "routes" =>
-//					for (routes <- v.asInstanceOf[List[JSON]]) {
-//						val base =
-//							if (routes contains "base")
-//								parsePath( routes getString "base" ).get
-//							else
-//								URIPath( Nil )
-//						val protection =
-//							if (routes contains "protection") {
-//								val p = routes getString "protection"
-//
-//								if (p eq null)
-//									Some( None )
-//								else
-//									Some( Some(p) )
-//							} else
-//								None
-//						val mappings =
-//							for (m <- routes.getList[JSON]( "mappings" ))
-//								yield {
-//									val method = HTTPMethod( m getString "method" )
-//									val path = parsePath( m getString "path" ).get
-//									val action =
-//										m getString "language" match {
-//											case "ESL" => parseExpression( m getString "action" )
-//											case "ECMAScript" => JavaScriptExpression( m getString "action" )
-//										}
-//									URIMapping( method, path, action )
-//								}
-//
-//						decl += RoutesDefinition( base, protection, mappings )
-//					}
-//			}
-//
-//		define( SourceAST(decl toList), connection, statement, database, key )
-//	}
+	def defineFromJSON( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ) = {
+		val s = src mkString
+		val json = DefaultJSONReader.fromString( s )
+		val decl = new ListBuffer[StatementAST]
+
+		for ((k, v) <- json)
+			k match {
+				case "tables" =>
+					for (tab <- v.asInstanceOf[List[JSON]]) {
+						val pro =
+							tab get "protection" match {
+								case None => None
+								case Some( groups: List[_] ) => Some( groups.asInstanceOf[List[String]].headOption )
+								case Some( _ ) => sys.error( "protection expected to be a list" )
+							}
+						val priv =
+							tab get "private" match {
+								case None => false
+								case Some( _ ) => true
+							}
+						val base =
+							if (tab contains "base")
+								parsePath( tab getString "base" )
+							else
+								None
+						val cols = new ListBuffer[ResourceField]
+
+						for (c <- tab.getList[JSON]( "fields" )) {
+							val typ = c getMap "type"
+							val cat = typ getString "category"
+							val array =
+								cat match {
+									case "primitive" => false
+									case "array" => true
+									case "one-to-many" => false
+									case "many-to-many" => true
+								}
+							val modifiers =
+								if (c contains "modifiers")
+									c getList[String] "modifiers" map (m => (null, m))
+								else
+									Nil
+							val validators =
+								if (c contains "validators")
+									c getList[String] "validators"
+								else
+									Nil
+							val args =
+								if (typ contains "parameters")
+									typ getList[AnyRef] "parameters"
+								else
+									Nil
+
+							cols += ResourceField( null, c getString "name", null, typ getString "type", args, modifiers, array )
+						}
+
+						decl += ResourceDefinition( pro, null, tab getString "name", base, cols toList, tab getBoolean "resource" )
+					}
+				case "routes" =>
+					for (routes <- v.asInstanceOf[List[JSON]]) {
+						val base =
+							if (routes contains "base")
+								parsePath( routes getString "base" )
+							else
+								None
+						val protection =
+							if (routes contains "protection") {
+								val p = routes getString "protection"
+
+								if (p eq null)
+									Some( None )
+								else
+									Some( Some(p) )
+							} else
+								None
+						val mappings =
+							for (m <- routes.getList[JSON]( "mappings" ))
+								yield {
+									val method = m getString "method"
+									val path = parsePath( m getString "path" ).get
+									val action =
+										m getString "language" match {
+											case "ESL" => parseExpression( m getString "action" )
+											//case "ECMAScript" => JavaScriptExpression( m getString "action" )
+										}
+									RouteMapping( null, method, path, None, action )	//todo: add route guards to JSON config
+								}
+
+						decl += RoutesDefinition( null, base, protection, mappings )
+					}
+			}
+
+		define( SourceAST(decl toList), connection, statement, database, key )
+	}
 
 	def parse( src: String ): AST = parse( io.Source.fromString(src) )
 
