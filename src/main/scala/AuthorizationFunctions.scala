@@ -1,0 +1,179 @@
+package xyz.hyperreal.energize2
+
+import java.time.{Instant, OffsetDateTime}
+import java.util.Base64
+
+import org.mindrot.jbcrypt.BCrypt
+import xyz.hyperreal.bvm.VM
+
+
+object AuthorizationFunctionHelpers {
+	val CREDENTIALS = "(.*):(.*)"r
+	lazy val SCHEME = AUTHORIZATION.getString( "scheme" )
+	lazy val EXPIRATION = if (AUTHORIZATION.getIsNull( "expiration" )) Int.MaxValue else AUTHORIZATION.getInt( "expiration" )
+
+	SCHEME match {
+		case "Basic"|"Bearer" =>
+		case _ => sys.error( """authorization scheme must be "Basic" or "Bearer" """ )
+	}
+
+	if (EXPIRATION <= 0)
+		sys.error( "authorization expiration value must be positive" )
+
+	def performLogin( vm: VM, user: Long ) = {
+		val tokens = vm resource "tokens"
+		val token = {
+			def gentoken: String = {
+				val tok = UtilityFunctions.rndAlpha( vm, 15 )
+
+				QueryFunctions.findOption( vm, tokens, "token", tok, false ) match {
+					case None => tok
+					case Some( _ ) => gentoken
+				}
+			}
+
+			gentoken
+		}
+
+		CommandFunctions.insert( vm, tokens, Map("token" -> token, "created" -> now, "user" -> user).asInstanceOf[OBJ] )
+		token
+	}
+
+	def auth( authorization: Option[Map[String, String]] ) =
+		authorization match {
+			case None => None
+			case Some( m ) => m get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+		}
+
+}
+
+object AuthorizationFunctions {
+	def register( vm: VM, json: OBJ ) = {
+		val users = vm resource "users"
+		val required = users.names.toSet -- Set( "createdTime", "updatedTime", "state", "groups" )
+
+		if ((required -- json.keySet) nonEmpty)
+			throw new BadRequestException( "register: missing field(s): " + (required -- json.keySet).mkString(", ") )
+
+		(json("email"), json("password")) match {
+			case (null|"", _) => throw new BadRequestException( "email may not be null or empty" )
+			case (_, null|"") => throw new BadRequestException( "password may not be null or empty" )
+			case _ =>
+		}
+
+		val json1: OBJ =
+			(json map {
+				case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
+				case f => f
+			}) + ("groups" -> List("user")) + ("createdTime" -> now)
+
+		AuthorizationFunctionHelpers.performLogin( vm, CommandFunctions.insert(vm, users, json1) )
+	}
+
+	def login( vm: VM, json: OBJ ) = {
+		val required = Set( "email", "password" )
+
+		if ((required -- json.keySet) nonEmpty)
+			throw new BadRequestException( "login: missing field(s): " + (required -- json.keySet).mkString(", ") )
+
+		if ((json.keySet -- required) nonEmpty)
+			throw new BadRequestException( "register: excess field(s): " + (required -- json.keySet).mkString(", ") )
+
+		val users = vm resource "users"
+		val email = json("email")
+
+		def denied = throw new UnauthorizedException( "email or password doesn't match" )
+
+		QueryFunctions.findOption( vm, users, "email", email, true ) match {
+			case None => denied
+			case Some( u ) =>
+				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
+					AuthorizationFunctionHelpers.performLogin( vm, u("_id").asInstanceOf[Long] )
+				else
+					denied
+		}
+	}
+
+	def logout( vm: VM, authorization: Option[Map[String, String]] ) = {
+		val access = AuthorizationFunctionHelpers.auth( authorization )
+
+		if (access isEmpty)
+			0
+		else
+			CommandFunctions.deleteValue( vm, vm resource "tokens", "token", access.get )
+	}
+
+	def me( vm: VM, authorization: Option[Map[String, String]] ) = {
+		val access = AuthorizationFunctionHelpers.auth( authorization )
+
+		def barred = throw new UnauthorizedException( "Protected" )
+
+		if (access isEmpty)
+			barred
+
+		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
+			val AuthorizationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
+
+			QueryFunctions.findOption( vm, vm resource "users", "email", email, true ) match {
+				case None => barred
+				case Some(u) =>
+					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
+						barred
+
+					u
+			}
+		} else {
+			QueryFunctions.findOption( vm, vm resource "tokens", "token", access.get, false ) match {
+				case None => barred
+				case Some( t ) =>
+					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
+						AuthorizationFunctionHelpers.EXPIRATION)
+						throw new ExpiredException( "Protected" )
+
+					t("user").asInstanceOf[OBJ]
+			}
+		}
+	}
+
+	def authorize( vm: VM, group: Option[String], key: Option[String], authorization: Option[Map[String, String]] ) {
+		if (key.isEmpty) {
+			val access = AuthorizationFunctionHelpers.auth( authorization )
+
+			def barred = throw new UnauthorizedException( "Protected" )
+
+			if (access isEmpty)
+				barred
+
+			if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
+				val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
+
+				QueryFunctions.findOption( vm, vm resource "users", "email", email, true ) match {
+					case None => barred
+					case Some( u ) =>
+						if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))
+							barred
+
+						if (group.nonEmpty && !u( "groups" ).asInstanceOf[List[String]].contains( group.get ))
+							barred
+				}
+			} else {
+				QueryFunctions.findOption( vm, vm resource "tokens", "token", access.get, false ) match {
+					case None => barred
+					case Some( t ) =>
+						if (group.nonEmpty && !t( "user" ).asInstanceOf[OBJ]( "groups" ).asInstanceOf[List[String]].contains( group.get ))
+							barred
+
+						if (Instant.now.getEpochSecond - OffsetDateTime.parse( t("created").asInstanceOf[String] ).toInstant.getEpochSecond >=
+							AuthorizationFunctionHelpers.EXPIRATION)
+							throw new ExpiredException( "Protected" )
+				}
+			}
+		} else
+			access( vm, key )
+	}
+
+	def access( vm: VM, key: Option[String] ): Unit =
+		if (key.isEmpty || key.get != vm.key)
+			throw new ForbiddenException( "wrong or missing access_token" )
+
+}

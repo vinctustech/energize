@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: xyz.hyperreal:table_2.12:0.9:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/xyz.hyperreal/table_2.12/jars/table_2.12-0.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/xyz.hyperreal/table_2.12/srcs/table_2.12-0.9-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
