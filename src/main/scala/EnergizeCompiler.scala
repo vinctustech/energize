@@ -91,23 +91,22 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	override def sourceExplicitsExtension( explicits: AST => Unit ) = {
 		if (router == null && !internal) {
 			specials
-			val els = LiteralExpressionAST( "no match" )
+			val els = LiteralExpressionAST( 'nomatch )
 
 			router =
 				FunctionExpressionAST(ROUTER, null,
 					List(
-						VariableStructureAST(null, "method", "method"),
-						VariableStructureAST(null, "path", "path"),
-						VariableStructureAST(null, "query", "query"),
-						VariableStructureAST(null, "parms", "parms"),
-						VariableStructureAST(null, "body", "body")),
+						VariableStructureAST(null, "$method", "$method"),
+						VariableStructureAST(null, "$path", "$path"),
+						VariableStructureAST(null, "$query", "$query"),
+						VariableStructureAST(null, "$headers", "$headers"),
+						VariableStructureAST(null, "$body", "$body"),
+						VariableStructureAST(null, "req", "req"),
+						VariableStructureAST(null, "res", "res")),
 					false, List(
 						FunctionPartExpressionAST(None,
-							BlockExpressionAST( List(
-								VarAST( null, "req", "req", None ),
-								ScanExpressionAST(null, VariableExpressionAST(null, "path", "path"),
-									ConditionalExpressionAST(conds, Some(els)))
-							))
+							ScanExpressionAST(null, VariableExpressionAST(null, "$path", "$path"),
+								ConditionalExpressionAST(conds, Some(els)))
 						)), WhereClauseAST(Nil))
 
 			explicits( DefAST(ROUTER, router) )
@@ -136,17 +135,9 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					val abspath = ConcatenationPathSegment( List(base getOrElse(EmptyPathSegment), path) )
 					val pat = path2pattern( abspath )
 					val req =
-						AssignmentExpressionAST( List((null, VariableExpressionAST(null, "req", "req"))), null, null, List((null,
-							MapExpressionAST( List(
-								(LiteralExpressionAST("method"),
-									BinaryExpressionAST(null, VariableExpressionAST(null, "method", "method"), '==, null, null, LiteralExpressionAST(method))),
-								(LiteralExpressionAST("path"),
-									PatternExpressionStringsAST(ConcatenationPattern(List(BeginningOfInputPattern, pat, EndOfInputPattern)))),
-								(LiteralExpressionAST("query"), VariableExpressionAST(null, "query", "query")),
-								(LiteralExpressionAST("parms"), VariableExpressionAST(null, "parms", "parms")),
-								(LiteralExpressionAST("body"), VariableExpressionAST(null, "body", "body"))
-							))) )
-						)
+						AndExpressionAST(
+							BinaryExpressionAST(null, VariableExpressionAST(null, "$method", "$method"), '==, null, null, LiteralExpressionAST(method)),
+							PatternExpressionStringsAST(ConcatenationPattern(List(BeginningOfInputPattern, pat, EndOfInputPattern))))
 					val cond =
 						(if (guard nonEmpty) AndExpressionAST( req, guard get ) else req,
 						protection match {

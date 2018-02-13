@@ -80,11 +80,20 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		val requri = new URI( uri )
 		val reqpath = requri.getPath
 		val reqquery = Map( URLEncodedUtils.parse( requri, Charset.forName("UTF-8") ).asScala map (p => (p.getName, p.getValue)): _* )	//todo: configuration charset for url decoding?
-
+		val reqbody = if (body eq null) null else DefaultJSONReader.fromString( body.toString )
+		val req =
+			Map(
+				"method" -> method,
+				"path" -> reqpath
+			)
+		val res =
+			new AnyRef {
+				def status( code: Int ) {}
+			}
 		val (sc, mt, obj) =
 			try {
-				vm.call( router, List(method, reqpath, reqquery, parms, if (body eq null) null else DefaultJSONReader.fromString( body.toString )) ) match {//todo: handle non-string request body
-					case "no match" => notfound
+				vm.call( router, List(method, reqpath, reqquery, parms, reqbody, req, res) ) match {//todo: handle non-string request body
+					case 'nomatch => notfound
 					case res => res
 				}
 			} catch {
