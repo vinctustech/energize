@@ -101,12 +101,15 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 						VariableStructureAST(null, "$query", "$query"),
 						VariableStructureAST(null, "$headers", "$headers"),
 						VariableStructureAST(null, "$body", "$body"),
-						VariableStructureAST(null, "req", "req"),
+						VariableStructureAST(null, "$req", "$req"),
 						VariableStructureAST(null, "res", "res")),
 					false, List(
 						FunctionPartExpressionAST(None,
-							ScanExpressionAST(null, VariableExpressionAST(null, "$path", "$path"),
-								ConditionalExpressionAST(conds, Some(els)))
+							BlockExpressionAST( List(
+								VarAST( null, "req", "req", None ),
+									ScanExpressionAST(null, VariableExpressionAST(null, "$path", "$path"),
+										ConditionalExpressionAST(conds, Some(els)))
+							))
 						)), WhereClauseAST(Nil))
 
 			explicits( DefAST(ROUTER, router) )
@@ -137,7 +140,10 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					val req =
 						AndExpressionAST(
 							BinaryExpressionAST(null, VariableExpressionAST(null, "$method", "$method"), '==, null, null, LiteralExpressionAST(method)),
-							PatternExpressionStringsAST(ConcatenationPattern(List(BeginningOfInputPattern, pat, EndOfInputPattern))))
+							AssignmentExpressionAST( List((null, VariableExpressionAST(null, "req", "req"))), null, null, List((null,
+								PatternExpressionStringsAST( ConcatenationPattern(List(BeginningOfInputPattern, pat, EndOfInputPattern)) )
+							)))
+						)
 					val cond =
 						(if (guard nonEmpty) AndExpressionAST( req, guard get ) else req,
 						protection match {

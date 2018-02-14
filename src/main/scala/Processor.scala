@@ -83,8 +83,11 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		val reqbody = if (body eq null) null else DefaultJSONReader.fromString( body.toString )
 		val req =
 			Map(
+        "body" -> reqbody,
 				"method" -> method,
-				"path" -> reqpath
+				"path" -> reqpath,
+        "query" -> reqquery,
+        "url" -> uri
 			)
 		val res =
 			new AnyRef {
