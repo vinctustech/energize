@@ -39,37 +39,37 @@ object Builtins {
 	val routes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64    => OkSingleOrNotFound( findID(<resource>, req.path.id, \?req.query.fields, None, None, None), req.path.id )
+			|  GET     /id:int64    => OkSingleOrNotFound( findID(<resource>, req.params.id, \?req.query.fields, None, None, None), req.params.id )
 			|  GET                  => Ok( list(<resource>, \?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
 			|  GET     /count       => Ok( count(<resource>, \?req.query.filter) )
-			|  GET     /sum/field:  => Ok( sum(<resource>, \?req.query.filter, req.path.field) )
-			|  GET     /avg/field:  => Ok( avg(<resource>, \?req.query.filter, req.path.field) )
-			|  GET     /min/field:  => Ok( min(<resource>, \?req.query.filter, req.path.field) )
-			|  GET     /max/field:  => Ok( max(<resource>, \?req.query.filter, req.path.field) )
+			|  GET     /sum/field:  => Ok( sum(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /avg/field:  => Ok( avg(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /min/field:  => Ok( min(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /max/field:  => Ok( max(<resource>, \?req.query.filter, req.params.field) )
 			|  GET     /schema      => Ok( tableSchema(<resource>) )
 			|  POST                 => Created( insert(<resource>, req.body) )
-			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( update(<resource>, req.path.id, req.body, false), req.path.id )
-			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( update(<resource>, req.path.id, req.body, true), req.path.id )
-			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( delete(<resource>, req.path.id), req.path.id )
+			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( update(<resource>, req.params.id, req.body, false), req.params.id )
+			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( update(<resource>, req.params.id, req.body, true), req.params.id )
+			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( delete(<resource>, req.params.id), req.params.id )
 			|  DELETE   						=> (deleteMany( <resource>, \?req.query.filter ); NoContent())
 		""".stripMargin
 
 	val mtmroutes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64/field:                    => OkSingleOrNotFound( findIDMany(<resource>, req.path.id, req.path.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.path.id )
-			|  POST    /id:int64/field:                    => Created( append(<resource>, req.path.id, req.path.field, req.body) )
-			|  POST    /sid:int64/field:/target/tid:int64  => (appendIDs( <resource>, req.path.sid, req.path.field, req.path.tid ); NoContent())
-			|  DELETE  /id:int64/field:                    => (deleteLinks( <resource>, req.path.id, req.path.field, req.body ); NoContent())
-			|  DELETE  /id:int64/field:/target/tid:int64   => OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, req.path.id, req.path.field, req.path.tid), req.path.id )
+			|  GET     /id:int64/field:                    => OkSingleOrNotFound( findIDMany(<resource>, req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
+			|  POST    /id:int64/field:                    => Created( append(<resource>, req.params.id, req.params.field, req.body) )
+			|  POST    /sid:int64/field:/target/tid:int64  => (appendIDs( <resource>, req.params.sid, req.params.field, req.params.tid ); NoContent())
+			|  DELETE  /id:int64/field:                    => (deleteLinks( <resource>, req.params.id, req.params.field, req.body ); NoContent())
+			|  DELETE  /id:int64/field:/target/tid:int64   => OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, req.params.id, req.params.field, req.params.tid), req.params.id )
 		""".stripMargin
 
 	val arrayroutes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  POST    /id:int64/field:/idx:integer  => (arrayInsert( <resource>, req.path.id, req.path.field, req.path.idx, req.body ); NoContent())
-			|  PUT     /id:int64/field:/idx:integer  => (arrayUpdate( <resource>, req.path.id, req.path.field, req.path.idx, req.body ); NoContent())
-			|  DELETE  /id:int64/field:/idx:integer  => (arrayDelete( <resource>, req.path.id, req.path.field, req.path.idx ); NoContent())
+			|  POST    /id:int64/field:/idx:integer  => (arrayInsert( <resource>, req.params.id, req.params.field, req.params.idx, req.body ); NoContent())
+			|  PUT     /id:int64/field:/idx:integer  => (arrayUpdate( <resource>, req.params.id, req.params.field, req.params.idx, req.body ); NoContent())
+			|  DELETE  /id:int64/field:/idx:integer  => (arrayDelete( <resource>, req.params.id, req.params.field, req.params.idx ); NoContent())
 		""".stripMargin
 
 	val special =
@@ -91,10 +91,10 @@ object Builtins {
 			|  user users
 			|
 			|routes /meta private
-			|  POST    /resourse:/field:                 => Ok( createField(req.path.resourse, req.path.field, req.body) )
-			|  PUT     /resourse:/field:/newname:        => Ok( renameField(req.path.resourse, req.path.field, req.path.newname) )
-			|  DELETE  /resourse:/field:                 => Ok( deleteField(req.path.resourse, req.path.field) )
-			|  DELETE  /resourse:                        => Ok( deleteResource(req.path.resourse) )
+			|  POST    /resourse:/field:                 => Ok( createField(req.params.resourse, req.params.field, req.body) )
+			|  PUT     /resourse:/field:/newname:        => Ok( renameField(req.params.resourse, req.params.field, req.params.newname) )
+			|  DELETE  /resourse:/field:                 => Ok( deleteField(req.params.resourse, req.params.field) )
+			|  DELETE  /resourse:                        => Ok( deleteResource(req.params.resourse) )
 			|  GET     /schema												   => Ok( databaseSchema() )
 			|
 			|routes <base>
@@ -107,6 +107,6 @@ object Builtins {
 			|  "data" blob(urlchars)
 			|
 			|routes
-			|  GET  /media/id:int64  => Ok( readMedia(req.path.id) )
+			|  GET  /media/id:int64  => Ok( readMedia(req.params.id) )
 		""".stripMargin
 }

@@ -141,8 +141,13 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 						AndExpressionAST(
 							BinaryExpressionAST(null, VariableExpressionAST(null, "$method", "$method"), '==, null, null, LiteralExpressionAST(method)),
 							AssignmentExpressionAST( List((null, VariableExpressionAST(null, "req", "req"))), null, null, List((null,
-								PatternExpressionStringsAST( ConcatenationPattern(List(BeginningOfInputPattern, pat, EndOfInputPattern)) )
-							)))
+								BinaryExpressionAST( null, VariableExpressionAST(null, "$req", "$req"), '+, null, null,
+									MapExpressionAST( List(
+										(LiteralExpressionAST( "params" ),
+											PatternExpressionStringsAST( ConcatenationPattern(List(BeginningOfInputPattern, pat, EndOfInputPattern)) ))
+									) )
+								)
+							)) )
 						)
 					val cond =
 						(if (guard nonEmpty) AndExpressionAST( req, guard get ) else req,

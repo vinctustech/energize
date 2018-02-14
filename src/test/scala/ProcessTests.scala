@@ -278,8 +278,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 				|
 				|routes
-				|  GET   /f/a:integer/b:integer => Ok( f(req.path.a, req.path.b) )
-				|  GET   /plus/a:/b:            => Ok( req.path.a + req.path.b )
+				|  GET   /f/a:integer/b:integer => Ok( f(req.params.a, req.params.b) )
+				|  GET   /plus/a:/b:            => Ok( req.params.a + req.params.b )
 				|  POST  /combine               => Ok( {"a": 3} + req.body )
 				|  POST  /eval                  => Ok( eval(req.body.expr).toString() )			;; POST /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
