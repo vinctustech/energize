@@ -78,7 +78,8 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		}
 
 		var resStatusCode = 200
-		var resType = "application/json"
+		var resType = "application/octet-stream"
+		var resTypeSet = false
 
 		val requri = new URI( uri )
 		val reqpath = requri.getPath
@@ -93,8 +94,21 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
         "url" -> uri
 			)
 		val res =
-			new AnyRef {
-				def status( code: Int ) {}
+			new Response {
+				def status( code: Int ) = {
+					resStatusCode = code
+					this
+				}
+
+				def `type`( typ: String ) = {
+					resType = typ
+					resTypeSet = true
+					this
+				}
+
+				def send( body: Any ) = {
+					this
+				}
 			}
 		val (sc, mt, obj) =
 			try {

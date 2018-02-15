@@ -20,7 +20,7 @@ object Main extends App {
     """
       |routes
       |  GET /r =>
-      |    write( 'wow' )
+      |    res.type( "asdf/qwer" )
       |    Ok( 'asdf' )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
