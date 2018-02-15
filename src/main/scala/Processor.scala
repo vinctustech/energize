@@ -77,6 +77,9 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			(sc, ctype, DefaultJSONWriter.toString( obj ))
 		}
 
+		var resStatusCode = 200
+		var resType = "application/json"
+
 		val requri = new URI( uri )
 		val reqpath = requri.getPath
 		val reqquery = Map( URLEncodedUtils.parse( requri, Charset.forName("UTF-8") ).asScala map (p => (p.getName, p.getValue)): _* )	//todo: configuration charset for url decoding?

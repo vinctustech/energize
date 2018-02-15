@@ -71,11 +71,11 @@ package object energize2 {
 		else
 			sys.error( pos.line + ": " + error + "\n" + pos.longString )
 
-	def run( program: String ): Unit = {
+	def run( program: String, args: Any* ): Unit = {
 		val parser = new EnergizeParser
 		val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
 		val code = new EnergizeCompiler().compile( ast, H2Database, false )
-		val vm = new VM( code, Array(), false, false, null )
+		val vm = new VM( code, Array(), false, false, args )
 
 		vm.execute
 	}

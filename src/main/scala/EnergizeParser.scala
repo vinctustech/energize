@@ -71,43 +71,14 @@ class EnergizeParser extends FunLParser {
 		pos ~ ident ~ ("(" ~> rep1sep(numericLit|ident|mimeType, ",") <~ ")") ^^ { case p ~ n ~ a => (p, n, a) } |
 		pos ~ ident ^^ { case p ~ n => (p, n, Nil) }
 
-//	lazy val primitiveColumnType: PackratParser[PrimitiveColumnType] =
-//		"boolean" ^^^ BooleanType |
-//			"string" ^^^ StringType |
-//			"text" ^^^ TextType |
-//			"integer" ^^^ IntegerType |
-//			"long" ^^^ LongType |
-//			"uuid" ^^^ UUIDType |
-//			"date" ^^^ DateType |
-//			"datetime" ^^^ DatetimeType |
-//			"time" ^^^ TimeType |
-//			"timestamp" ^^^ TimestampType |
-//			"timestamp" ~ "with" ~ "timezone" ^^^ TimestamptzType |
-//			"binary" ^^^ BinaryType |
-//			"blob" ~> opt("(" ~> ident <~ ")") ^^ {
-//				case None => BLOBType( 'base64 )
-//				case Some( r ) => BLOBType( Symbol(r) )} |
-//			"float" ^^^ FloatType |
-//			("decimal" ~ "(") ~> ((numericLit <~ ",") ~ (numericLit <~ ")")) ^^ {
-//				case p ~ s => DecimalType( p.toInt, s.toInt )} |
-//			"media" ~> opt("(" ~> (repsep(mimeType, ",") ~ opt("," ~> numericLit)) <~ ")") ^^ {
-//				case Some( ts ~ Some(l) ) => MediaType( ts, l, Int.MaxValue )
-//				case Some( ts ~ None ) => MediaType( ts, null, Int.MaxValue )
-//				case None => MediaType( Nil, null, Int.MaxValue )}
-
-//	lazy val columnModifier: PackratParser[ColumnTypeModifier] =
-//		positioned( ("unique" | "indexed" | "required" | "optional" | "secret") ^^ ColumnTypeModifier )
-
 	lazy val routesDefinition: PackratParser[RoutesDefinition] =
 		"routes" ~> pos ~ opt(basicPath) ~ opt(protection) ~ (Indent ~> rep1(routeMapping) <~ Dedent) ^^ {
 			case p ~ b ~ pro ~ ms => RoutesDefinition( p, b, pro, ms ) }
 
 	lazy val routeMapping: PackratParser[RouteMapping] =
-//		pos ~ ident ~ ("/" ~> "=>" ~> expression <~ nl) ^^ {case p ~ m ~ action => RouteMapping( p, m, SlashPathSegment, action )} |
-		pos ~ ident ~ opt(routePath) ~ opt("if" ~> expression) ~ ("=>" ~> expression <~ nl) ^^ {
+		pos ~ ident ~ opt(routePath) ~ opt("if" ~> expression) ~ ("=>" ~> expressionOrBlock <~ nl) ^^ {
 			case p ~ m ~ Some( path ) ~ g ~ action => RouteMapping( p, m, path, g, action )
 			case p ~ m ~ None ~ g ~ action => RouteMapping( p, m, EmptyPathSegment, g, action ) } |
-//		pos ~ ident ~ ("/" ~> "=>" ~> protection <~ nl) ^^ {case p ~ m ~ pro => RouteMapping( p, m, SlashPathSegment, authorize(pro) )} |
 		pos ~ ident ~ opt(routePath) ~ opt("if" ~> expression) ~ ("=>" ~> protection <~ nl) ^^ {
 			case p ~ m ~ Some( path ) ~ g ~ pro => RouteMapping( p, m, path, g, authorize(pro) )
 			case p ~ m ~ None ~ g ~ pro => RouteMapping( p, m, EmptyPathSegment, g, authorize(pro) ) }
