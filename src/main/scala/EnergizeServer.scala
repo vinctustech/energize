@@ -288,6 +288,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 								contents match {
 									case s: String => new NStringEntity( s, mktype(ctype) )
 									case a: Array[Byte] => new NByteArrayEntity( a, mktype(ctype) )
+									case a: Seq[Byte] => new NByteArrayEntity( a.toArray, mktype(ctype) )
 								}
 
 							if (method == "HEAD") {

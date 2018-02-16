@@ -2,6 +2,29 @@
 package xyz.hyperreal.energize2
 
 
+abstract class Response {
+
+  def status( code: Int ): Response
+
+  def `type`( typ: String ): Response
+
+  def send( body: AnyRef ): Response
+
+  def json( body: OBJ ) = send( body )
+
+  def end = send( Nil )
+
+  def sendStatus( code: Int ) = {
+    status( code )
+
+    Response.codes get code match {
+      case None => send( code.toString )
+      case Some( reason ) => send( reason )
+    }
+  }
+
+}
+
 object Response {
 
   val codes =
@@ -48,24 +71,5 @@ object Response {
       505 -> "HTTP Version Not Supported",
       507 -> "Insufficient Storage"
     )
-
-}
-
-abstract class Response {
-
-  def status( code: Int ): Response
-
-  def `type`( typ: String ): Response
-
-  def send( body: AnyRef ): Response
-
-  def sendStatus( code: Int ) = {
-    status( code )
-
-    Response.codes get code match {
-      case None => send( code.toString )
-      case Some( reason ) => send( reason )
-    }
-  }
 
 }
