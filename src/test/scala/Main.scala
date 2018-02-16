@@ -18,8 +18,10 @@ object Main extends App {
   val key = AUTHORIZATION.getString( "key" )
   val src =
     """
+      |;;def Ok( res, d ) = res.type( 'asdf/qwer' ).send( {zxcv: d} )
+      |
       |routes
-      |  GET /r => res.send( {a: 123} )
+      |  GET /r => Ok( res, 123 )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
 

@@ -191,9 +191,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin)
 		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1, description: null}""" ) shouldBe
-			(SC_NO_CONTENT, null, null)//todo: the two 'string' type field above should be type 'text' but then we get "updating a text field isn't supported yet" for this test
+			(SC_NO_CONTENT, "text/html", "No Content")//todo: the two 'string' type field above should be type 'text' but then we get "updating a text field isn't supported yet" for this test
 		pro.process( "PUT", "/api/v1/test/1", null, """{"asdf": 1234}""" ) shouldBe
-			(SC_NO_CONTENT, null, null)
+			(SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/api/v1/todo", null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
@@ -224,7 +224,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 								|  "data": 1
 								|}
 							""".trim.stripMargin )
-		pro.process( "DELETE", "/api/v1/todo/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "DELETE", "/api/v1/todo/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
  		pro.process( "GET", "/api/v1/todo/1", null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
@@ -259,7 +259,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "DELETE", "/api/v1/test/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "DELETE", "/api/v1/test/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
  		pro.process( "GET", "/api/v1/test/1", null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
@@ -278,10 +278,10 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
 				|
 				|routes
-				|  GET   /f/a:integer/b:integer => Ok( f(req.params.a, req.params.b) )
-				|  GET   /plus/a:/b:            => Ok( req.params.a + req.params.b )
-				|  POST  /combine               => Ok( {"a": 3} + req.body )
-				|  POST  /eval                  => Ok( eval(req.body.expr).toString() )			;; POST /eval {"expr": "3 + 4"}
+				|  GET   /f/a:integer/b:integer => Ok( res, f(req.params.a, req.params.b) )
+				|  GET   /plus/a:/b:            => Ok( res, req.params.a + req.params.b )
+				|  POST  /combine               => Ok( res, {"a": 3} + req.body )
+				|  POST  /eval                  => Ok( res, eval(req.body.expr).toString() )			;; POST /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
@@ -438,7 +438,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/products/1", null, """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/products/1", null, """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/products", null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
@@ -454,7 +454,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "DELETE", "/products/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "DELETE", "/products/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
  		pro.process( "GET", "/products/1", null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
@@ -486,7 +486,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "DELETE", "/types/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "DELETE", "/types/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
  		pro.process( "GET", "/types/1", null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
@@ -609,8 +609,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "POST", "/customers/1/products/target/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
-		pro.process( "PUT", "/customers/1", null, """{"lastname": "doe", "firstname": "jane"}""" ) shouldBe (SC_NO_CONTENT, null, null)//todo: updating text fields need to be supported
+		pro.process( "POST", "/customers/1/products/target/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "PUT", "/customers/1", null, """{"lastname": "doe", "firstname": "jane"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")//todo: updating text fields need to be supported
 		pro.process( "GET", "/customers", null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
@@ -629,7 +629,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "DELETE", "/customers/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "DELETE", "/customers/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/customers/1", null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
@@ -661,7 +661,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "DELETE", "/products/1", null, null ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "DELETE", "/products/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/products/1", null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""

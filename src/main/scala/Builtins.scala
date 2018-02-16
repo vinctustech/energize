@@ -31,45 +31,57 @@ object Builtins {
 		Native( FileFunctions )
 	val map =
 		pairs( natives ) ++ constants toMap
-//	val jsmap =
-//		pairs( natives ) ++ jsconstants toMap
+	//	val jsmap =
+	//		pairs( natives ) ++ jsconstants toMap
 
 	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
 
 	val routes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64    => OkSingleOrNotFound( findID(<resource>, req.params.id, \?req.query.fields, None, None, None), req.params.id )
-			|  GET                  => Ok( list(<resource>, \?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
-			|  GET     /count       => Ok( count(<resource>, \?req.query.filter) )
-			|  GET     /sum/field:  => Ok( sum(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /avg/field:  => Ok( avg(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /min/field:  => Ok( min(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /max/field:  => Ok( max(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /schema      => Ok( tableSchema(<resource>) )
-			|  POST                 => Created( insert(<resource>, req.body) )
-			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( update(<resource>, req.params.id, req.body, false), req.params.id )
-			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( update(<resource>, req.params.id, req.body, true), req.params.id )
-			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( delete(<resource>, req.params.id), req.params.id )
-			|  DELETE   						=> (deleteMany( <resource>, \?req.query.filter ); NoContent())
+			|  GET     /id:int64    => OkSingleOrNotFound( res, findID(<resource>, req.params.id, \?req.query.fields, None, None, None), req.params.id )
+			|  GET                  => Ok( res, list(<resource>, \?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
+			|  GET     /count       => Ok( res, count(<resource>, \?req.query.filter) )
+			|  GET     /sum/field:  => Ok( res, sum(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /avg/field:  => Ok( res, avg(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /min/field:  => Ok( res, min(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /max/field:  => Ok( res, max(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /schema      => Ok( res, tableSchema(<resource>) )
+			|  POST                 => Created( res, insert(<resource>, req.body) )
+			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, update(<resource>, req.params.id, req.body, false), req.params.id )
+			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, update(<resource>, req.params.id, req.body, true), req.params.id )
+			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( res, delete(<resource>, req.params.id), req.params.id )
+			|  DELETE   						=>
+			|    deleteMany( <resource>, \?req.query.filter )
+			|    NoContent( res )
 		""".stripMargin
 
 	val mtmroutes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64/field:                    => OkSingleOrNotFound( findIDMany(<resource>, req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
-			|  POST    /id:int64/field:                    => Created( append(<resource>, req.params.id, req.params.field, req.body) )
-			|  POST    /sid:int64/field:/target/tid:int64  => (appendIDs( <resource>, req.params.sid, req.params.field, req.params.tid ); NoContent())
-			|  DELETE  /id:int64/field:                    => (deleteLinks( <resource>, req.params.id, req.params.field, req.body ); NoContent())
-			|  DELETE  /id:int64/field:/target/tid:int64   => OkAtLeastOneOrNotFoundId( deleteLinksID(<resource>, req.params.id, req.params.field, req.params.tid), req.params.id )
+			|  GET     /id:int64/field:                    => OkSingleOrNotFound( res, findIDMany(<resource>, req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
+			|  POST    /id:int64/field:                    => Created( res, append(<resource>, req.params.id, req.params.field, req.body) )
+			|  POST    /sid:int64/field:/target/tid:int64  =>
+			|    appendIDs( <resource>, req.params.sid, req.params.field, req.params.tid )
+			|    NoContent( res )
+			|  DELETE  /id:int64/field:                    =>
+			|    deleteLinks( <resource>, req.params.id, req.params.field, req.body )
+			|    NoContent( res )
+			|  DELETE  /id:int64/field:/target/tid:int64   => OkAtLeastOneOrNotFoundId( res, deleteLinksID(<resource>, req.params.id, req.params.field, req.params.tid), req.params.id )
 		""".stripMargin
 
 	val arrayroutes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  POST    /id:int64/field:/idx:integer  => (arrayInsert( <resource>, req.params.id, req.params.field, req.params.idx, req.body ); NoContent())
-			|  PUT     /id:int64/field:/idx:integer  => (arrayUpdate( <resource>, req.params.id, req.params.field, req.params.idx, req.body ); NoContent())
-			|  DELETE  /id:int64/field:/idx:integer  => (arrayDelete( <resource>, req.params.id, req.params.field, req.params.idx ); NoContent())
+			|  POST    /id:int64/field:/idx:integer  =>
+			|    arrayInsert( <resource>, req.params.id, req.params.field, req.params.idx, req.body )
+			|    NoContent( res )
+			|  PUT     /id:int64/field:/idx:integer  =>
+			|    arrayUpdate( <resource>, req.params.id, req.params.field, req.params.idx, req.body )
+			|    NoContent( res )
+			|  DELETE  /id:int64/field:/idx:integer  =>
+			|    arrayDelete( <resource>, req.params.id, req.params.field, req.params.idx )
+			|    NoContent( res )
 		""".stripMargin
 
 	val special =
@@ -83,7 +95,7 @@ object Builtins {
 			|  password string secret
 			|
 			|routes protected
-			|  GET     /users/me  => Ok( me() )
+			|  GET     /users/me  => Ok( res, me() )
 			|
 			|table tokens
 			|  token string unique
@@ -91,22 +103,22 @@ object Builtins {
 			|  user users
 			|
 			|routes /meta private
-			|  POST    /resourse:/field:                 => Ok( createField(req.params.resourse, req.params.field, req.body) )
-			|  PUT     /resourse:/field:/newname:        => Ok( renameField(req.params.resourse, req.params.field, req.params.newname) )
-			|  DELETE  /resourse:/field:                 => Ok( deleteField(req.params.resourse, req.params.field) )
-			|  DELETE  /resourse:                        => Ok( deleteResource(req.params.resourse) )
-			|  GET     /schema												   => Ok( databaseSchema() )
+			|  POST    /resourse:/field:                 => Ok( res, createField(req.params.resourse, req.params.field, req.body) )
+			|  PUT     /resourse:/field:/newname:        => Ok( res, renameField(req.params.resourse, req.params.field, req.params.newname) )
+			|  DELETE  /resourse:/field:                 => Ok( res, deleteField(req.params.resourse, req.params.field) )
+			|  DELETE  /resourse:                        => Ok( res, deleteResource(req.params.resourse) )
+			|  GET     /schema												   => Ok( res, databaseSchema() )
 			|
 			|routes <base>
-			|  POST    /login        => Ok( login(req.body) )
+			|  POST    /login        => Ok( res, login(req.body) )
 			|  GET     /logout       => OkAtLeastOneOrNotFound( logout(), "token not found" )
-			|  POST    /register     => Created( register(req.body) )
+			|  POST    /register     => Created( res, register(req.body) )
 			|
 			|table _media_
 			|  type string
 			|  "data" blob(urlchars)
 			|
 			|routes
-			|  GET  /media/id:int64  => Ok( readMedia(req.params.id) )
+			|  GET  /media/id:int64  => Ok( res, readMedia(req.params.id) )
 		""".stripMargin
 }

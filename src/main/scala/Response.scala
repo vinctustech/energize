@@ -7,7 +7,6 @@ object Response {
   val codes =
     Map(
       100 -> "Continue",
-      101 -> "Switching Protocols",
       200 -> "OK",
       201 -> "Created",
       202 -> "Accepted",
@@ -46,7 +45,8 @@ object Response {
       502 -> "Bad Gateway",
       503 -> "Service Unavailable",
       504 -> "Gateway Timeout",
-      505 -> "HTTP Version Not Supported"
+      505 -> "HTTP Version Not Supported",
+      507 -> "Insufficient Storage"
     )
 
 }

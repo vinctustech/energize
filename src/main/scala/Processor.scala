@@ -55,7 +55,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		}
 	}
 
-	def result( name: String, args: List[Any] ) = call( name, args ).asInstanceOf[(Int, String, OBJ)]
+	def result( name: String, res: Response, args: List[Any] ) = call( name, res :: args )
 
 	def process( method: String, uri: String, parms: Map[String, Any], body: AnyRef ) = resourceMutex.synchronized {
 //		val res =
@@ -70,12 +70,6 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 //			case Some( resource ) =>
 //				routeSearch( method, path, resource.routes )
 //		}
-
-		def notfound = {
-			val (sc, ctype, obj) = result( "NotFound", List("route not found") )
-
-			(sc, ctype, DefaultJSONWriter.toString( obj ))
-		}
 
 		var resStatusCode = 200
 		var resType = "application/octet-stream"
@@ -128,24 +122,23 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				}
 			}
 
+    //todo: handle non-string request body
     try {
-      vm.call( router, List(method, reqpath, reqquery, parms, reqbody, req, res) ) match {//todo: handle non-string request body
-        case 'nomatch => notfound
-        case res => res
-      }
+      if (vm.call( router, List(method, reqpath, reqquery, parms, reqbody, req, res) ) == 'nomatch)
+        result( "NotFound", res, List("route not found") )
     } catch {
       case e: UnauthorizedException =>
-        result( "Unauthorized", List(s"""realm="${e.getMessage}"""") )
+        result( "Unauthorized", res, List(s"""realm="${e.getMessage}"""") )
       case e: ExpiredException =>
-        result( "Unauthorized", List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
+        result( "Unauthorized", res, List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
       case e: ForbiddenException =>
-        result( "Forbidden", List(e.getMessage) )
+        result( "Forbidden", res, List(e.getMessage) )
       case e: BadRequestException =>
-        result( "BadRequest", List(e.getMessage) )
+        result( "BadRequest", res, List(e.getMessage) )
       case e: NotFoundException =>
-        result( "NotFound", List(e.getMessage) )
+        result( "NotFound", res, List(e.getMessage) )
       case e: SQLException if db.conflict( e.getMessage )  =>
-        result( "Conflict", List(e.getMessage) )
+        result( "Conflict", res, List(e.getMessage) )
     }
 
 		(resStatusCode, resType, resBody)

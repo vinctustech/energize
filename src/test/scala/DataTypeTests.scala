@@ -53,7 +53,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/truths/2", null, """{statement: "we only have 5 senses", veracity: false}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/truths/2", null, """{statement: "we only have 5 senses", veracity: false}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/truths", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -107,7 +107,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //					|  ]
 //					|}
 //				""".trim.stripMargin )
-//		pro.process( "PUT", "/cards/1", null, """{number: 2, suit: "clubs"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+//		pro.process( "PUT", "/cards/1", null, """{number: 2, suit: "clubs"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 //		pro.process( "GET", "/cards", null, null ) shouldBe
 //			(SC_OK, "application/json",
 //				"""
@@ -152,7 +152,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-//		pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+//		pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 //		pro.process( "GET", "/documents", null, null ) shouldBe
 //			(SC_OK, "application/json",
 //				"""
@@ -196,7 +196,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-				pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+				pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 				pro.process( "GET", "/documents", null, null ) shouldBe
 					(SC_OK, "application/json",
 						"""
@@ -240,7 +240,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/test/1", null, """{identifier: "8140d714-7387-486c-ab5b-ef5fc1cc790e"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/test/1", null, """{identifier: "8140d714-7387-486c-ab5b-ef5fc1cc790e"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/test", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -290,7 +290,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/r/1", null, """{f: 2.7}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/r/1", null, """{f: 2.7}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/r", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -364,7 +364,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/events/1", null, """{title: "finish coding date support", event: "2017-06-15"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/events/1", null, """{title: "finish coding date support", event: "2017-06-15"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/events", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -411,7 +411,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/alarms/1", null, """{title: "finish coding time support", alarm: "16:45:00"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/alarms/1", null, """{title: "finish coding time support", alarm: "16:45:00"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/alarms", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -458,7 +458,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/lunar", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -505,7 +505,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/lunar", null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -548,7 +548,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/arrays/1", null, """{a: [1, 2, 3]}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/arrays/1", null, """{a: [1, 2, 3]}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/arrays", null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
@@ -603,7 +603,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
-//		pro.process( "PUT", "/blobs/1", null, """{a: "AQIE", b: "AQIE", c: "010204", d: [1, 2, 4]}""" ) shouldBe (SC_NO_CONTENT, null, null)
+//		pro.process( "PUT", "/blobs/1", null, """{a: "AQIE", b: "AQIE", c: "010204", d: [1, 2, 4]}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 //		pro.process( "GET", "/blobs", null, null ) shouldBe (SC_OK, "application/json",
 //			"""
 //				|{
@@ -651,7 +651,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/test/1", null, """{a: "123457"}""" ) shouldBe (SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/test/1", null, """{a: "123457"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/test", null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
@@ -694,7 +694,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin)
 		(pro.process( "GET", "/media/1", null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
 			(SC_OK, "image/gif", base642bytes("R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==").toList)
-		pro.process( "PUT", "/test/1", null, """{a: "data:,Hello, World!"}""" ) shouldBe(SC_NO_CONTENT, null, null)
+		pro.process( "PUT", "/test/1", null, """{a: "data:,Hello, World!"}""" ) shouldBe(SC_NO_CONTENT, "text/html", "No Content")
 		pro.process( "GET", "/test", null, null ) shouldBe(SC_OK, "application/json",
 			"""
 				|{
