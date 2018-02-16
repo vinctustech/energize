@@ -19,9 +19,7 @@ object Main extends App {
   val src =
     """
       |routes
-      |  GET /r =>
-      |    res.type( "asdf/qwer" )
-      |    Ok( 'asdf' )
+      |  GET /r => res.send( {a: 123} )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
 

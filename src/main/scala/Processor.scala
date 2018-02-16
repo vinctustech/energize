@@ -80,6 +80,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		var resStatusCode = 200
 		var resType = "application/octet-stream"
 		var resTypeSet = false
+    var resBody: AnyRef = ""
 
 		val requri = new URI( uri )
 		val reqpath = requri.getPath
@@ -106,38 +107,48 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 					this
 				}
 
-				def send( body: Any ) = {
+				def send( body: AnyRef ) = {
+          resBody = body
+
+          body match {
+            case _: String =>
+              if (!resTypeSet)
+                resType = "text/html"
+            case _: Array[_] | _: Seq[_] =>
+              if (!resTypeSet)
+                resType = "application/octet-stream"
+            case _: Map[_, _] =>
+              if (!resTypeSet)
+                resType = "application/json"
+
+            resBody = DefaultJSONWriter.toString( body.asInstanceOf[Map[String, Any]] )
+          }
+
 					this
 				}
 			}
-		val (sc, mt, obj) =
-			try {
-				vm.call( router, List(method, reqpath, reqquery, parms, reqbody, req, res) ) match {//todo: handle non-string request body
-					case 'nomatch => notfound
-					case res => res
-				}
-			} catch {
-				case e: UnauthorizedException =>
-					result( "Unauthorized", List(s"""realm="${e.getMessage}"""") )
-				case e: ExpiredException =>
-					result( "Unauthorized", List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
-				case e: ForbiddenException =>
-					result( "Forbidden", List(e.getMessage) )
-				case e: BadRequestException =>
-					result( "BadRequest", List(e.getMessage) )
-				case e: NotFoundException =>
-					result( "NotFound", List(e.getMessage) )
-				case e: SQLException if db.conflict( e.getMessage )  =>
-					result( "Conflict", List(e.getMessage) )
-			}
 
-		val obj1 =
-			if (obj.isInstanceOf[OBJ])
-				DefaultJSONWriter.toString( obj.asInstanceOf[Map[String, Any]] )
-			else
-				obj
+    try {
+      vm.call( router, List(method, reqpath, reqquery, parms, reqbody, req, res) ) match {//todo: handle non-string request body
+        case 'nomatch => notfound
+        case res => res
+      }
+    } catch {
+      case e: UnauthorizedException =>
+        result( "Unauthorized", List(s"""realm="${e.getMessage}"""") )
+      case e: ExpiredException =>
+        result( "Unauthorized", List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
+      case e: ForbiddenException =>
+        result( "Forbidden", List(e.getMessage) )
+      case e: BadRequestException =>
+        result( "BadRequest", List(e.getMessage) )
+      case e: NotFoundException =>
+        result( "NotFound", List(e.getMessage) )
+      case e: SQLException if db.conflict( e.getMessage )  =>
+        result( "Conflict", List(e.getMessage) )
+    }
 
-		(sc.asInstanceOf[Int], mt.asInstanceOf[String], obj1.asInstanceOf[AnyRef])
+		(resStatusCode, resType, resBody)
 	}
 }
 

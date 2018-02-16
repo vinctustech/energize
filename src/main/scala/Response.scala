@@ -57,7 +57,7 @@ abstract class Response {
 
   def `type`( typ: String ): Response
 
-  def send( body: Any ): Response
+  def send( body: AnyRef ): Response
 
   def sendStatus( code: Int ) = {
     status( code )
