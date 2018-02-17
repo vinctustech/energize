@@ -13,5 +13,6 @@ class ResponseHeaders( response: HttpResponse ) {
 			case h => h
 		}
 
-	def
+	def update( header: String, value: String ) = response.setHeader( header, value )
+
 }
