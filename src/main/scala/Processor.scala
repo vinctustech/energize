@@ -57,7 +57,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 	def result( name: String, res: Response, args: List[Any] ) = call( name, res :: args )
 
-	def process( method: String, uri: String, parms: Map[String, Any], body: AnyRef ) = resourceMutex.synchronized {
+	def process( method: String, uri: String, headers: MessageHeaders, body: AnyRef ) = resourceMutex.synchronized {
 //		val res =
 //			path.indexOf( '/', 1 ) match {
 //				case -1 => path substring 1
@@ -124,7 +124,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
     //todo: handle non-string request body
     try {
-      if (vm.call( router, List(method, reqpath, reqquery, parms, reqbody, req, res) ) == 'nomatch)
+      if (vm.call( router, List(method, reqpath, reqquery, reqbody, req, res) ) == 'nomatch)
         result( "NotFound", res, List("route not found") )
     } catch {
       case e: UnauthorizedException =>

@@ -131,16 +131,17 @@ class EnergizeServer( pro: Processor, port: Int ) {
 				response.setHeader( "Access-Control-Allow-Origin", origin )
 
 				try {
-					val parms =
-						request.getFirstHeader( "Authorization" ) match {
-							case null => Map[String, String]()
-							case h =>
-								h.getValue match {
-									case v if v startsWith "Basic " => Map( "authorization" -> Map("$basic" -> v.substring( 6 )) )
-									case v if v startsWith "Bearer " => Map( "authorization" -> Map("$bearer" -> v.substring( 7 )) )
-									case _ => Map[String, String]()
-								}
-						}
+//					val parms =
+//						request.getFirstHeader( "Authorization" ) match {
+//							case null => Map[String, String]()
+//							case h =>
+//								h.getValue match {
+//									case v if v startsWith "Basic " => Map( "authorization" -> Map("$basic" -> v.substring( 6 )) )
+//									case v if v startsWith "Bearer " => Map( "authorization" -> Map("$bearer" -> v.substring( 7 )) )
+//									case _ => Map[String, String]()
+//								}
+//						}
+          val headers = new MessageHeaders( request )
 					val (status, ctype, contents) =
 						request match {
 							case withEntity: HttpEntityEnclosingRequest =>
@@ -148,9 +149,9 @@ class EnergizeServer( pro: Processor, port: Int ) {
 								val entity = withEntity.getEntity
 
 								entity.writeTo( buf )
-								pro.process( method1, target, parms, buf.toString )
+								pro.process( method1, target, headers, buf.toString )
 							case _ =>
-								pro.process( method1, target, parms, null )
+								pro.process( method1, target, headers, null )
 						}
 
 					if (status == SC_NOT_FOUND) {

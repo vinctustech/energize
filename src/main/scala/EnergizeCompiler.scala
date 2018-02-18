@@ -99,7 +99,6 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 						VariableStructureAST(null, "$method", "$method"),
 						VariableStructureAST(null, "$path", "$path"),
 						VariableStructureAST(null, "$query", "$query"),
-						VariableStructureAST(null, "$headers", "$headers"),
 						VariableStructureAST(null, "$body", "$body"),
 						VariableStructureAST(null, "$req", "$req"),
 						VariableStructureAST(null, "res", "res")),
