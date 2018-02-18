@@ -5,10 +5,12 @@ import java.nio.charset.Charset
 import java.sql.{Connection, SQLException, Statement}
 
 import collection.JavaConverters._
-import collection.mutable.{ArrayBuffer}
+import collection.mutable.ArrayBuffer
 import org.apache.http.client.utils.URLEncodedUtils
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 import xyz.hyperreal.bvm.{Compilation, VM}
+
+import scala.util.parsing.input.Position
 
 
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
@@ -83,6 +85,10 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		val req =
 			Map(
         "body" -> reqbody,
+				"get" -> {
+					(vm: VM, pos: Position, ps: List[Position], args: Any) => {
+						headers( args.toString )
+					} },
 				"method" -> method,
 				"path" -> reqpath,
         "query" -> reqquery,
