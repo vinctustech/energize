@@ -8,10 +8,12 @@ import xyz.hyperreal.bvm.undefined
 class MessageHeaders( message: HttpMessage ) {
 
 	def apply( header: String ) =
-		message.getFirstHeader( header ) match {
+		get( header ) match {
 			case null => undefined
-			case h => h
+			case h => h.getValue
 		}
+	
+	def get( header: String ) = message.getFirstHeader( header )
 
 	def update( header: String, value: String ) = message.setHeader( header, value )
 

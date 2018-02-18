@@ -6,9 +6,11 @@ import java.sql.{Connection, SQLException, Statement}
 
 import collection.JavaConverters._
 import collection.mutable.ArrayBuffer
+
 import org.apache.http.client.utils.URLEncodedUtils
+
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
-import xyz.hyperreal.bvm.{Compilation, VM}
+import xyz.hyperreal.bvm.{deref, Compilation, VM}
 
 import scala.util.parsing.input.Position
 
@@ -86,9 +88,12 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			Map(
         "body" -> reqbody,
 				"get" -> {
-					(vm: VM, pos: Position, ps: List[Position], args: Any) => {
-						headers( args.toString )
-					} },
+					(vm: VM, apos: Position, ps: List[Position], args: Any) =>
+						deref( args ) match {
+							case h: String => headers( h )
+							case _ => problem( apos, "error: expected one string argument" )
+						}
+					},
 				"method" -> method,
 				"path" -> reqpath,
         "query" -> reqquery,

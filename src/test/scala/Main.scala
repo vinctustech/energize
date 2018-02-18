@@ -1,6 +1,9 @@
 //@
 package xyz.hyperreal.energize2
 
+import org.apache.http._
+import org.apache.http.params.HttpParams
+
 //import xyz.hyperreal.bvm.{AST, Compiler, VM}
 //import xyz.hyperreal.funl2.{FunLParser, Predef}
 
@@ -19,11 +22,39 @@ object Main extends App {
   val src =
     """
       |routes
-      |  GET /r => res.status( 204 ).end()
+      |  GET /r => res.send( req.get( 'Host' ) )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
-
-  println( pro.process( "GET", "/r", null, null ) )
+  val message =
+    new HttpMessage {
+      override def setHeaders(headers: Array[Header]): Unit = ???
+      override def headerIterator(): HeaderIterator = ???
+      override def headerIterator(name: String): HeaderIterator = ???
+      override def addHeader(header: Header): Unit = ???
+      override def addHeader(name: String, value: String): Unit = ???
+      override def getHeaders(name: String): Array[Header] = ???
+      override def getFirstHeader(name: String): Header =
+        name match {
+          case "Host" =>
+            new Header {
+              override def getElements: Array[HeaderElement] = ???
+              override def getName: String = "Host"
+              override def getValue: String = "abc.com"
+            }
+          case _ => null
+        }
+      override def getLastHeader(name: String): Header = ???
+      override def getAllHeaders: Array[Header] = ???
+      override def removeHeaders(name: String): Unit = ???
+      override def setHeader(header: Header): Unit = ???
+      override def setHeader(name: String, value: String): Unit = ???
+      override def removeHeader(header: Header): Unit = ???
+      override def getProtocolVersion: ProtocolVersion = ???
+      override def containsHeader(name: String): Boolean = ???
+      override def getParams: HttpParams = ???
+      override def setParams(params: HttpParams): Unit = ???
+   }
+  println( pro.process( "GET", "/r", new MessageHeaders(message), null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
