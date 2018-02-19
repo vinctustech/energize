@@ -75,7 +75,7 @@ object REPLMain extends App {
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, uri: String, json: String ) =
-			println( pro.process(method, uri, null, json) ) // todo: query and server (header) parameters
+			println( pro.process(method, uri, null, json, null) )
 
 		try {
 			com match {

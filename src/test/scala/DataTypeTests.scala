@@ -5,8 +5,6 @@ import prop.PropertyChecks
 
 import org.apache.http.HttpStatus._
 
-import java.util.UUID
-
 
 class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
@@ -21,21 +19,21 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/truths", null, """{statement: "crackers love cheese", veracity: true}""" ) shouldBe
+		pro.process( "POST", "/truths", null, """{statement: "crackers love cheese", veracity: true}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				 """.trim.stripMargin )
-		pro.process( "POST", "/truths", null, """{statement: "we only have five senses", veracity: false}""" ) shouldBe
+		pro.process( "POST", "/truths", null, """{statement: "we only have five senses", veracity: false}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 2
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/truths", null, null ) shouldBe
+		pro.process( "GET", "/truths", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -53,8 +51,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/truths/2", null, """{statement: "we only have 5 senses", veracity: false}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/truths", null, null ) shouldBe
+		pro.process( "PUT", "/truths/2", null, """{statement: "we only have 5 senses", veracity: false}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/truths", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -87,14 +85,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //			""".trim.stripMargin
 //		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 //
-//		pro.process( "POST", "/cards", null, """{suit: "hearts", number: 1}""" ) shouldBe
+//		pro.process( "POST", "/cards", null, """{suit: "hearts", number: 1}""", null ) shouldBe
 //			(SC_CREATED, "application/json",
 //				"""
 //					|{
 //					|  "data": 1
 //					|}
 //				""".trim.stripMargin )
-//		pro.process( "GET", "/cards", null, null ) shouldBe
+//		pro.process( "GET", "/cards", null, null, null ) shouldBe
 //			(SC_OK, "application/json",
 //				"""
 //					|{
@@ -107,8 +105,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //					|  ]
 //					|}
 //				""".trim.stripMargin )
-//		pro.process( "PUT", "/cards/1", null, """{number: 2, suit: "clubs"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-//		pro.process( "GET", "/cards", null, null ) shouldBe
+//		pro.process( "PUT", "/cards/1", null, """{number: 2, suit: "clubs"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+//		pro.process( "GET", "/cards", null, null, null ) shouldBe
 //			(SC_OK, "application/json",
 //				"""
 //					|{
@@ -133,14 +131,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/documents", null, """{document: "this is a document"}""" ) shouldBe
+		pro.process( "POST", "/documents", null, """{document: "this is a document"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/documents", null, null ) shouldBe
+		pro.process( "GET", "/documents", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -152,8 +150,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-//		pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-//		pro.process( "GET", "/documents", null, null ) shouldBe
+//		pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+//		pro.process( "GET", "/documents", null, null, null ) shouldBe
 //			(SC_OK, "application/json",
 //				"""
 //					|{
@@ -177,14 +175,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/documents", null, """{document: "this is a document"}""" ) shouldBe
+		pro.process( "POST", "/documents", null, """{document: "this is a document"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/documents", null, null ) shouldBe
+		pro.process( "GET", "/documents", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -196,8 +194,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-				pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-				pro.process( "GET", "/documents", null, null ) shouldBe
+				pro.process( "PUT", "/documents/1", null, """{document: "this is a longer document"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+				pro.process( "GET", "/documents", null, null, null ) shouldBe
 					(SC_OK, "application/json",
 						"""
 							|{
@@ -221,14 +219,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/test", null, """{identifier: "a94cae4a-8bdf-49f3-849b-e7d338f4400a"}""" ) shouldBe
+		pro.process( "POST", "/test", null, """{identifier: "a94cae4a-8bdf-49f3-849b-e7d338f4400a"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/test", null, null ) shouldBe
+		pro.process( "GET", "/test", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -240,8 +238,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/test/1", null, """{identifier: "8140d714-7387-486c-ab5b-ef5fc1cc790e"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/test", null, null ) shouldBe
+		pro.process( "PUT", "/test/1", null, """{identifier: "8140d714-7387-486c-ab5b-ef5fc1cc790e"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/test", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -271,14 +269,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
 
-		pro.process( "POST", "/r", null, """{f: 1.5}""" ) shouldBe
+		pro.process( "POST", "/r", null, """{f: 1.5}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/r", null, null ) shouldBe
+		pro.process( "GET", "/r", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -290,8 +288,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/r/1", null, """{f: 2.7}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/r", null, null ) shouldBe
+		pro.process( "PUT", "/r/1", null, """{f: 2.7}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/r", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -303,7 +301,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/r1", null, null ) shouldBe
+		pro.process( "GET", "/r1", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -344,14 +342,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
 
-		pro.process( "POST", "/events", null, """{title: "finish coding date support", event: "2017-06-14"}""" ) shouldBe
+		pro.process( "POST", "/events", null, """{title: "finish coding date support", event: "2017-06-14"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/events", null, null ) shouldBe
+		pro.process( "GET", "/events", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -364,8 +362,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/events/1", null, """{title: "finish coding date support", event: "2017-06-15"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/events", null, null ) shouldBe
+		pro.process( "PUT", "/events/1", null, """{title: "finish coding date support", event: "2017-06-15"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/events", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -391,14 +389,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/alarms", null, """{title: "finish coding time support", alarm: "17:00:00"}""" ) shouldBe
+		pro.process( "POST", "/alarms", null, """{title: "finish coding time support", alarm: "17:00:00"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/alarms", null, null ) shouldBe
+		pro.process( "GET", "/alarms", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -411,8 +409,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/alarms/1", null, """{title: "finish coding time support", alarm: "16:45:00"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/alarms", null, null ) shouldBe
+		pro.process( "PUT", "/alarms/1", null, """{title: "finish coding time support", alarm: "16:45:00"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/alarms", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -438,14 +436,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/lunar", null, """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""" ) shouldBe
+		pro.process( "POST", "/lunar", null, """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/lunar", null, null ) shouldBe
+		pro.process( "GET", "/lunar", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -458,8 +456,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/lunar", null, null ) shouldBe
+		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/lunar", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -485,14 +483,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/lunar", null, """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""" ) shouldBe
+		pro.process( "POST", "/lunar", null, """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/lunar", null, null ) shouldBe
+		pro.process( "GET", "/lunar", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -505,8 +503,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/lunar", null, null ) shouldBe
+		pro.process( "PUT", "/lunar/1", null, """{type: "penumbral", eclipse: "2017-03-23T11:47:11.8Z"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/lunar", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -531,13 +529,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
 
-		pro.process( "POST", "/arrays", null, """{a: []}""" ) shouldBe (SC_CREATED, "application/json",
+		pro.process( "POST", "/arrays", null, """{a: []}""", null ) shouldBe (SC_CREATED, "application/json",
 			"""
 				|{
 				|  "data": 1
 				|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/arrays", null, null ) shouldBe (SC_OK, "application/json",
+		pro.process( "GET", "/arrays", null, null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -548,8 +546,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/arrays/1", null, """{a: [1, 2, 3]}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/arrays", null, null ) shouldBe (SC_OK, "application/json",
+		pro.process( "PUT", "/arrays/1", null, """{a: [1, 2, 3]}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/arrays", null, null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -579,13 +577,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
 
-		pro.process( "POST", "/blobs", null, """{a: "AQID", b: "AQID", c: "010203", d: [1, 2, 3]}""" ) shouldBe (SC_CREATED, "application/json",
+		pro.process( "POST", "/blobs", null, """{a: "AQID", b: "AQID", c: "010203", d: [1, 2, 3]}""", null ) shouldBe (SC_CREATED, "application/json",
 			"""
 				|{
 				|  "data": 1
 				|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/blobs", null, null ) shouldBe (SC_OK, "application/json",
+		pro.process( "GET", "/blobs", null, null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -603,8 +601,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
-//		pro.process( "PUT", "/blobs/1", null, """{a: "AQIE", b: "AQIE", c: "010204", d: [1, 2, 4]}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-//		pro.process( "GET", "/blobs", null, null ) shouldBe (SC_OK, "application/json",
+//		pro.process( "PUT", "/blobs/1", null, """{a: "AQIE", b: "AQIE", c: "010204", d: [1, 2, 4]}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+//		pro.process( "GET", "/blobs", null, null, null ) shouldBe (SC_OK, "application/json",
 //			"""
 //				|{
 //				|  "data": [
@@ -634,13 +632,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
 
-		pro.process( "POST", "/test", null, """{a: ""}""" ) shouldBe (SC_CREATED, "application/json",
+		pro.process( "POST", "/test", null, """{a: ""}""", null ) shouldBe (SC_CREATED, "application/json",
 			"""
 				|{
 				|  "data": 1
 				|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/test", null, null ) shouldBe (SC_OK, "application/json",
+		pro.process( "GET", "/test", null, null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -651,8 +649,8 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/test/1", null, """{a: "123457"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/test", null, null ) shouldBe (SC_OK, "application/json",
+		pro.process( "PUT", "/test/1", null, """{a: "123457"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/test", null, null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -675,13 +673,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""" ) shouldBe(SC_CREATED, "application/json",
+		pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""", null ) shouldBe(SC_CREATED, "application/json",
 			"""
 				|{
 				|  "data": 1
 				|}
 			""".trim.stripMargin)
-		pro.process( "GET", "/test", null, null ) shouldBe (SC_OK, "application/json",
+		pro.process( "GET", "/test", null, null, null ) shouldBe (SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -692,10 +690,10 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin)
-		(pro.process( "GET", "/media/1", null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
+		(pro.process( "GET", "/media/1", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
 			(SC_OK, "image/gif", base642bytes("R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==").toList)
-		pro.process( "PUT", "/test/1", null, """{a: "data:,Hello, World!"}""" ) shouldBe(SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/test", null, null ) shouldBe(SC_OK, "application/json",
+		pro.process( "PUT", "/test/1", null, """{a: "data:,Hello, World!"}""", null ) shouldBe(SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/test", null, null, null ) shouldBe(SC_OK, "application/json",
 			"""
 				|{
 				|  "data": [
@@ -706,7 +704,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin)
-		(pro.process( "GET", "/media/2", null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
+		(pro.process( "GET", "/media/2", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
 			(SC_OK, "text/plain", "Hello, World!" map (_.toInt) toList)
 	}
 

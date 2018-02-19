@@ -61,20 +61,8 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 	def result( name: String, res: Response, args: List[Any] ) = call( name, res :: args )
 
-	def process( method: String, uri: String, headers: MessageHeaders, body: AnyRef ) = resourceMutex.synchronized {
-//		val res =
-//			path.indexOf( '/', 1 ) match {
-//				case -1 => path substring 1
-//				case idx => path substring( 1, idx )
-//			}
-
-//		resourceLookup( res ) match {
-//			case None =>
-//				routeSearch( method, path, miscellaneousRoutes )
-//			case Some( resource ) =>
-//				routeSearch( method, path, resource.routes )
-//		}
-
+	//todo: need a router for each resource and a misc router
+	def process(method: String, uri: String, reqheaders: MessageHeaders, body: AnyRef, resheaders: MessageHeaders ) = resourceMutex.synchronized {
 		var resStatusCode = 200
 		var resType = "application/octet-stream"
 		var resTypeSet = false
@@ -90,7 +78,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				"get" -> {
 					(vm: VM, apos: Position, ps: List[Position], args: Any) =>
 						deref( args ) match {
-							case h: String => headers( h )
+							case h: String => reqheaders( h )
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
@@ -101,6 +89,16 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			)
 		val res =
 			new Response {
+				def get( header: String ) = {
+					resheaders( header )
+					this
+				}
+
+				def set( header: String, value: String ) = {
+					resheaders( header ) = value
+					this
+				}
+
 				def status( code: Int ) = {
 					resStatusCode = code
 					this

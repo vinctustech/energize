@@ -24,49 +24,49 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/api/v1/todo", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": []
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/test", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/test", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": []
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/todo/count", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo/count", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": 0
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/test/count", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/test/count", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": 0
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/api/v1/todo/1", null, null ) shouldBe
+ 		pro.process( "GET", "/api/v1/todo/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/api/v1/test/1", null, null ) shouldBe
+ 		pro.process( "GET", "/api/v1/test/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/api/v1/tod", null, null ) shouldBe
+ 		pro.process( "GET", "/api/v1/tod", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
@@ -91,33 +91,33 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/todo", null, null ) shouldBe
+		pro.process( "GET", "/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/test", null, null ) shouldBe
+		pro.process( "GET", "/test", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": []
 			|}
 			""".trim.stripMargin )
- 		pro.process( "GET", "/todo/1", null, null ) shouldBe
+ 		pro.process( "GET", "/todo/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/test/1", null, null ) shouldBe
+ 		pro.process( "GET", "/test/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/tod", null, null ) shouldBe
+ 		pro.process( "GET", "/tod", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""{
 					|  "error": "route not found"
@@ -140,19 +140,19 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "POST", "/api/v1/todo", null, """{"name": "do something", "status": 1}""" ) shouldBe
+		pro.process( "POST", "/api/v1/todo", null, """{"name": "do something", "status": 1}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		pro.process( "POST", "/api/v1/test", null, """{"asdf": 123}""" ) shouldBe
+		pro.process( "POST", "/api/v1/test", null, """{"asdf": 123}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/todo", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": [
@@ -165,7 +165,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/todo/1", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
@@ -176,25 +176,25 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1}""" ) shouldBe
+		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1}""", null ) shouldBe
 			(SC_BAD_REQUEST, "application/json",
 				"""
 					|{
 					|  "error": "update: missing field(s): description"
 					|}
 				""".trim.stripMargin)
-		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1, description: null, extra: null}""" ) shouldBe
+		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1, description: null, extra: null}""", null ) shouldBe
 			(SC_BAD_REQUEST, "application/json",
 				"""
 					|{
 					|  "error": "update: excess field(s): extra"
 					|}
 				""".trim.stripMargin)
-		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1, description: null}""" ) shouldBe
+		pro.process( "PUT", "/api/v1/todo/1", null, """{"name": "do something else", "status": 1, description: null}""", null ) shouldBe
 			(SC_NO_CONTENT, "text/html", "No Content")//todo: the two 'string' type field above should be type 'text' but then we get "updating a text field isn't supported yet" for this test
-		pro.process( "PUT", "/api/v1/test/1", null, """{"asdf": 1234}""" ) shouldBe
+		pro.process( "PUT", "/api/v1/test/1", null, """{"asdf": 1234}""", null ) shouldBe
 			(SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/api/v1/todo", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": [
@@ -207,7 +207,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/todo/1", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": {
@@ -218,21 +218,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/todo/count", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/todo/count", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 								|{
 								|  "data": 1
 								|}
 							""".trim.stripMargin )
-		pro.process( "DELETE", "/api/v1/todo/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
- 		pro.process( "GET", "/api/v1/todo/1", null, null ) shouldBe
+		pro.process( "DELETE", "/api/v1/todo/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+ 		pro.process( "GET", "/api/v1/todo/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/test", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/test", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": [
@@ -243,7 +243,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/test/1", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/test/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
@@ -252,15 +252,15 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/api/v1/test/count", null, null ) shouldBe
+		pro.process( "GET", "/api/v1/test/count", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "DELETE", "/api/v1/test/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
- 		pro.process( "GET", "/api/v1/test/1", null, null ) shouldBe
+		pro.process( "DELETE", "/api/v1/test/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+ 		pro.process( "GET", "/api/v1/test/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
@@ -285,7 +285,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/f/3/4", null, null ) shouldBe
+		pro.process( "GET", "/f/3/4", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -296,13 +296,13 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  }
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/plus/asdf/ghjk", null, null ) shouldBe
+		pro.process( "GET", "/plus/asdf/ghjk", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": "asdfghjk"
 			|}
 			""".trim.stripMargin )
-		pro.process( "POST", "/combine", null, """ {"b": 4} """ ) shouldBe
+		pro.process( "POST", "/combine", null, """ {"b": 4} """, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
@@ -311,7 +311,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "POST", "/eval", null, """ {"expr": "(i + 2)/2*i"} """ ) shouldBe //todo: body in GET?
+		pro.process( "POST", "/eval", null, """ {"expr": "(i + 2)/2*i"} """, null ) shouldBe //todo: body in GET?
 			(SC_OK, "application/json", """
 			|{
 			|  "data": "-1/2+i"
@@ -334,35 +334,35 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/products", null, null ) shouldBe
+		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": []
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/types", null, null ) shouldBe
+		pro.process( "GET", "/types", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
 					|  "data": []
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/products/1", null, null ) shouldBe
+ 		pro.process( "GET", "/products/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/types/1", null, null ) shouldBe
+ 		pro.process( "GET", "/types/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
- 		pro.process( "GET", "/product", null, null ) shouldBe
+ 		pro.process( "GET", "/product", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
@@ -386,31 +386,31 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "POST", "/types", null, """{"name": "normal"}""" ) shouldBe
+		pro.process( "POST", "/types", null, """{"name": "normal"}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		pro.process( "POST", "/types", null, """{"name": "normal"}""" ) shouldBe
+		pro.process( "POST", "/types", null, """{"name": "normal"}""", null ) shouldBe
 			(SC_CONFLICT, "application/json", s"""
 																				 |{
 																				 |  "error": "Unique index or primary key violation: \\"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(${nameIn("NAME")}) VALUES ('normal', 1)\\"; SQL statement:\\nINSERT INTO types (${nameIn("name")}) VALUES (?) [23505-196]"
 																				 |}
 																			 """.trim.stripMargin )
-		pro.process( "POST", "/types", null, """{"name": "special"}""" ) shouldBe
+		pro.process( "POST", "/types", null, """{"name": "special"}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
 																				 |{
 																				 |  "data": 3
 																				 |}
 																			 """.trim.stripMargin )
-		pro.process( "POST", "/products", null, """{"code": "12345", "type": "normal"}""" ) shouldBe
+		pro.process( "POST", "/products", null, """{"code": "12345", "type": "normal"}""", null ) shouldBe
 			(SC_CREATED, "application/json",  """
 			|{
 			|  "data": 1
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/products", null, null ) shouldBe
+		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": [
@@ -425,7 +425,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/products/1", null, null ) shouldBe
+		pro.process( "GET", "/products/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
@@ -438,8 +438,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "PUT", "/products/1", null, """{"code": "123456", "type": "special"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/products", null, null ) shouldBe
+		pro.process( "PUT", "/products/1", null, """{"code": "123456", "type": "special"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": [
@@ -454,15 +454,15 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "DELETE", "/products/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
- 		pro.process( "GET", "/products/1", null, null ) shouldBe
+		pro.process( "DELETE", "/products/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+ 		pro.process( "GET", "/products/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/types", null, null ) shouldBe
+		pro.process( "GET", "/types", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": [
@@ -477,7 +477,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  ]
 			|}
 			""".trim.stripMargin )
-		pro.process( "GET", "/types/1", null, null ) shouldBe
+		pro.process( "GET", "/types/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 			|{
 			|  "data": {
@@ -486,8 +486,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  }
 			|}
 			""".trim.stripMargin )
-		pro.process( "DELETE", "/types/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
- 		pro.process( "GET", "/types/1", null, null ) shouldBe
+		pro.process( "DELETE", "/types/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+ 		pro.process( "GET", "/types/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
@@ -512,33 +512,33 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/products", null, null ) shouldBe
+		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": []
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "GET", "/customers", null, null ) shouldBe
+		pro.process( "GET", "/customers", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": []
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "GET", "/products/1", null, null ) shouldBe
+		pro.process( "GET", "/products/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/customers/1", null, null ) shouldBe
+		pro.process( "GET", "/customers/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/product", null, null ) shouldBe
+		pro.process( "GET", "/product", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""{
 					|  "error": "route not found"
@@ -561,31 +561,31 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "POST", "/products", null, """{"name": "savings"}""" ) shouldBe
+		pro.process( "POST", "/products", null, """{"name": "savings"}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
 																				 |{
 																				 |  "data": 1
 																				 |}
 																			 """.trim.stripMargin )
-		pro.process( "POST", "/products", null, """{"name": "savings"}""" ) shouldBe
+		pro.process( "POST", "/products", null, """{"name": "savings"}""", null ) shouldBe
 			(SC_CONFLICT, "application/json", s"""
 																					|{
 																					|  "error": "Unique index or primary key violation: \\"CONSTRAINT_INDEX_F ON PUBLIC.PRODUCTS(${nameIn("NAME")}) VALUES ('savings', 1)\\"; SQL statement:\\nINSERT INTO products (${nameIn("name")}) VALUES (?) [23505-196]"
 																					|}
 																				""".trim.stripMargin )
-		pro.process( "POST", "/products", null, """{"name": "credit card"}""" ) shouldBe
+		pro.process( "POST", "/products", null, """{"name": "credit card"}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
 																				 |{
 																				 |  "data": 3
 																				 |}
 																			 """.trim.stripMargin )
-		pro.process( "POST", "/customers", null, """{"lastname": "doe", "firstname": "john"}""" ) shouldBe
+		pro.process( "POST", "/customers", null, """{"lastname": "doe", "firstname": "john"}""", null ) shouldBe
 			(SC_CREATED, "application/json",  """
 																					|{
 																					|  "data": 1
 																					|}
 																				""".trim.stripMargin )
-		pro.process( "GET", "/customers", null, null ) shouldBe
+		pro.process( "GET", "/customers", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": [
@@ -598,7 +598,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "GET", "/customers/1", null, null ) shouldBe
+		pro.process( "GET", "/customers/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": {
@@ -609,9 +609,9 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "POST", "/customers/1/products/target/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "PUT", "/customers/1", null, """{"lastname": "doe", "firstname": "jane"}""" ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")//todo: updating text fields need to be supported
-		pro.process( "GET", "/customers", null, null ) shouldBe
+		pro.process( "POST", "/customers/1/products/target/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "PUT", "/customers/1", null, """{"lastname": "doe", "firstname": "jane"}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")//todo: updating text fields need to be supported
+		pro.process( "GET", "/customers", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": [
@@ -629,15 +629,15 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "DELETE", "/customers/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/customers/1", null, null ) shouldBe
+		pro.process( "DELETE", "/customers/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/customers/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/products", null, null ) shouldBe
+		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": [
@@ -652,7 +652,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  ]
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "GET", "/products/1", null, null ) shouldBe
+		pro.process( "GET", "/products/1", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
 																		|{
 																		|  "data": {
@@ -661,8 +661,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 																		|  }
 																		|}
 																	""".trim.stripMargin )
-		pro.process( "DELETE", "/products/1", null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/products/1", null, null ) shouldBe
+		pro.process( "DELETE", "/products/1", null, null, null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/products/1", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
@@ -694,21 +694,21 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`		""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( src ), c, s, d, key )
 
-		pro.process( "POST","/books/1/authors", null, """{"name": "Brian Herbert"}""" ) shouldBe
+		pro.process( "POST","/books/1/authors", null, """{"name": "Brian Herbert"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 1
 					|}
 				""".trim.stripMargin )
-		pro.process( "POST", "/books/1/authors", null, """{"name": "Kevin J. Anderson"}""" ) shouldBe
+		pro.process( "POST", "/books/1/authors", null, """{"name": "Kevin J. Anderson"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					|{
 					|  "data": 2
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/books", null, null ) shouldBe
+		pro.process( "GET", "/books", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -778,7 +778,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/db/20?fields=_id,first_name", null, null ) shouldBe
+		pro.process( "GET", "/db/20?fields=_id,first_name", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -788,7 +788,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  }
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/db/20?fields=first_name", null, null ) shouldBe
+		pro.process( "GET", "/db/20?fields=first_name", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -797,7 +797,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  }
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/db?fields=first_name,city;order=city:asc;filter=first_name~*%25C%25", null, null ) shouldBe
+		pro.process( "GET", "/db?fields=first_name,city;order=city:asc;filter=first_name~*%25C%25", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -821,7 +821,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/db?fields=_id,first_name;limit=3;page=2", null, null ) shouldBe
+		pro.process( "GET", "/db?fields=_id,first_name;limit=3;page=2", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -866,7 +866,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/customers?order=City:asc,PostalCode:desc", null, null ) shouldBe
+		pro.process( "GET", "/customers?order=City:asc,PostalCode:desc", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -919,7 +919,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  ]
 					|}
 				""".trim.stripMargin )
-		pro.process( "GET", "/customers?filter=CustomerName~A%25,City=Berlin", null, null ) shouldBe
+		pro.process( "GET", "/customers?filter=CustomerName~A%25,City=Berlin", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -968,7 +968,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 
-		pro.process( "GET", "/books", null, null ) shouldBe
+		pro.process( "GET", "/books", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -1013,7 +1013,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin)
 
-		pro.process( "GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books._id=3", null, null ) shouldBe
+		pro.process( "GET", "/books?filter=title=The+Adventures+of+Huckleberry+Finn,books._id=3", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -1034,7 +1034,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin)
 
-		pro.process( "GET", "/books?order=title:asc", null, null ) shouldBe
+		pro.process( "GET", "/books?order=title:asc", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -1079,7 +1079,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin)
 
-		pro.process( "GET", "/books/1", null, null ) shouldBe
+		pro.process( "GET", "/books/1", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{

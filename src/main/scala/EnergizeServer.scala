@@ -141,7 +141,8 @@ class EnergizeServer( pro: Processor, port: Int ) {
 //									case _ => Map[String, String]()
 //								}
 //						}
-          val headers = new MessageHeaders( request )
+          val reqheaders = new MessageHeaders( request )
+          val resheaders = new MessageHeaders( response )
 					val (status, ctype, contents) =
 						request match {
 							case withEntity: HttpEntityEnclosingRequest =>
@@ -149,9 +150,9 @@ class EnergizeServer( pro: Processor, port: Int ) {
 								val entity = withEntity.getEntity
 
 								entity.writeTo( buf )
-								pro.process( method1, target, headers, buf.toString )
+								pro.process( method1, target, reqheaders, buf.toString, resheaders )
 							case _ =>
-								pro.process( method1, target, headers, null )
+								pro.process( method1, target, reqheaders, null, resheaders )
 						}
 
 					if (status == SC_NOT_FOUND) {
@@ -289,7 +290,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 								contents match {
 									case s: String => new NStringEntity( s, mktype(ctype) )
 									case a: Array[Byte] => new NByteArrayEntity( a, mktype(ctype) )
-									case a: Seq[Byte] => new NByteArrayEntity( a.toArray, mktype(ctype) )
+									case a: Seq[_] => new NByteArrayEntity( a.asInstanceOf[Seq[Byte]].toArray, mktype(ctype) )
 								}
 
 							if (method == "HEAD") {

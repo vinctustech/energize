@@ -4,6 +4,10 @@ package xyz.hyperreal.energize2
 
 abstract class Response {
 
+  def get( header: String ): Response
+
+  def set( header: String, value: String ): Response
+
   def status( code: Int ): Response
 
   def `type`( typ: String ): Response

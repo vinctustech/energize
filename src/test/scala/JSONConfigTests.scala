@@ -40,14 +40,14 @@ class JSONConfigTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val (pro, _) = Definition.defineFromJSON( io.Source.fromString( config ), c, s, d, key )
 
-		pro.process( "POST", "/r", null, """{"limit": 123, "asdf": true}""" ) shouldBe
+		pro.process( "POST", "/r", null, """{"limit": 123, "asdf": true}""", null ) shouldBe
 			(SC_CREATED, "application/json",
 				"""
 					 |{
 					 |  "data": 1
 					 |}
 				 """.trim.stripMargin )
-		pro.process( "GET", "/r", null, null ) shouldBe
+		pro.process( "GET", "/r", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
 					|{
@@ -84,7 +84,7 @@ class JSONConfigTests extends FreeSpec with PropertyChecks with Matchers {
 //			""".trim.stripMargin
 //		val (pro, _) = Definition.defineFromJSON( io.Source.fromString( config ), c, s, d, key )
 //
-//		pro.process( "GET", "/js", null, null ) shouldBe
+//		pro.process( "GET", "/js", null, null, null ) shouldBe
 //			(SC_OK, "application/json",
 //				"""
 //					|{
