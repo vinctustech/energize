@@ -4,9 +4,6 @@ package xyz.hyperreal.energize2
 import org.apache.http._
 import org.apache.http.params.HttpParams
 
-//import xyz.hyperreal.bvm.{AST, Compiler, VM}
-//import xyz.hyperreal.funl2.{FunLParser, Predef}
-
 
 object Main extends App {
 
@@ -54,7 +51,7 @@ object Main extends App {
       override def getParams: HttpParams = ???
       override def setParams(params: HttpParams): Unit = ???
    }
-  println( pro.process( "GET", "/r", new MessageHeaders(message), null, null ) )
+  println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

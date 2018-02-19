@@ -141,8 +141,8 @@ class EnergizeServer( pro: Processor, port: Int ) {
 //									case _ => Map[String, String]()
 //								}
 //						}
-          val reqheaders = new MessageHeaders( request )
-          val resheaders = new MessageHeaders( response )
+          val reqheaders = new HttpComponentsMessageHeaders( request )
+          val resheaders = new HttpComponentsMessageHeaders( response )
 					val (status, ctype, contents) =
 						request match {
 							case withEntity: HttpEntityEnclosingRequest =>
