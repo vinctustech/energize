@@ -10,18 +10,20 @@ object Resource {
 }
 
 case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
-										 manyToMany: Boolean, mediaArray: Boolean, statement: Statement ) {
+										 manyToMany: Boolean, mediaArray: Boolean, statement: Statement, db: Database ) {
 	var preparedInsert: PreparedStatement = _
 	var preparedFullInsert: PreparedStatement = _
+	var media: Resource = _
 
 	def names = fields map (_.name)
 
-	def init: Unit = {
-
-	}
+//	def init: Unit = {
+//
+//	}
 }
 
-case class Field( name: String, typ: FieldType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean, validators: List[Int] )	// 'validators' is a list of function entry points
+case class Field( name: String, typ: FieldType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean,
+									validators: List[Int] )	//todo: 'validators' is a list of function entry points
 
 trait FieldType
 

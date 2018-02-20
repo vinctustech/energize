@@ -109,34 +109,34 @@ object CommandFunctionHelpers {
 
 object CommandFunctions {
 
-	def command( vm: VM, sql: String ) = vm.statement.executeUpdate( sql )
+	def command( resource: Resource, sql: String ) = resource.statement.executeUpdate( sql )
 	
-	def delete( vm: VM, resource: Resource, id: Long ): Int = {
+	def delete( resource: Resource, id: Long ): Int = {
 		if (resource.mediaArray)
 			resource.fields foreach {
 				case Field( name, ArrayType(MediaType(_)),_, _, _, _, _ ) =>
-					for (mid <- QueryFunctions.readField( vm, resource, id, name ).asInstanceOf[Array[Long]])
-						deleteMedia( vm, mid )
+					for (mid <- QueryFunctions.readField( resource, id, name ).asInstanceOf[Array[Long]])
+						deleteMedia( resource, mid )
 				case _ =>
 			}
 
-		command( vm, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
+		command( resource, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
 	}
 
 	//todo: deal with resources that have media arrays as in delete()
-	def deleteMany( vm: VM, resource: Resource, filter: Option[String] ) = {
-		command( vm, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering( filter )}" )
+	def deleteMany( resource: Resource, filter: Option[String] ) = {
+		command( resource, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering( filter )}" )
 	}
 
-	def deleteMedia( vm: VM, id: Long ) = delete( vm, vm resource "_media_", id )//todo: put the Resource object for _media_ somewhere so it doesn't have to be looked up
+	def deleteMedia( vm: VM, id: Long ) = delete( vm resource "_media_", id )//todo: put the Resource object for _media_ somewhere so it doesn't have to be looked up
 
-	def deleteValue( vm: VM, resource: Resource, field: String, value: Any ) =
+	def deleteValue( resource: Resource, field: String, value: Any ) =
 		value match {
-			case s: String => command( vm, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
-			case _ => command( vm, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
+			case s: String => command( resource, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
+			case _ => command( resource, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
 		}
 
-	def batchInsert( vm: VM, resource: Resource, rows: List[Seq[AnyRef]], full: Boolean ) {
+	def batchInsert( resource: Resource, rows: List[Seq[AnyRef]], full: Boolean ) {
 		val types = for ((c, i) <- resource.fields zipWithIndex) yield (i + (if (full) 2 else 1), c.typ)
 		val preparedStatement = if (full) resource.preparedFullInsert else resource.preparedInsert
 

@@ -7,7 +7,7 @@ import collection.mutable.ListBuffer
 import xyz.hyperreal.bvm.VM
 
 
-class Relation( vm: VM, rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
+class Relation( db: Database, rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 	private val md = rs.getMetaData
 	private var cur: List[IndexedSeq[AnyRef]] = _
 
@@ -48,7 +48,7 @@ class Relation( vm: VM, rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 	def get( index: Int ) = cur.head( index )
 
 	def get( table: String, column: String ): Option[AnyRef] = {
-		columnMap get Col(vm.db.desensitize(table), vm.db.desensitize(column)) map get
+		columnMap get Col(db.desensitize(table), db.desensitize(column)) map get
 	}
 
 	def getLong( table: String, column: String ) = get( table, column ).get.asInstanceOf[Long]

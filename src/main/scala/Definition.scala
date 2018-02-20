@@ -4,11 +4,12 @@ import java.sql._
 
 import collection.mutable.{ArrayBuffer, HashMap, ListBuffer}
 import collection.JavaConverters._
+import scala.util.parsing.input.Position
+
 import org.mindrot.jbcrypt.BCrypt
+
 import xyz.hyperreal.bvm._
 import xyz.hyperreal.json.{DefaultJSONReader, JSON}
-
-import scala.util.parsing.input.Position
 
 
 object Definition {
@@ -16,12 +17,6 @@ object Definition {
 	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
 
 	def dbtype( pos: Position, name: String, args: List[Any], array: Boolean ) = {
-		val args1 =
-			args map {
-				case a: String if a forall (_.isDigit) => a.toInt
-				case a => a
-			}
-
 		val basic =
 			name match {
 				case "boolean" if args nonEmpty => problem( pos, "the 'boolean' type doesn't take parameters" )
@@ -189,11 +184,11 @@ object Definition {
 								case Some( groups: List[_] ) => Some( groups.asInstanceOf[List[String]].headOption )
 								case Some( _ ) => sys.error( "protection expected to be a list" )
 							}
-						val priv =
-							tab get "private" match {
-								case None => false
-								case Some( _ ) => true
-							}
+//						val priv =	//todo: implement 'private' in defineFromJSON()
+//							tab get "private" match {
+//								case None => false
+//								case Some( _ ) => true
+//							}
 						val base =
 							if (tab contains "base")
 								parsePath( tab getString "base" )
@@ -216,11 +211,11 @@ object Definition {
 									c getList[String] "modifiers" map (m => (null, m))
 								else
 									Nil
-							val validators =
-								if (c contains "validators")
-									c getList[String] "validators"
-								else
-									Nil
+//							val validators =	//todo: validators in defineFromJSON()
+//								if (c contains "validators")
+//									c getList[String] "validators"
+//								else
+//									Nil
 							val args =
 								if (typ contains "parameters")
 									typ getList[AnyRef] "parameters"
@@ -277,20 +272,20 @@ object Definition {
 		p.parseFromSource( src, p.source )
 	}
 
-	def compile( src: String, db: Database, internal: Boolean ): Definition = compile( parse(src), db, internal )
+	def compile( src: String, db: Database, stat: Statement, internal: Boolean ): Definition = compile( parse(src), db, stat, internal )
 
-	def compile( ast: AST, db: Database, internal: Boolean ) = {
+	def compile( ast: AST, db: Database, stat: Statement, internal: Boolean ) = {
 		val compiler = new EnergizeCompiler
-		val code = compiler.compile( ast, db, internal )
+		val code = compiler.compile( ast, db, stat, internal )
 
 		Definition( code, compiler.resources, compiler.routes, compiler.conds )
 	}
 
 	def define( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): (Processor, ArrayBuffer[Route]) = {
-		val Definition( code, resources, routes, _ ) = compile( ast, db, false )
+		val Definition( code, resources, routes, _ ) = compile( ast, db, statement, false )
 
 		resources.values foreach {
-			case Resource( _, fields, _, _, _, _, _ ) =>
+			case Resource( _, fields, _, _, _, _, _, _ ) =>
 				fields foreach {
 					case Field( _, t@SingleReferenceType(pos, table, _), _, _, _, _, _ ) =>
 						t.ref = resources.getOrElse( db.desensitize(table), problem(pos, s"'$table' not found") )
@@ -308,14 +303,17 @@ object Definition {
 			statement.execute( db.create(sorted) )
 		}
 
+		val media = resources( db.desensitize("_media_") )
+
 		resources.values foreach {
-			case r@Resource( name, fields, _, _, _, _, _ ) =>
+			case r@Resource( name, fields, _, _, _, _, _, _ ) =>
 				val cnames1 = fields filterNot (_.typ.isInstanceOf[ManyReferenceType]) map (_.name)
 				val fieldstr = cnames1 map nameIn mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 
 				r.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($fieldstr) VALUES ($values)" )
 				r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
+				r.media = media
 		}
 
 		val proc = new Processor( code, connection, statement, db, resources.toMap, key )

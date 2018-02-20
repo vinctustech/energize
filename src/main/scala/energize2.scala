@@ -1,12 +1,11 @@
 package xyz.hyperreal
 
-import java.io.ByteArrayOutputStream
 import java.time.{Instant, ZoneOffset}
 import java.util.Base64
 
 import scala.util.parsing.input.Position
 import com.typesafe.config.ConfigFactory
-import xyz.hyperreal.bvm.{AST, ExpressionAST, VM}
+import xyz.hyperreal.bvm.{ExpressionAST, VM}
 
 
 package object energize2 {
@@ -70,25 +69,6 @@ package object energize2 {
 			sys.error( error )
 		else
 			sys.error( pos.line + ": " + error + "\n" + pos.longString )
-
-	def run( program: String, args: Any* ): Unit = {
-		val parser = new EnergizeParser
-		val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
-		val code = new EnergizeCompiler().compile( ast, H2Database, false )
-		val vm = new VM( code, Array(), false, false, args )
-
-		vm.execute
-	}
-
-	def runCapture( program: String ): String = {
-		val outCapture = new ByteArrayOutputStream
-
-		Console.withOut(outCapture) {
-			run( program )
-		}
-
-		outCapture.toString.trim
-	}
 
 	def integer( s: String ) = s.forall( _.isDigit )
 

@@ -240,7 +240,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					cols(cname) = Field( cname, fieldType, secret, required, unique, indexed, Nil )
 			}
 
-			val res = Resource( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, statement )
+			val res = Resource( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, statement, db )
 
 			resources(db.desensitize( name )) = res
 			r.decl = VarAST( pos, name, name, Some(LiteralExpressionAST(res)))
@@ -258,28 +258,28 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 				if (base isEmpty) {
 					addRoutes( Definition.compile( Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name).
-						replaceAll("<authorize>", authorize), db, true ) )
+						replaceAll("<authorize>", authorize), db, statement, true ) )
 
 					if (mtm)
 						addRoutes( Definition.compile( Builtins.mtmroutes.replaceAll("<base>", "").replaceAll("<resource>", name).
-							replaceAll("<authorize>", authorize), db, true ) )
+							replaceAll("<authorize>", authorize), db, statement, true ) )
 
 					if (cols exists {case (_, c) => c.typ.isInstanceOf[ArrayType]})
 						addRoutes( Definition.compile( Builtins.arrayroutes.replaceAll("<base>", "").replaceAll("<resource>", name).
-							replaceAll("<authorize>", authorize), db, true ) )
+							replaceAll("<authorize>", authorize), db, statement, true ) )
 				} else {
 					val basepath = path2string( base get )
 
 					addRoutes( Definition.compile( Builtins.routes.replaceAll("<resource>", name).
-						replaceAll("<base>", basepath ).replaceAll("<authorize>", authorize), db, true ) )
+						replaceAll("<base>", basepath ).replaceAll("<authorize>", authorize), db, statement, true ) )
 
 					if (mtm)
 						addRoutes( Definition.compile( Builtins.mtmroutes.replaceAll("<resource>", name).
-							replaceAll("<base>", basepath).replaceAll("<authorize>", authorize), db, true ) )
+							replaceAll("<base>", basepath).replaceAll("<authorize>", authorize), db, statement, true ) )
 
 					if (cols exists { case (_, c) => c.typ.isInstanceOf[ArrayType] })
 						addRoutes( Definition.compile( Builtins.arrayroutes.replaceAll("<resource>", name).
-							replaceAll("<base>", basepath).replaceAll("<authorize>", authorize), db, true ) )
+							replaceAll("<base>", basepath).replaceAll("<authorize>", authorize), db, statement, true ) )
 					}
 			}
 
@@ -296,14 +296,14 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 			val special = Definition.compile( Builtins.special.
 				replaceAll( "<base>", AUTHORIZATION.getString("base") ).
 				replaceAll( "<email>", ADMIN.getString("email") ).
-				replaceAll( "<password>", ADMIN.getString("password") ), db, true )
+				replaceAll( "<password>", ADMIN.getString("password") ), db, statement, true )
 
 			addRoutes( special )
 
 			for ((k, v) <- special.resources) {
 				resources get k match {
-					case Some( Resource(name, fields, fieldMap, _, mtm, ma, st )) =>
-						resources(k) = Resource(name, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma, st )
+					case Some( Resource(name, fields, fieldMap, _, mtm, ma, st, d )) =>
+						resources(k) = Resource(name, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma, st, d )
 					case None => resources(k) = v
 				}
 			}
@@ -314,21 +314,20 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 	override def declsExtension: PartialFunction[(AST, AST => Unit), Any] = {
 		case (RoutesDefinition( pos, base, pro, mappings ), decls) =>
-		case (ResourceDefinition( protection, pos, name, base, fields, resource, decl ), decls) =>
-			decls( decl )
+		case (ResourceDefinition( protection, pos, name, base, fields, resource, decl ), decls) => decls( decl )
 	}
 
 	override def emitExtension: PartialFunction[(AST, AST => Unit), Any] = {
 		case (RoutesDefinition( pos, base, protection, mappings ), emit) =>
-		case (ResourceDefinition( protection, pos, name, base, fields, resource, decl ), emit) =>
-			emit( decl )
+		case (ResourceDefinition( protection, pos, name, base, fields, resource, decl ), emit) => emit( decl )
 	}
 
-	def compile( ast: AST, db: Database, internal: Boolean ) = {
+	def compile( ast: AST, db: Database, statement: Statement, internal: Boolean ) = {
 		router = null
 		conds.clear
 		routes.clear
 		this.db = db
+		this.statement = statement
 		this.internal = internal
 		specialsDone = false
 		super.compile( ast )

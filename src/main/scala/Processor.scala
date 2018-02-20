@@ -120,7 +120,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
             case _: Array[_] | _: Seq[_] =>
               if (!resTypeSet)
                 resType = "application/octet-stream"
-            case _: OBJ =>
+            case _: Map[_, _] =>
               if (!resTypeSet)
                 resType = "application/json"
 
