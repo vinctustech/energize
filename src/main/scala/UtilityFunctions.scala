@@ -16,7 +16,7 @@ object UtilityFunctions {
 
 	def rndInt( vm: VM, low: Int, high: Int ) = nextInt( high + 1 - low ) + low
 
-	def show( vm: VM, tab: String ) = Console.print( TextTable(vm.args.asInstanceOf[Processor].statement.executeQuery(s"select * from $tab")) )
+	def show( vm: VM, proc: Processor, tab: String ) = Console.print( TextTable(proc.statement.executeQuery(s"select * from $tab")) )
 
 //	def Some( vm: VM, v: Any ) = scala.Some( v )
 

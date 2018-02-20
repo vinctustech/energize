@@ -14,7 +14,7 @@ object AggregateFunctionsHelpers {
 	def aggregate( vm: VM, func: String, resource: Resource, filter: Option[String], field: String ) = QueryFunctionHelpers.synchronized {
 		val typ = AggregateFunctionsHelpers.checkField( resource, field )
 		val where = QueryFunctionHelpers.filtering( filter )
-		val res = vm.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
+		val res = resource.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
 
 		res.next
 
@@ -30,7 +30,7 @@ object AggregateFunctions {
 
 	def count( vm: VM, resource: Resource, filter: Option[String] ) = QueryFunctionHelpers.synchronized {
 		val where = QueryFunctionHelpers.filtering( filter )
-		val res = vm.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name} $where" )
+		val res = resource.statement.executeQuery( s"SELECT COUNT(*) FROM ${resource.name} $where" )
 
 		res.next
 
@@ -39,7 +39,7 @@ object AggregateFunctions {
 
 //	def avg( vm: VM, resource: Resource, filter: Option[String], field: String ) = {
 //		val where = QueryFunctionHelpers.filtering( filter )
-//		val res = vm.statement.executeQuery( s"SELECT AVG(${nameIn(field)}) FROM ${resource.name} $where" )
+//		val res = resource.statement.executeQuery( s"SELECT AVG(${nameIn(field)}) FROM ${resource.name} $where" )
 //
 //		res.next
 //

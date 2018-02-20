@@ -198,7 +198,7 @@ object CommandFunctions {
 						case FloatType => resource.preparedInsert.setDouble( i + 1, v.asInstanceOf[Number].doubleValue )
 						case BigintType => resource.preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 						case UUIDType | TimeType | DateType | BinaryType | StringType( _ ) | EnumType(_, _) => resource.preparedInsert.setString( i + 1, v.toString )
-						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, vm.db.readTimestamp(v.toString) )
+						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, resource.db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>
 							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(resource, allowed, _))
 
@@ -228,8 +228,8 @@ object CommandFunctions {
 		}
 
 		val id =
-//			if (vm.db == PostgresDatabase) {
-//				val res = vm.statement.executeQuery( com + "RETURNING _id" )
+//			if (resource.db == PostgresDatabase) {
+//				val res = resource.statement.executeQuery( com + "RETURNING _id" )
 //
 //				res.next
 //				res.getLong( 1 )
@@ -295,7 +295,7 @@ object CommandFunctions {
 						val kIn = nameIn( k )
 
 						resource.fieldMap(k).typ match {
-							case DatetimeType | TimestampType => kIn + " = '" + vm.db.readTimestamp( v.toString ) + "'"
+							case DatetimeType | TimestampType => kIn + " = '" + resource.db.readTimestamp( v.toString ) + "'"
 							case UUIDType | TimeType | DateType | StringType( _ ) | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
 							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _ ) =>
@@ -326,7 +326,7 @@ object CommandFunctions {
 			com ++= s" WHERE $idIn = "
 			com ++= id.toString
 
-			val res = vm.statement.executeUpdate( com.toString )
+			val res = resource.statement.executeUpdate( com.toString )
 
 			for (id <- mediaDeletes)
 				deleteMedia( vm, resource, id )

@@ -154,7 +154,7 @@ object QueryFunctions {
 //							case Some( Column(cname, ManyReferenceType(ref, reft), _, _, _, _) ) =>
 //								attr += (cname -> query( vm, reft,
 //									s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref._id " +
-//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(vm.db.desensitize("_id"))}" ))
+//										s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(resource.db.desensitize("_id"))}" ))
 //							case Some( c ) => attr += (c.name -> obj)
 //						}
 //						case Some( t ) if t == table =>
@@ -231,7 +231,8 @@ object QueryFunctions {
 					} mkString ", ")
 			}
 
-		query( vm, resource, QueryFunctionHelpers.listQuery(vm.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None, false )
+		query( vm, resource, QueryFunctionHelpers.listQuery(resource.db, resource, fields, where + orderby, page, start, limit),
+			Some("1"), None, None, false )
 	}
 
 	def findID( vm: VM, resource: Resource, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
