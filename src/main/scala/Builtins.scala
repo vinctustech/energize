@@ -86,6 +86,9 @@ object Builtins {
 
 	val special =
 		"""
+			|resource asdf
+			|  a int
+			|
 			|resource users private
 			|  email string unique
 			|  createdTime timestamp
@@ -119,6 +122,6 @@ object Builtins {
 			|  "data" blob(urlchars)
 			|
 			|routes
-			|  GET  /media/id:int64  => Ok( res, readMedia(req.params.id) )
+			|  GET  /media/id:int64  => Ok( res, readMedia(_media_, req.params.id) )
 		""".stripMargin
 }

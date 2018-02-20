@@ -118,7 +118,7 @@ object QueryFunctionHelpers {
 }
 
 object QueryFunctions {
-	def query( resource: Resource, sql: Query, page: Option[String], start: Option[String], limit: Option[String],
+	def query( vm: VM, resource: Resource, sql: Query, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
 		val res = QueryFunctionHelpers.synchronized( new Relation( resource.db, resource.statement.executeQuery(sql.query) ) )
 		val list = new ListBuffer[OBJ]
@@ -164,7 +164,7 @@ object QueryFunctions {
 								case Some( Field(cname, SingleReferenceType(_, _, reft), _, _, _, _, _) ) if obj.get ne null =>
 									attr += (cname -> mkOBJ( reft, Nil ))
 								case Some( Field(cname, ManyReferenceType(_, ref, reft), _, _, _, _, _) ) =>
-									attr += (cname -> query( reft,
+									attr += (cname -> query( vm, reft,
 										Query(s"SELECT * FROM ${table.name}$$$ref INNER JOIN $ref ON ${table.name}$$$ref.$ref$$id = $ref.$idIn " +
 											s"WHERE ${table.name}$$$ref.${table.name}$$id = ${res.getLong(table.name, "_id")}" +
 											QueryFunctionHelpers.pageStartLimit(page, start, limit)), page, start, limit, allowsecret ))
@@ -231,30 +231,30 @@ object QueryFunctions {
 					} mkString ", ")
 			}
 
-		query( resource, QueryFunctionHelpers.listQuery(vm.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None, false )
+		query( vm, resource, QueryFunctionHelpers.listQuery(vm.db, resource, fields, where + orderby, page, start, limit), Some("1"), None, None, false )
 	}
 
-	def findID( resource: Resource, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( resource, QueryFunctionHelpers.listQuery(resource.db, resource, fields, s" WHERE ${resource.name}.$idIn = $id",
+	def findID( vm: VM, resource: Resource, id: Long, fields: Option[String], page: Option[String], start: Option[String], limit: Option[String] ) =
+		query( vm, resource, QueryFunctionHelpers.listQuery(resource.db, resource, fields, s" WHERE ${resource.name}.$idIn = $id",
 			page, start, limit), None, None, None, false )
 
-	def findIDMany( resource: Resource, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( resource, QueryFunctionHelpers.listQuery(resource.db, resource, Some(fields), s" WHERE ${resource.name}.$idIn = $id",
+	def findIDMany( vm: VM, resource: Resource, id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
+		query( vm, resource, QueryFunctionHelpers.listQuery(resource.db, resource, Some(fields), s" WHERE ${resource.name}.$idIn = $id",
 			None, None, None), page, start, limit, false )
 
-	def findValue( resource: Resource, field: String, value: Any, allowsecret: Boolean ) =
-		query( resource, QueryFunctionHelpers.listQuery(resource.db, resource, None, s" WHERE ${resource.name}.${nameIn(field)} = '$value'",
+	def findValue( vm: VM, resource: Resource, field: String, value: Any, allowsecret: Boolean ) =
+		query( vm, resource, QueryFunctionHelpers.listQuery(resource.db, resource, None, s" WHERE ${resource.name}.${nameIn(field)} = '$value'",
 			None, None, None), None, None, None, allowsecret )
 
-	def findOne( resource: Resource, field: String, value: Any ) = findValue( resource, field, value, false ).head
+	def findOne( vm: VM, resource: Resource, field: String, value: Any ) = findValue( vm, resource, field, value, false ).head
 
-	def findOption( resource: Resource, field: String, value: Any, allowsecret: Boolean ) =
-		findValue( resource, field, value, allowsecret ).headOption
+	def findOption( vm: VM, resource: Resource, field: String, value: Any, allowsecret: Boolean ) =
+		findValue( vm, resource, field, value, allowsecret ).headOption
 
-	def findField( resource: Resource, id: Long, field: String ) =
-		query( resource, Query(s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
+	def findField( vm: VM, resource: Resource, id: Long, field: String ) =
+		query( vm, resource, Query(s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
 
-	def readField( resource: Resource, id: Long, field: String ) = {
+	def readField( vm: VM, resource: Resource, id: Long, field: String ) = {
 		val res = resource.statement.executeQuery( s"SELECT ${nameIn(field)} FROM ${resource.name} WHERE $idIn = $id" )
 
 		res.next
@@ -271,7 +271,7 @@ object QueryFunctions {
 //		blob.getBytes( 0, blob.length.toInt )
 //	}
 
-	def readMedia( resource: Resource, id: Long ) = {
+	def readMedia( vm: VM, resource: Resource, id: Long ) = {
 		val res = resource.statement.executeQuery( s"SELECT * FROM _media_ WHERE $idIn = $id" )
 
 		res.next

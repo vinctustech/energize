@@ -76,14 +76,14 @@ object CommandFunctionHelpers {
 			case Some( uc ) => uc.name
 		}
 
-	def mediaInsert( vm: VM, allowed: List[MimeType], v: String ) =
+	def mediaInsert( resource: Resource, allowed: List[MimeType], v: String ) =
 		dataurl( v ) match {
 			case Left( error ) => throw new BadRequestException( error )
 			case Right( (typ, subtype, parameter, data) ) =>
 				if (allowed != Nil && !allowed.exists {case MimeType(atyp, asubtype) => typ == atyp && (asubtype == "*" || subtype == asubtype)})
 					throw new BadRequestException( s"insert: MIME type not allowed: $typ/$subtype" )
 
-				CommandFunctions.insert( vm, vm resource "_media_", Map("type" -> s"$typ/$subtype$parameter", "data" -> data) )
+				CommandFunctions.insert( null, resource.media, Map("type" -> s"$typ/$subtype$parameter", "data" -> data) )
 		}
 
 	def setNull( preparedStatement: PreparedStatement, col: Int, typ: FieldType ): Unit = {
@@ -109,34 +109,34 @@ object CommandFunctionHelpers {
 
 object CommandFunctions {
 
-	def command( resource: Resource, sql: String ) = resource.statement.executeUpdate( sql )
+	def command( vm: VM, resource: Resource, sql: String ) = resource.statement.executeUpdate( sql )
 	
-	def delete( resource: Resource, id: Long ): Int = {
+	def delete( vm: VM, resource: Resource, id: Long ): Int = {
 		if (resource.mediaArray)
 			resource.fields foreach {
 				case Field( name, ArrayType(MediaType(_)),_, _, _, _, _ ) =>
-					for (mid <- QueryFunctions.readField( resource, id, name ).asInstanceOf[Array[Long]])
-						deleteMedia( resource, mid )
+					for (mid <- QueryFunctions.readField( vm, resource, id, name ).asInstanceOf[Array[Long]])
+						deleteMedia( vm, resource, mid )
 				case _ =>
 			}
 
-		command( resource, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
+		command( vm, resource, s"DELETE FROM ${resource.name} WHERE $idIn = $id;" )
 	}
 
 	//todo: deal with resources that have media arrays as in delete()
-	def deleteMany( resource: Resource, filter: Option[String] ) = {
-		command( resource, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering( filter )}" )
+	def deleteMany( vm: VM, resource: Resource, filter: Option[String] ) = {
+		command( vm, resource, s"DELETE FROM ${resource.name} ${QueryFunctionHelpers.filtering( filter )}" )
 	}
 
-	def deleteMedia( vm: VM, id: Long ) = delete( vm resource "_media_", id )//todo: put the Resource object for _media_ somewhere so it doesn't have to be looked up
+	def deleteMedia( vm: VM, resource: Resource, id: Long ) = delete( vm, resource.media, id )
 
-	def deleteValue( resource: Resource, field: String, value: Any ) =
+	def deleteValue( vm: VM, resource: Resource, field: String, value: Any ) =
 		value match {
-			case s: String => command( resource, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
-			case _ => command( resource, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
+			case s: String => command( vm, resource, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = '$s';" )
+			case _ => command( vm, resource, s"DELETE FROM ${resource.name} WHERE ${nameIn(field)} = $value;" )
 		}
 
-	def batchInsert( resource: Resource, rows: List[Seq[AnyRef]], full: Boolean ) {
+	def batchInsert( vm: VM, resource: Resource, rows: List[Seq[AnyRef]], full: Boolean ) {
 		val types = for ((c, i) <- resource.fields zipWithIndex) yield (i + (if (full) 2 else 1), c.typ)
 		val preparedStatement = if (full) resource.preparedFullInsert else resource.preparedInsert
 
@@ -200,7 +200,7 @@ object CommandFunctions {
 						case UUIDType | TimeType | DateType | BinaryType | StringType( _ ) | EnumType(_, _) => resource.preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType | TimestampType => resource.preparedInsert.setTimestamp( i + 1, vm.db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>
-							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(vm, allowed, _))
+							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(resource, allowed, _))
 
 							resource.preparedInsert.setObject( i + 1, s.asInstanceOf[Seq[java.lang.Long]].toArray )
 						case ArrayType( _ ) => resource.preparedInsert.setObject( i + 1, v.asInstanceOf[Seq[Any]].toArray )
@@ -222,7 +222,7 @@ object CommandFunctions {
 							resource.preparedInsert.setBlob( i + 1, new SerialBlob(array) )
 						case TextType => resource.preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed ) =>
-							resource.preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(vm, allowed, v.asInstanceOf[String]) )
+							resource.preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(resource, allowed, v.asInstanceOf[String]) )
 					}
 			}
 		}
@@ -307,7 +307,7 @@ object CommandFunctions {
 							case BLOBType( _ ) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case MediaType( allowed ) =>
 								val oldid = QueryFunctions.readField( vm, resource, id, k ).asInstanceOf[Long]
-								val newid = CommandFunctionHelpers.mediaInsert( vm, allowed, v.asInstanceOf[String] )
+								val newid = CommandFunctionHelpers.mediaInsert( resource, allowed, v.asInstanceOf[String] )
 
 								mediaDeletes += oldid
 								kIn + " = " + String.valueOf( newid )
@@ -329,7 +329,7 @@ object CommandFunctions {
 			val res = vm.statement.executeUpdate( com.toString )
 
 			for (id <- mediaDeletes)
-				deleteMedia( vm, id )
+				deleteMedia( vm, resource, id )
 
 			res
 		}
@@ -349,7 +349,7 @@ object CommandFunctions {
 					resource.fieldMap get field match {
 						case None => throw new NotFoundException( s"arrayInsert: '$field' not found" )
 						case Some( Field(_, ArrayType(MediaType(allowed)), _, _, _, _, _) ) =>
-							CommandFunctionHelpers.mediaInsert( vm, allowed, data.toString )
+							CommandFunctionHelpers.mediaInsert( resource, allowed, data.toString )
 						case _ => data
 					}
 
@@ -373,7 +373,7 @@ object CommandFunctions {
 					resource.fieldMap get field match {
 						case None => throw new NotFoundException( s"arrayUpdate: '$field' not found" )
 						case Some( Field(_, ArrayType(MediaType(allowed)), _, _, _, _, _) ) =>
-							(CommandFunctionHelpers.mediaInsert( vm, allowed, data.toString ), Some( oldarray(idx).asInstanceOf[Long] ))
+							(CommandFunctionHelpers.mediaInsert( resource, allowed, data.toString ), Some( oldarray(idx).asInstanceOf[Long] ))
 						case _ => (data, None)
 					}
 
@@ -464,7 +464,7 @@ object CommandFunctions {
 	}
 
 	def deleteLinkIDs( vm: VM, src: Resource, sid: Long, dst: Resource, did: Long ) =
-		command( vm, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
+		command( vm, src, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
 
 	def associateID( vm: VM, src: Resource, id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
 		val did = QueryFunctions.findOne( vm, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
@@ -473,7 +473,7 @@ object CommandFunctions {
 	}
 
 	def associateIDs( vm: VM, src: Resource, sid: Long, dst: Resource, did: Long ) =
-		command( vm, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($sid, $did)" )
+		command( vm, src, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($sid, $did)" )
 
 	def associate( vm: VM, src: Resource, sfield: String, svalue: AnyRef, dst: Resource, dfield: String, dvalue: AnyRef ) = {
 		val sobj = QueryFunctions.findOne( vm, src, sfield, svalue )( "_id" ).asInstanceOf[Long]

@@ -663,49 +663,49 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin )
 	}
 
-	"media" in {
-		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
-		val config =
-			"""
-				|resource test
-				|	a media
-			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
-
-		pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""", null ) shouldBe(SC_CREATED, "application/json",
-			"""
-				|{
-				|  "data": 1
-				|}
-			""".trim.stripMargin)
-		pro.process( "GET", "/test", null, null, null ) shouldBe (SC_OK, "application/json",
-			"""
-				|{
-				|  "data": [
-				|    {
-				|      "_id": 1,
-				|      "a": "/media/1"
-				|    }
-				|  ]
-				|}
-			""".trim.stripMargin)
-		(pro.process( "GET", "/media/1", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
-			(SC_OK, "image/gif", base642bytes("R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==").toList)
-		pro.process( "PUT", "/test/1", null, """{a: "data:,Hello, World!"}""", null ) shouldBe(SC_NO_CONTENT, "text/html", "No Content")
-		pro.process( "GET", "/test", null, null, null ) shouldBe(SC_OK, "application/json",
-			"""
-				|{
-				|  "data": [
-				|    {
-				|      "_id": 1,
-				|      "a": "/media/2"
-				|    }
-				|  ]
-				|}
-			""".trim.stripMargin)
-		(pro.process( "GET", "/media/2", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
-			(SC_OK, "text/plain", "Hello, World!" map (_.toInt) toList)
-	}
+//	"media" in {
+//		val (c, s, d) = Test.dbconnect
+//		val key = AUTHORIZATION.getString( "key" )
+//		val config =
+//			"""
+//				|resource test
+//				|	a media
+//			""".trim.stripMargin
+//		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+//
+//		pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""", null ) shouldBe(SC_CREATED, "application/json",
+//			"""
+//				|{
+//				|  "data": 1
+//				|}
+//			""".trim.stripMargin)
+//		pro.process( "GET", "/test", null, null, null ) shouldBe (SC_OK, "application/json",
+//			"""
+//				|{
+//				|  "data": [
+//				|    {
+//				|      "_id": 1,
+//				|      "a": "/media/1"
+//				|    }
+//				|  ]
+//				|}
+//			""".trim.stripMargin)
+//		(pro.process( "GET", "/media/1", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
+//			(SC_OK, "image/gif", base642bytes("R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==").toList)
+//		pro.process( "PUT", "/test/1", null, """{a: "data:,Hello, World!"}""", null ) shouldBe(SC_NO_CONTENT, "text/html", "No Content")
+//		pro.process( "GET", "/test", null, null, null ) shouldBe(SC_OK, "application/json",
+//			"""
+//				|{
+//				|  "data": [
+//				|    {
+//				|      "_id": 1,
+//				|      "a": "/media/2"
+//				|    }
+//				|  ]
+//				|}
+//			""".trim.stripMargin)
+//		(pro.process( "GET", "/media/2", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
+//			(SC_OK, "text/plain", "Hello, World!" map (_.toInt) toList)
+//	}
 
 }
