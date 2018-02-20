@@ -18,7 +18,10 @@ object Main extends App {
   val key = AUTHORIZATION.getString( "key" )
   val src =
     """
-      |write( asdf )
+			|table r
+			|  a int
+			|
+      |write( r )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
   val message =

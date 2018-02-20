@@ -85,7 +85,8 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				"method" -> method,
 				"path" -> reqpath,
         "query" -> reqquery,
-        "url" -> uri
+        "url" -> uri,
+				"proc" -> this
 			)
 		val res =
 			new Response {

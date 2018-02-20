@@ -271,8 +271,8 @@ object QueryFunctions {
 //		blob.getBytes( 0, blob.length.toInt )
 //	}
 
-	def readMedia( vm: VM, resource: Resource, id: Long ) = {
-		val res = resource.statement.executeQuery( s"SELECT * FROM _media_ WHERE $idIn = $id" )
+	def readMedia( vm: VM, stat: Statement, id: Long ) = {
+		val res = stat.executeQuery( s"SELECT * FROM _media_ WHERE $idIn = $id" )
 
 		res.next
 

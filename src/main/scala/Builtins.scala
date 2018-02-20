@@ -122,6 +122,6 @@ object Builtins {
 			|  "data" blob(urlchars)
 			|
 			|routes
-			|  GET  /media/id:int64  => Ok( res, readMedia(_media_, req.params.id) )
+			|  GET  /media/id:int64  => Ok( res, readMedia(req.proc.statement(), req.params.id) )
 		""".stripMargin
 }
