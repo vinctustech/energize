@@ -290,7 +290,7 @@ object Definition {
 		val Definition( code, resources, routes, _ ) = compile( ast, db, false )
 
 		resources.values foreach {
-			case Resource( _, fields, _, _, _, _ ) =>
+			case Resource( _, fields, _, _, _, _, _ ) =>
 				fields foreach {
 					case Field( _, t@SingleReferenceType(pos, table, _), _, _, _, _, _ ) =>
 						t.ref = resources.getOrElse( db.desensitize(table), problem(pos, s"'$table' not found") )
@@ -309,7 +309,7 @@ object Definition {
 		}
 
 		resources.values foreach {
-			case r@Resource( name, fields, _, _, _, _ ) =>
+			case r@Resource( name, fields, _, _, _, _, _ ) =>
 				val cnames1 = fields filterNot (_.typ.isInstanceOf[ManyReferenceType]) map (_.name)
 				val fieldstr = cnames1 map nameIn mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","

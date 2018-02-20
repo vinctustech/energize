@@ -18,8 +18,13 @@ object Main extends App {
   val key = AUTHORIZATION.getString( "key" )
   val src =
     """
+      |resource r
+      |  a int
+      |
       |routes
-      |  GET /r => res.send( req.get( 'Host' ) )
+      |  GET /r => res.send( list(r, None, None, None, None, None, None) )
+      |
+      |insert( r, {a: 123} )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
   val message =

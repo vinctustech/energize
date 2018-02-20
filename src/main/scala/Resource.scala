@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize2
 
-import java.sql.PreparedStatement
+import java.sql.{PreparedStatement, Statement}
 
 import scala.util.parsing.input.Position
 
@@ -9,14 +9,8 @@ object Resource {
 
 }
 
-//trait Method
-//case object Get extends Method
-//case object Post extends Method
-//case object Put extends Method
-//case object Patch extends Method
-//case object Delete extends Method
-
-case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Field], visible: Boolean, manyToMany: Boolean, mediaArray: Boolean ) {
+case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
+										 manyToMany: Boolean, mediaArray: Boolean, statement: Statement ) {
 	var preparedInsert: PreparedStatement = _
 	var preparedFullInsert: PreparedStatement = _
 

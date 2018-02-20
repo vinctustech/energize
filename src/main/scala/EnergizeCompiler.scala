@@ -1,6 +1,8 @@
 //@
 package xyz.hyperreal.energize2
 
+import java.sql.Statement
+
 import collection.mutable.{ArrayBuffer, HashMap, LinkedHashMap}
 import scala.util.parsing.input.Position
 import xyz.hyperreal.bvm._
@@ -18,6 +20,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	val conds = new ArrayBuffer[(ExpressionAST, ExpressionAST)]
 	var lastResource: Position = _
 	var db: Database = _
+	var statement: Statement = _
 	var internal: Boolean = _
 	var specialsDone: Boolean = _
 
@@ -237,7 +240,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					cols(cname) = Field( cname, fieldType, secret, required, unique, indexed, Nil )
 			}
 
-			val res = Resource( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma )
+			val res = Resource( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, statement )
 
 			resources(db.desensitize( name )) = res
 			r.decl = VarAST( pos, name, name, Some(LiteralExpressionAST(res)))
@@ -299,8 +302,8 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 			for ((k, v) <- special.resources) {
 				resources get k match {
-					case Some( Resource(name, fields, fieldMap, _, mtm, ma )) =>
-						resources(k) = Resource(name, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma )
+					case Some( Resource(name, fields, fieldMap, _, mtm, ma, st )) =>
+						resources(k) = Resource(name, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma, st )
 					case None => resources(k) = v
 				}
 			}
