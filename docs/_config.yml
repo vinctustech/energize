@@ -11,7 +11,7 @@ timezone: America/Montreal
 # Build settings
 markdown: kramdown
 theme: jekyll-theme-cayman
-gems:
+plugins:
   - jekyll-redirect-from
 exclude:
   - Gemfile
