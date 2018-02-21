@@ -1,16 +1,16 @@
+//@
 package xyz.hyperreal.energize2
 
+import java.lang.reflect.InvocationTargetException
 import java.net.URI
 import java.nio.charset.Charset
 import java.sql.{Connection, SQLException, Statement}
 
 import collection.JavaConverters._
 import collection.mutable.ArrayBuffer
-
 import org.apache.http.client.utils.URLEncodedUtils
-
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
-import xyz.hyperreal.bvm.{deref, Compilation, VM}
+import xyz.hyperreal.bvm.{Compilation, VM, deref}
 
 import scala.util.parsing.input.Position
 
@@ -137,22 +137,29 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
       if (vm.call( router, List(method, reqpath, reqquery, reqbody, req, res) ) == 'nomatch)
         result( "NotFound", res, List("route not found") )
     } catch {
-      case e: UnauthorizedException =>
-        result( "Unauthorized", res, List(s"""realm="${e.getMessage}"""") )
-      case e: ExpiredException =>
-        result( "Unauthorized", res, List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
-      case e: ForbiddenException =>
-        result( "Forbidden", res, List(e.getMessage) )
-      case e: BadRequestException =>
-        result( "BadRequest", res, List(e.getMessage) )
-      case e: NotFoundException =>
-        result( "NotFound", res, List(e.getMessage) )
-      case e: SQLException if db.conflict( e.getMessage )  =>
-        result( "Conflict", res, List(e.getMessage) )
-    }
+			case e: InvocationTargetException => handleException( e.getCause, res )
+			case e: Exception => handleException( e, res )
+		}
 
 		(resStatusCode, resType, resBody)
 	}
+
+	def handleException( e: Throwable, res: Response ) =
+		e match {
+			case e: UnauthorizedException =>
+				result( "Unauthorized", res, List(s"""realm="${e.getMessage}"""") )
+			case e: ExpiredException =>
+				result( "Unauthorized", res, List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
+			case e: ForbiddenException =>
+				result( "Forbidden", res, List(e.getMessage) )
+			case e: BadRequestException =>
+				result( "BadRequest", res, List(e.getMessage) )
+			case e: NotFoundException =>
+				result( "NotFound", res, List(e.getMessage) )
+			case e: SQLException if db.conflict( e.getMessage )  =>
+				result( "Conflict", res, List(e.getMessage) )
+		}
+
 }
 
 class NotFoundException( error: String ) extends Exception( error )

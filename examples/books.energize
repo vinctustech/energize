@@ -10,6 +10,6 @@ resource publishers
 	name string unique
 
 
-if count( books, None ) == 0
+if books.count( None ) == 0
 	insert( publishers, {name: "Spectra"} )
 	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`

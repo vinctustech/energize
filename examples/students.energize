@@ -6,7 +6,7 @@ resource classrooms
 	room string unique
 
 
-if count( students, None ) == 0
+if students.count( None ) == 0
 	batchInsert( students, [["rayna"], ["soren"], ["carys"], ["larkin"]] )
 	batchInsert( classrooms, [["101"], ["105"], ["208"], ["302"], ["307"]] )
 	associate( students, "name", "rayna", classrooms, "room", "105" )

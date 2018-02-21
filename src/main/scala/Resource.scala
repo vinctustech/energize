@@ -20,6 +20,28 @@ case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Fi
 //	def init: Unit = {
 //
 //	}
+
+	//
+	// aggregate functions
+	//
+
+	def count( filter: Option[String] ) = QueryFunctionHelpers.synchronized {
+		val where = QueryFunctionHelpers.filtering( filter )
+		val res = statement.executeQuery( s"SELECT COUNT(*) FROM $name $where" )
+
+		res.next
+
+		BigInt( res.getLong(1) )
+	}
+
+	def avg( filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( "AVG", this, filter, field )
+
+	def sum( filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( "SUM", this, filter, field )
+
+	def min( filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( "MIN", this, filter, field )
+
+	def max( filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( "MAX", this, filter, field )
+
 }
 
 case class Field( name: String, typ: FieldType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean,

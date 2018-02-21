@@ -18,10 +18,11 @@ object Main extends App {
   val key = AUTHORIZATION.getString( "key" )
   val src =
     """
-			|table r
+			|resource r
 			|  a int
 			|
-      |write( r )
+      |insert( r, {a: 3} )
+			|insert( r, {a: 4} )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
   val message =
@@ -53,7 +54,7 @@ object Main extends App {
       override def getParams: HttpParams = ???
       override def setParams(params: HttpParams): Unit = ???
    }
-  println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
+  println( pro.process( "GET", "/r/sum/b", new HttpComponentsMessageHeaders(message), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

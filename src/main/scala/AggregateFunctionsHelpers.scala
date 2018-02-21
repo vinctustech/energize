@@ -11,7 +11,7 @@ object AggregateFunctionsHelpers {
 			case Some( c ) => c.typ
 		}
 
-	def aggregate( vm: VM, func: String, resource: Resource, filter: Option[String], field: String ) = QueryFunctionHelpers.synchronized {
+	def aggregate( func: String, resource: Resource, filter: Option[String], field: String ) = QueryFunctionHelpers.synchronized {
 		val typ = AggregateFunctionsHelpers.checkField( resource, field )
 		val where = QueryFunctionHelpers.filtering( filter )
 		val res = resource.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
@@ -25,7 +25,7 @@ object AggregateFunctionsHelpers {
 	}
 
 }
-
+/*
 object AggregateFunctions {
 
 	def count( vm: VM, resource: Resource, filter: Option[String] ) = QueryFunctionHelpers.synchronized {
@@ -37,15 +37,6 @@ object AggregateFunctions {
 		BigInt( res.getLong(1) )
 	}
 
-//	def avg( vm: VM, resource: Resource, filter: Option[String], field: String ) = {
-//		val where = QueryFunctionHelpers.filtering( filter )
-//		val res = resource.statement.executeQuery( s"SELECT AVG(${nameIn(field)}) FROM ${resource.name} $where" )
-//
-//		res.next
-//
-//		res.getDouble( 1 )
-//	}
-
 	def avg( vm: VM, resource: Resource, filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( vm, "AVG", resource, filter, field )
 
 	def sum( vm: VM, resource: Resource, filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( vm, "SUM", resource, filter, field )
@@ -54,4 +45,4 @@ object AggregateFunctions {
 
 	def max( vm: VM, resource: Resource, filter: Option[String], field: String ) = AggregateFunctionsHelpers.aggregate( vm, "MAX", resource, filter, field )
 
-}
+}*/

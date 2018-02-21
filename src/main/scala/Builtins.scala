@@ -23,7 +23,6 @@ object Builtins {
 		)
 	val natives =
 		Native( QueryFunctions ) ++
-		Native( AggregateFunctions ) ++
 		Native( CommandFunctions ) ++
 		Native( ResultFunctions ) ++
 		Native( UtilityFunctions ) ++
@@ -41,11 +40,11 @@ object Builtins {
 			|routes <base>/<resource> <authorize>
 			|  GET     /id:int64    => OkSingleOrNotFound( res, findID(<resource>, req.params.id, \?req.query.fields, None, None, None), req.params.id )
 			|  GET                  => Ok( res, list(<resource>, \?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
-			|  GET     /count       => Ok( res, count(<resource>, \?req.query.filter) )
-			|  GET     /sum/field:  => Ok( res, sum(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /avg/field:  => Ok( res, avg(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /min/field:  => Ok( res, min(<resource>, \?req.query.filter, req.params.field) )
-			|  GET     /max/field:  => Ok( res, max(<resource>, \?req.query.filter, req.params.field) )
+			|  GET     /count       => Ok( res, <resource>.count(\?req.query.filter) )
+			|  GET     /sum/field:  => Ok( res, <resource>.sum(\?req.query.filter, req.params.field) )
+			|  GET     /avg/field:  => Ok( res, <resource>.avg(\?req.query.filter, req.params.field) )
+			|  GET     /min/field:  => Ok( res, <resource>.min(\?req.query.filter, req.params.field) )
+			|  GET     /max/field:  => Ok( res, <resource>.max(\?req.query.filter, req.params.field) )
 			|  GET     /schema      => Ok( res, tableSchema(<resource>) )
 			|  POST                 => Created( res, insert(<resource>, req.body) )
 			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, update(<resource>, req.params.id, req.body, false), req.params.id )

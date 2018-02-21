@@ -689,7 +689,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	name string unique
 				|
 				|
-				|if count( books, None ) == 0
+				|if books.count( None ) == 0
 				|	insert( publishers, {name: "Spectra"} )
 				|	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`		""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( src ), c, s, d, key )
@@ -856,7 +856,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	PostalCode string indexed
 				|	Country string indexed
 				|
-				|if count( customers, None ) == 0
+				|if customers.count( None ) == 0
 				|	batchInsert( customers, [
 				|	 ["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
 				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
@@ -955,7 +955,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	name string unique required
 				|
 				|
-				|if count( books, None ) == 0
+				|if books.count( None ) == 0
 				|	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]], false )
 				|
 				|	insert( authors, {name: "Fyodor Dostoyevsky"} )
