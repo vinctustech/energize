@@ -8,11 +8,13 @@ import java.sql.{Connection, SQLException, Statement}
 
 import collection.JavaConverters._
 import collection.mutable.ArrayBuffer
-import org.apache.http.client.utils.URLEncodedUtils
-import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
-import xyz.hyperreal.bvm.{Compilation, VM, deref}
 
 import scala.util.parsing.input.Position
+
+import org.apache.http.client.utils.URLEncodedUtils
+
+import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
+import xyz.hyperreal.bvm.{Compilation, VM, deref}
 
 
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
@@ -32,6 +34,17 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 	def renameField( resource: String, oldname: String, newname: String ) = resourceMutex.synchronized {
 
+	}
+
+	def readMedia( id: Long ) = {
+		val res = statement.executeQuery( s"SELECT * FROM _media_ WHERE $idIn = $id" )
+
+		res.next
+
+		val typ = res.getString( 2 )
+		val blob = res.getBlob( 3 )
+
+		(typ, blob.getBytes( 0, blob.length.toInt ))
 	}
 
 	val miscellaneousRoutes = new ArrayBuffer[Route]
@@ -158,6 +171,8 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				result( "NotFound", res, List(e.getMessage) )
 			case e: SQLException if db.conflict( e.getMessage )  =>
 				result( "Conflict", res, List(e.getMessage) )
+			case e: Exception =>
+				result( "InternalServerError", res, List(e.getMessage) )
 		}
 
 }

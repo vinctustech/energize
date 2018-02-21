@@ -115,7 +115,7 @@ object CommandFunctions {
 		if (resource.mediaArray)
 			resource.fields foreach {
 				case Field( name, ArrayType(MediaType(_)),_, _, _, _, _ ) =>
-					for (mid <- QueryFunctions.readField( vm, resource, id, name ).asInstanceOf[Array[Long]])
+					for (mid <- resource.readField( id, name ).asInstanceOf[Array[Long]])
 						deleteMedia( vm, resource, mid )
 				case _ =>
 			}
@@ -182,7 +182,7 @@ object CommandFunctions {
 				case Some( v ) =>
 					c.typ match {
 						case SingleReferenceType( _, _, tref ) if !v.isInstanceOf[Int] && !v.isInstanceOf[Long] =>
-							resource.preparedInsert.setLong( i + 1, QueryFunctions.findOne(vm, tref, CommandFunctionHelpers.uniqueField(tref), v).asInstanceOf[Map[String, Long]]("_id") )
+							resource.preparedInsert.setLong( i + 1, tref.findOne(CommandFunctionHelpers.uniqueField(tref), v).asInstanceOf[Map[String, Long]]("_id") )
 //								s"SELECT id FROM $tname WHERE " +
 //								(tref.columns.find(c => c.unique ) match {
 //									case None => throw new BadRequestException( "insert: no unique column in referenced resource in POST request" )
@@ -306,7 +306,7 @@ object CommandFunctions {
 									}.mkString( "(", ", ", ")" )
 							case BLOBType( _ ) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case MediaType( allowed ) =>
-								val oldid = QueryFunctions.readField( vm, resource, id, k ).asInstanceOf[Long]
+								val oldid = resource.readField( id, k ).asInstanceOf[Long]
 								val newid = CommandFunctionHelpers.mediaInsert( resource, allowed, v.asInstanceOf[String] )
 
 								mediaDeletes += oldid
@@ -339,7 +339,7 @@ object CommandFunctions {
 		json get "data" match {
 			case None => throw new BadRequestException( "arrayInsert: 'data' not found in JSON body" )
 			case Some( data ) =>
-				val oldarray = QueryFunctions.readField( vm, resource, id, field ).asInstanceOf[Array[Any]]
+				val oldarray = resource.readField( id, field ).asInstanceOf[Array[Any]]
 
 				if (idx < 0 || idx > oldarray.length)
 					throw new BadRequestException( s"arrayInsert: array index is out of range: $idx" )
@@ -363,7 +363,7 @@ object CommandFunctions {
 		json get "data" match {
 			case None => throw new BadRequestException( "arrayUpdate: 'data' not found in JSON body" )
 			case Some( data ) =>
-				val oldarray = QueryFunctions.readField( vm, resource, id, field ).asInstanceOf[Array[Any]]
+				val oldarray = resource.readField( id, field ).asInstanceOf[Array[Any]]
 
 				if (idx < 0 || idx > oldarray.length)
 					throw new BadRequestException( s"arrayUpdate: array index is out of range: $idx" )
@@ -386,7 +386,7 @@ object CommandFunctions {
 	}
 
 	def arrayDelete( vm: VM, resource: Resource, id: Long, field: String, idx: Int ): Unit = {
-		val oldarray = QueryFunctions.readField( vm, resource, id, field ).asInstanceOf[Array[Any]]
+		val oldarray = resource.readField( id, field ).asInstanceOf[Array[Any]]
 
 		if (idx < 0 || idx > oldarray.length)
 			throw new BadRequestException( s"arrayDelete: array index is out of range: $idx" )
@@ -458,7 +458,7 @@ object CommandFunctions {
 		}
 
 	def deleteLinkID( vm: VM, src: Resource, id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
-		val did = QueryFunctions.findOne( vm, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
+		val did = dst.findOne( dfield, dvalue )( "_id" ).asInstanceOf[Long]
 
 		deleteLinkIDs( vm, src, id, dst, did )
 	}
@@ -467,7 +467,7 @@ object CommandFunctions {
 		command( vm, src, s"DELETE FROM ${src.name}$$${dst.name} WHERE ${src.name}$$id = $sid AND ${dst.name}$$id = $did" )
 
 	def associateID( vm: VM, src: Resource, id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
-		val did = QueryFunctions.findOne( vm, dst, dfield, dvalue )( "_id" ).asInstanceOf[Long]
+		val did = dst.findOne( dfield, dvalue )( "_id" ).asInstanceOf[Long]
 
 		associateIDs( vm, src, id, dst, did )
 	}
@@ -476,7 +476,7 @@ object CommandFunctions {
 		command( vm, src, s"INSERT INTO ${src.name}$$${dst.name} VALUES ($sid, $did)" )
 
 	def associate( vm: VM, src: Resource, sfield: String, svalue: AnyRef, dst: Resource, dfield: String, dvalue: AnyRef ) = {
-		val sobj = QueryFunctions.findOne( vm, src, sfield, svalue )( "_id" ).asInstanceOf[Long]
+		val sobj = src.findOne( sfield, svalue )( "_id" ).asInstanceOf[Long]
 
 		associateID( vm, src, sobj, dst, dfield, dvalue )
 	}

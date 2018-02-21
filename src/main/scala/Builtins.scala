@@ -22,7 +22,6 @@ object Builtins {
 			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
 		)
 	val natives =
-		Native( QueryFunctions ) ++
 		Native( CommandFunctions ) ++
 		Native( ResultFunctions ) ++
 		Native( UtilityFunctions ) ++
@@ -38,8 +37,8 @@ object Builtins {
 	val routes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64    => OkSingleOrNotFound( res, findID(<resource>, req.params.id, \?req.query.fields, None, None, None), req.params.id )
-			|  GET                  => Ok( res, list(<resource>, \?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
+			|  GET     /id:int64    => OkSingleOrNotFound( res, <resource>.findID(req.params.id, \?req.query.fields, None, None, None), req.params.id )
+			|  GET                  => Ok( res, <resource>.list(\?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
 			|  GET     /count       => Ok( res, <resource>.count(\?req.query.filter) )
 			|  GET     /sum/field:  => Ok( res, <resource>.sum(\?req.query.filter, req.params.field) )
 			|  GET     /avg/field:  => Ok( res, <resource>.avg(\?req.query.filter, req.params.field) )
@@ -58,7 +57,7 @@ object Builtins {
 	val mtmroutes =
 		"""
 			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64/field:                    => OkSingleOrNotFound( res, findIDMany(<resource>, req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
+			|  GET     /id:int64/field:                    => OkSingleOrNotFound( res, <resource>.findIDMany(req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
 			|  POST    /id:int64/field:                    => Created( res, append(<resource>, req.params.id, req.params.field, req.body) )
 			|  POST    /sid:int64/field:/target/tid:int64  =>
 			|    appendIDs( <resource>, req.params.sid, req.params.field, req.params.tid )
@@ -121,6 +120,6 @@ object Builtins {
 			|  "data" blob(urlchars)
 			|
 			|routes
-			|  GET  /media/id:int64  => Ok( res, readMedia(req.proc.statement(), req.params.id) )
+			|  GET  /media/id:int64  => Ok( res, req.proc.readMedia(req.params.id) )
 		""".stripMargin
 }

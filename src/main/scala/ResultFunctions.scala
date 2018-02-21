@@ -24,6 +24,8 @@ object ResultFunctions {
 	def Conflict( vm: VM, res: Response, error: String ) = Error( vm, res, SC_CONFLICT, error )
 	def Forbidden( vm: VM, res: Response, error: String ) = Error( vm, res, SC_FORBIDDEN, error )
 
+	def InternalServerError( vm: VM, res: Response, error: String ) = Error( vm, res, SC_INTERNAL_SERVER_ERROR, error )
+
 	def Unauthorized( vm: VM, res: Response, error: String ) = (SC_UNAUTHORIZED, null, error)
 
 	def OkSingleOrNotFound( vm: VM, res: Response, list: List[Any], id: Long ) =

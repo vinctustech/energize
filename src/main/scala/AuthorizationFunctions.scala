@@ -26,7 +26,7 @@ object AuthorizationFunctionHelpers {
 			def gentoken: String = {
 				val tok = UtilityFunctions.rndAlpha( vm, 15 )
 
-				QueryFunctions.findOption( vm, tokens, "token", tok, false ) match {
+				tokens.findOption( "token", tok, false ) match {
 					case None => tok
 					case Some( _ ) => gentoken
 				}
@@ -84,7 +84,7 @@ object AuthorizationFunctions {
 
 		def denied = throw new UnauthorizedException( "email or password doesn't match" )
 
-		QueryFunctions.findOption( vm, users, "email", email, true ) match {
+		users.findOption( "email", email, true ) match {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
@@ -114,7 +114,7 @@ object AuthorizationFunctions {
 		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
 			val AuthorizationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
 
-			QueryFunctions.findOption( vm, vm resource "users", "email", email, true ) match {
+			(vm resource "users").findOption( "email", email, true ) match {
 				case None => barred
 				case Some(u) =>
 					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
@@ -123,7 +123,7 @@ object AuthorizationFunctions {
 					u
 			}
 		} else {
-			QueryFunctions.findOption( vm, vm resource "tokens", "token", access.get, false ) match {
+			(vm resource "tokens").findOption( "token", access.get, false ) match {
 				case None => barred
 				case Some( t ) =>
 					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
@@ -147,7 +147,7 @@ object AuthorizationFunctions {
 			if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
 				val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
 
-				QueryFunctions.findOption( vm, vm resource "users", "email", email, true ) match {
+				(vm resource "users").findOption( "email", email, true ) match {
 					case None => barred
 					case Some( u ) =>
 						if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))
@@ -157,7 +157,7 @@ object AuthorizationFunctions {
 							barred
 				}
 			} else {
-				QueryFunctions.findOption( vm, vm resource "tokens", "token", access.get, false ) match {
+				(vm resource "tokens").findOption( "token", access.get, false ) match {
 					case None => barred
 					case Some( t ) =>
 						if (group.nonEmpty && !t( "user" ).asInstanceOf[OBJ]( "groups" ).asInstanceOf[List[String]].contains( group.get ))
