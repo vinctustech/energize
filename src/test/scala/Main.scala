@@ -37,9 +37,18 @@ object Main extends App {
         name match {
           case "Host" =>
             new Header {
-              override def getElements: Array[HeaderElement] = ???
-              override def getName: String = "Host"
-              override def getValue: String = "abc.com"
+              override def getElements: Array[HeaderElement] =
+                Array(
+                  new HeaderElement {
+                    override def getName: String = "elem1"
+                    override def getParameterCount: Int = 1
+                    override def getParameterByName(name: String): NameValuePair = ???
+                    override def getValue: String = "value1"
+                    override def getParameters: Array[NameValuePair] = Array()
+                    override def getParameter(index: Int): NameValuePair = ???
+                    })
+              override def getName: String = "SomeHeader"
+              override def getValue: String = "blah"
             }
           case _ => null
         }
