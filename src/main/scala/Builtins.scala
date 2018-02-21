@@ -22,7 +22,6 @@ object Builtins {
 			"SC_NOT_ACCEPTABLE" -> SC_NOT_ACCEPTABLE
 		)
 	val natives =
-		Native( CommandFunctions ) ++
 		Native( ResultFunctions ) ++
 		Native( UtilityFunctions ) ++
 		Native( AuthorizationFunctions ) ++
@@ -45,10 +44,10 @@ object Builtins {
 			|  GET     /min/field:  => Ok( res, <resource>.min(\?req.query.filter, req.params.field) )
 			|  GET     /max/field:  => Ok( res, <resource>.max(\?req.query.filter, req.params.field) )
 			|  GET     /schema      => Ok( res, tableSchema(<resource>) )
-			|  POST                 => Created( res, insert(<resource>, req.body) )
-			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, update(<resource>, req.params.id, req.body, false), req.params.id )
-			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, update(<resource>, req.params.id, req.body, true), req.params.id )
-			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( res, delete(<resource>, req.params.id), req.params.id )
+			|  POST                 => Created( res, <resource>.insert(req.body) )
+			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, <resource>.update(req.params.id, req.body, false), req.params.id )
+			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, <resource>.update( req.params.id, req.body, true), req.params.id )
+			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( res, <resource>.delete(req.params.id), req.params.id )
 			|  DELETE   						=>
 			|    deleteMany( <resource>, \?req.query.filter )
 			|    NoContent( res )
@@ -58,9 +57,9 @@ object Builtins {
 		"""
 			|routes <base>/<resource> <authorize>
 			|  GET     /id:int64/field:                    => OkSingleOrNotFound( res, <resource>.findIDMany(req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
-			|  POST    /id:int64/field:                    => Created( res, append(<resource>, req.params.id, req.params.field, req.body) )
+			|  POST    /id:int64/field:                    => Created( res, <resource>.append(req.params.id, req.params.field, req.body) )
 			|  POST    /sid:int64/field:/target/tid:int64  =>
-			|    appendIDs( <resource>, req.params.sid, req.params.field, req.params.tid )
+			|    <resource>.appendIDs( req.params.sid, req.params.field, req.params.tid )
 			|    NoContent( res )
 			|  DELETE  /id:int64/field:                    =>
 			|    deleteLinks( <resource>, req.params.id, req.params.field, req.body )

@@ -1,12 +1,5 @@
 package xyz.hyperreal.energize2
 
-import java.sql.{Blob, Clob, Statement}
-
-import xyz.hyperreal.bvm.VM
-
-import collection.mutable.ListBuffer
-import collection.immutable.ListMap
-
 
 object QueryFunctionHelpers {
 	val FILTER = """(.+)(=|<=|>=|<|>|!=|~\*|~)(.+)"""r

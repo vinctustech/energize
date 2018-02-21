@@ -1,9 +1,7 @@
 package xyz.hyperreal.energize2
 
-import xyz.hyperreal.bvm.VM
 
-
-object AggregateFunctionsHelpers {
+object AggregateFunctionHelpers {
 
 	def checkField( resource: Resource, field: String ) =
 		resource.fieldMap get field match {
@@ -12,7 +10,7 @@ object AggregateFunctionsHelpers {
 		}
 
 	def aggregate( func: String, resource: Resource, filter: Option[String], field: String ) = QueryFunctionHelpers.synchronized {
-		val typ = AggregateFunctionsHelpers.checkField( resource, field )
+		val typ = AggregateFunctionHelpers.checkField( resource, field )
 		val where = QueryFunctionHelpers.filtering( filter )
 		val res = resource.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
 

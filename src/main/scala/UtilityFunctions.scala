@@ -94,7 +94,7 @@ object UtilityFunctions {
 
 			pro.resources get pro.db.desensitize(table.name) match {
 				case None =>
-				case Some( t ) => CommandFunctions.batchInsert( vm, t, table.data, true )
+				case Some( t ) => t.batchInsert( table.data, true )
 			}
 		}
 	}

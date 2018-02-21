@@ -326,7 +326,7 @@ object Definition {
 				}
 			) :+ "createdTime" -> now: _* )
 
-		CommandFunctions.insert( proc.vm, resources(db.desensitize("users")), admin )
+		resources(db.desensitize("users")).insert( admin )
 
 		(proc, routes)
 	}

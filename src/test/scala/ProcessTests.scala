@@ -690,8 +690,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|
 				|
 				|if books.count( None ) == 0
-				|	insert( publishers, {name: "Spectra"} )
-				|	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`		""".trim.stripMargin
+				|	publishers.insert( {name: "Spectra"} )
+				|	books.insert( {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`		""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString( src ), c, s, d, key )
 
 		pro.process( "POST","/books/1/authors", null, """{"name": "Brian Herbert"}""", null ) shouldBe
@@ -754,7 +754,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	email string indexed
 				|	web string indexed
 				|
-				|batchInsert( db, [
+				|db.batchInsert( [
 				|	["Francoise","Rautenstrauch","Riebesell, H F Jr","2335 Canton Hwy #6","Windsor","ON","N8N 3N2","519-569-8399","519-978-6179","francoise.rautenstrauch@rautenstrauch.com","http://www.riebesellhfjr.com"],
 				|	["Kendra","Loud","Deloitte & Touche","6 Arch St #9757","Alcida","NB","E8J 2C4","506-363-1526","506-932-4472","kloud@gmail.com","http://www.deloittetouche.com"],
 				|	["Lourdes","Bauswell","Oklahoma Neon Inc","9547 Belmont Rd #21","Belleville","ON","K8P 1B3","613-903-7043","613-638-6682","lourdes_bauswell@aol.com","http://www.oklahomaneoninc.com"],
@@ -857,7 +857,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	Country string indexed
 				|
 				|if customers.count( None ) == 0
-				|	batchInsert( customers, [
+				|	customers.batchInsert( [
 				|	 ["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
 				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
 				|	 ["Antonio Moreno Taquería",            "Antonio Moreno",     "Mataderos 2312",                "México D.F.", "05023",    "Mexico"],
@@ -956,15 +956,15 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|
 				|
 				|if books.count( None ) == 0
-				|	batchInsert( publishers, [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]], false )
+				|	publishers.batchInsert( [["North Point Press"], ["Enhanced Media"], ["Amazon Classics"]], false )
 				|
-				|	insert( authors, {name: "Fyodor Dostoyevsky"} )
-				|	insert( authors, {name: "Lewis Carroll"} )
-				|	insert( authors, {name: "Mark Twain"} )
+				|	authors.insert( {name: "Fyodor Dostoyevsky"} )
+				|	authors.insert( {name: "Lewis Carroll"} )
+				|	authors.insert( {name: "Mark Twain"} )
 				|
-				|	insert( books, {title: "The Brothers Karamazov", author: "Fyodor Dostoyevsky", publisher: "North Point Press"} )
-				|	insert( books, {title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", publisher: "Enhanced Media"} )
-				|	insert( books, {title: "The Adventures of Huckleberry Finn", author: "Mark Twain", publisher: "Amazon Classics"} )
+				|	books.insert( {title: "The Brothers Karamazov", author: "Fyodor Dostoyevsky", publisher: "North Point Press"} )
+				|	books.insert( {title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", publisher: "Enhanced Media"} )
+				|	books.insert( {title: "The Adventures of Huckleberry Finn", author: "Mark Twain", publisher: "Amazon Classics"} )
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( src, c, s, d, key )
 

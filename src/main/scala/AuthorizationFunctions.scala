@@ -35,7 +35,7 @@ object AuthorizationFunctionHelpers {
 			gentoken
 		}
 
-		CommandFunctions.insert( vm, tokens, Map("token" -> token, "created" -> now, "user" -> user).asInstanceOf[OBJ] )
+		tokens.insert( Map("token" -> token, "created" -> now, "user" -> user).asInstanceOf[OBJ] )
 		token
 	}
 
@@ -67,7 +67,7 @@ object AuthorizationFunctions {
 				case f => f
 			}) + ("groups" -> List("user")) + ("createdTime" -> now)
 
-		AuthorizationFunctionHelpers.performLogin( vm, CommandFunctions.insert(vm, users, json1) )
+		AuthorizationFunctionHelpers.performLogin( vm, users.insert(json1) )
 	}
 
 	def login( vm: VM, json: OBJ ) = {
@@ -100,7 +100,7 @@ object AuthorizationFunctions {
 		if (access isEmpty)
 			0
 		else
-			CommandFunctions.deleteValue( vm, vm resource "tokens", "token", access.get )
+			(vm resource "tokens").deleteValue( "token", access.get )
 	}
 
 	def me( vm: VM, authorization: Option[Map[String, String]] ) = {

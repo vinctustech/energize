@@ -265,7 +265,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|	f float
 				|
 				|for a <- [1.3, .3, 1.3e3, .3e3, 1e3]
-				| insert( r1, {f: a} )
+				| r1.insert( {f: a} )
 			""".trim.stripMargin
 		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
 
