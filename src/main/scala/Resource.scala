@@ -4,10 +4,9 @@ import java.sql.{Blob, Clob, Date, PreparedStatement, Statement}
 import java.time.LocalDate
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
-import xyz.hyperreal.bvm.VM
-
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.ListBuffer
+
 import scala.util.parsing.input.Position
 
 
@@ -216,8 +215,8 @@ case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Fi
 	def delete( id: Long ): Int = {
 		if (mediaArray)
 			fields foreach {
-				case Field( name, ArrayType(MediaType(_)),_, _, _, _, _ ) =>
-					for (mid <- readField( id, name ).asInstanceOf[Array[Long]])
+				case Field( n, ArrayType(MediaType(_)),_, _, _, _, _ ) =>
+					for (mid <- readField( id, n ).asInstanceOf[Array[Long]])
 						deleteMedia( mid )
 				case _ =>
 			}
@@ -275,7 +274,7 @@ case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Fi
 		if (diff nonEmpty)
 			throw new BadRequestException( "insert: excess field(s): " + diff.mkString(", ") )
 
-		val mtms = fields filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
+		//val mtms = fields filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
 
 		for ((c, i) <- cols zipWithIndex) {
 			json1 get c.name match {
