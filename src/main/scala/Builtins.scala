@@ -111,7 +111,7 @@ object Builtins {
 			|
 			|routes <base>
 			|  POST    /login        => Ok( res, login(req.body) )
-			|  GET     /logout       => OkAtLeastOneOrNotFound( logout(), "token not found" )
+			|  GET     /logout       => OkAtLeastOneOrNotFound( logout(req), "token not found" )
 			|  POST    /register     => Created( res, register(req.body) )
 			|
 			|table _media_

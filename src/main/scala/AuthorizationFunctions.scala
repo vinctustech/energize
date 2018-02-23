@@ -39,10 +39,10 @@ object AuthorizationFunctionHelpers {
 		token
 	}
 
-	def auth( authorization: Option[Map[String, String]] ) =
-		authorization match {
-			case None => None
-			case Some( m ) => m get (if (AuthorizationFunctionHelpers.SCHEME == "Basic") "$basic" else "$bearer")
+	def auth( req: Map[String, Any] ) =
+		req("parse").asInstanceOf[String => (String, Map[String, (String, Map[String, String])])]( "Authorization" ) match {
+			case null => None
+			case (_, elems) => elems get AuthorizationFunctionHelpers.SCHEME
 		}
 
 }
@@ -94,8 +94,8 @@ object AuthorizationFunctions {
 		}
 	}
 
-	def logout( vm: VM, authorization: Option[Map[String, String]] ) = {
-		val access = AuthorizationFunctionHelpers.auth( authorization )
+	def logout( vm: VM, req: Map[String, Any] ) = {
+		val access = AuthorizationFunctionHelpers.auth( req )
 
 		if (access isEmpty)
 			0
@@ -103,8 +103,8 @@ object AuthorizationFunctions {
 			(vm resource "tokens").deleteValue( "token", access.get )
 	}
 
-	def me( vm: VM, authorization: Option[Map[String, String]] ) = {
-		val access = AuthorizationFunctionHelpers.auth( authorization )
+	def me( vm: VM, req: Map[String, Any] ) = {
+		val access = AuthorizationFunctionHelpers.auth( req )
 
 		def barred = throw new UnauthorizedException( "Protected" )
 
@@ -135,9 +135,11 @@ object AuthorizationFunctions {
 		}
 	}
 
-	def authorize( vm: VM, group: Option[String], key: Option[String], authorization: Option[Map[String, String]] ) {
+	def authorize( vm: VM, group: Option[String], req: Map[String, Any] ) {
+		val key = req("query").asInstanceOf[Map[String, String]] get "access_token"
+
 		if (key.isEmpty) {
-			val access = AuthorizationFunctionHelpers.auth( authorization )
+			val access = AuthorizationFunctionHelpers.auth( req )
 
 			def barred = throw new UnauthorizedException( "Protected" )
 
@@ -145,7 +147,7 @@ object AuthorizationFunctions {
 				barred
 
 			if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
-				val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get.asInstanceOf[String] ) )
+				val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get._1 ) )
 
 				(vm resource "users").findOption( "email", email, true ) match {
 					case None => barred

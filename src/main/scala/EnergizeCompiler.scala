@@ -158,15 +158,13 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 							case Some( Some(null) ) =>
 								BlockExpressionAST(List(ApplyExpressionAST(null, VariableExpressionAST(null, "access", "access"), null,
 									List(
-										(null, DotExpressionAST(null,
-											DotExpressionAST(null, VariableExpressionAST(null, "req", "req"), null, 'query), null, 'access_token))
+										(null, VariableExpressionAST(null, "req", "req"))
 									), false), action) )
 							case Some( pro ) =>
 								BlockExpressionAST(List(ApplyExpressionAST(null, VariableExpressionAST(null, "authorize", "authorize"), null,
 									List(
 										(null, LiteralExpressionAST(pro)),
-										(null, DotExpressionAST(null,
-											DotExpressionAST(null, VariableExpressionAST(null, "req", "req"), null, 'query), null, 'access_token))
+										(null, VariableExpressionAST(null, "req", "req"))
 									), false), action) )
 						})
 
