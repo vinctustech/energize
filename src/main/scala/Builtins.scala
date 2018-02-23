@@ -33,51 +33,51 @@ object Builtins {
 
 	def pairs( natives: List[Native] ) = natives map (n => n.name -> n)
 
-	val routes =
-		"""
-			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64    => OkSingleOrNotFound( res, <resource>.findID(req.params.id, \?req.query.fields, None, None, None), req.params.id )
-			|  GET                  => Ok( res, <resource>.list(\?req.query.fields, \?req.query.filter, \?req.query.order, \?req.query.page, \?req.query.start, \?req.query.limit) )
-			|  GET     /count       => Ok( res, <resource>.count(\?req.query.filter) )
-			|  GET     /sum/field:  => Ok( res, <resource>.sum(\?req.query.filter, req.params.field) )
-			|  GET     /avg/field:  => Ok( res, <resource>.avg(\?req.query.filter, req.params.field) )
-			|  GET     /min/field:  => Ok( res, <resource>.min(\?req.query.filter, req.params.field) )
-			|  GET     /max/field:  => Ok( res, <resource>.max(\?req.query.filter, req.params.field) )
-			|  GET     /schema      => Ok( res, tableSchema(<resource>) )
-			|  POST                 => Created( res, <resource>.insert(req.body) )
-			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, <resource>.update(req.params.id, req.body, false), req.params.id )
-			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, <resource>.update( req.params.id, req.body, true), req.params.id )
-			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( res, <resource>.delete(req.params.id), req.params.id )
+	def routes( base: String, resource: String, authorize: String ) =
+		s"""
+			|routes $base/$resource $authorize
+			|  GET     /id:int64    => OkSingleOrNotFound( res, $resource.findID(req.params.id, \\?req.query.fields, None, None, None), req.params.id )
+			|  GET                  => Ok( res, $resource.list(\\?req.query.fields, \\?req.query.filter, \\?req.query.order, \\?req.query.page, \\?req.query.start, \\?req.query.limit) )
+			|  GET     /count       => Ok( res, $resource.count(\\?req.query.filter) )
+			|  GET     /sum/field:  => Ok( res, $resource.sum(\\?req.query.filter, req.params.field) )
+			|  GET     /avg/field:  => Ok( res, $resource.avg(\\?req.query.filter, req.params.field) )
+			|  GET     /min/field:  => Ok( res, $resource.min(\\?req.query.filter, req.params.field) )
+			|  GET     /max/field:  => Ok( res, $resource.max(\\?req.query.filter, req.params.field) )
+			|  GET     /schema      => Ok( res, tableSchema($resource) )
+			|  POST                 => Created( res, $resource.insert(req.body) )
+			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update(req.params.id, req.body, false), req.params.id )
+			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update( req.params.id, req.body, true), req.params.id )
+			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.delete(req.params.id), req.params.id )
 			|  DELETE   						=>
-			|    deleteMany( <resource>, \?req.query.filter )
+			|    deleteMany( $resource, \\?req.query.filter )
 			|    NoContent( res )
 		""".stripMargin
 
-	val mtmroutes =
-		"""
-			|routes <base>/<resource> <authorize>
-			|  GET     /id:int64/field:                    => OkSingleOrNotFound( res, <resource>.findIDMany(req.params.id, req.params.field, \?req.query.page, \?req.query.start, \?req.query.limit), req.params.id )
-			|  POST    /id:int64/field:                    => Created( res, <resource>.append(req.params.id, req.params.field, req.body) )
+	def mtmroutes( base: String, resource: String, authorize: String ) =
+		s"""
+			|routes $base/$resource $authorize
+			|  GET     /id:int64/field:                    => OkSingleOrNotFound( res, $resource.findIDMany(req.params.id, req.params.field, \\?req.query.page, \\?req.query.start, \\?req.query.limit), req.params.id )
+			|  POST    /id:int64/field:                    => Created( res, $resource.append(req.params.id, req.params.field, req.body) )
 			|  POST    /sid:int64/field:/target/tid:int64  =>
-			|    <resource>.appendIDs( req.params.sid, req.params.field, req.params.tid )
+			|    $resource.appendIDs( req.params.sid, req.params.field, req.params.tid )
 			|    NoContent( res )
 			|  DELETE  /id:int64/field:                    =>
-			|    deleteLinks( <resource>, req.params.id, req.params.field, req.body )
+			|    deleteLinks( $resource, req.params.id, req.params.field, req.body )
 			|    NoContent( res )
-			|  DELETE  /id:int64/field:/target/tid:int64   => OkAtLeastOneOrNotFoundId( res, deleteLinksID(<resource>, req.params.id, req.params.field, req.params.tid), req.params.id )
+			|  DELETE  /id:int64/field:/target/tid:int64   => OkAtLeastOneOrNotFoundId( res, deleteLinksID($resource, req.params.id, req.params.field, req.params.tid), req.params.id )
 		""".stripMargin
 
-	val arrayroutes =
-		"""
-			|routes <base>/<resource> <authorize>
+	def arrayroutes( base: String, resource: String, authorize: String ) =
+		s"""
+			|routes $base/$resource $authorize
 			|  POST    /id:int64/field:/idx:integer  =>
-			|    arrayInsert( <resource>, req.params.id, req.params.field, req.params.idx, req.body )
+			|    arrayInsert( $resource, req.params.id, req.params.field, req.params.idx, req.body )
 			|    NoContent( res )
 			|  PUT     /id:int64/field:/idx:integer  =>
-			|    arrayUpdate( <resource>, req.params.id, req.params.field, req.params.idx, req.body )
+			|    arrayUpdate( $resource, req.params.id, req.params.field, req.params.idx, req.body )
 			|    NoContent( res )
 			|  DELETE  /id:int64/field:/idx:integer  =>
-			|    arrayDelete( <resource>, req.params.id, req.params.field, req.params.idx )
+			|    arrayDelete( $resource, req.params.id, req.params.field, req.params.idx )
 			|    NoContent( res )
 		""".stripMargin
 

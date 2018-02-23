@@ -257,29 +257,23 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					}
 
 				if (base isEmpty) {
-					addRoutes( Definition.compile( Builtins.routes.replaceAll("<base>", "").replaceAll("<resource>", name).
-						replaceAll("<authorize>", authorize), db, statement, true ) )
+					addRoutes( Definition.compile( Builtins.routes("", name, authorize), db, statement, true ) )
 
 					if (mtm)
-						addRoutes( Definition.compile( Builtins.mtmroutes.replaceAll("<base>", "").replaceAll("<resource>", name).
-							replaceAll("<authorize>", authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.mtmroutes("", name, authorize), db, statement, true ) )
 
 					if (cols exists {case (_, c) => c.typ.isInstanceOf[ArrayType]})
-						addRoutes( Definition.compile( Builtins.arrayroutes.replaceAll("<base>", "").replaceAll("<resource>", name).
-							replaceAll("<authorize>", authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.arrayroutes("", name, authorize), db, statement, true ) )
 				} else {
 					val basepath = path2string( base get )
 
-					addRoutes( Definition.compile( Builtins.routes.replaceAll("<resource>", name).
-						replaceAll("<base>", basepath ).replaceAll("<authorize>", authorize), db, statement, true ) )
+					addRoutes( Definition.compile( Builtins.routes(basepath, name, authorize), db, statement, true ) )
 
 					if (mtm)
-						addRoutes( Definition.compile( Builtins.mtmroutes.replaceAll("<resource>", name).
-							replaceAll("<base>", basepath).replaceAll("<authorize>", authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.mtmroutes(basepath, name, authorize), db, statement, true ) )
 
 					if (cols exists { case (_, c) => c.typ.isInstanceOf[ArrayType] })
-						addRoutes( Definition.compile( Builtins.arrayroutes.replaceAll("<resource>", name).
-							replaceAll("<base>", basepath).replaceAll("<authorize>", authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.arrayroutes(basepath, name, authorize), db, statement, true ) )
 					}
 			}
 

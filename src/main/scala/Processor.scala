@@ -89,14 +89,14 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			Map(
         "body" -> reqbody,
 				"get" -> {
-					(vm: VM, apos: Position, ps: List[Position], args: Any) =>
+					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
 							case h: String => reqheaders( h )
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
 				"parse" -> {
-					(vm: VM, apos: Position, ps: List[Position], args: Any) =>
+					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
 							case h: String => reqheaders.parse( h )
 							case _ => problem( apos, "error: expected one string argument" )

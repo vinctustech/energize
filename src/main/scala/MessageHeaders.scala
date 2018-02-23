@@ -26,7 +26,7 @@ class HttpComponentsMessageHeaders( message: HttpMessage ) extends MessageHeader
 		message.getFirstHeader( header ) match {
 			case null => null
 			case h =>
-				(h.getValue, h.getElements map (e => (e.getName -> (e.getValue, e.getParameters map (p => (p.getName -> p.getValue)) toMap))) toMap)
+				(h.getValue, h.getElements map (e => e.getName -> (e.getValue, e.getParameters map (p => p.getName -> p.getValue) toMap)) toMap)
 		}
 	}
 
