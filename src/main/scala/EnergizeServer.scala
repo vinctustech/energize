@@ -131,16 +131,6 @@ class EnergizeServer( pro: Processor, port: Int ) {
 				response.setHeader( "Access-Control-Allow-Origin", origin )
 
 				try {
-//					val parms =
-//						request.getFirstHeader( "Authorization" ) match {
-//							case null => Map[String, String]()
-//							case h =>
-//								h.getValue match {
-//									case v if v startsWith "Basic " => Map( "authorization" -> Map("$basic" -> v.substring( 6 )) )
-//									case v if v startsWith "Bearer " => Map( "authorization" -> Map("$bearer" -> v.substring( 7 )) )
-//									case _ => Map[String, String]()
-//								}
-//						}
           val reqheaders = new HttpComponentsMessageHeaders( request )
           val resheaders = new HttpComponentsMessageHeaders( response )
 					val (status, ctype, contents) =

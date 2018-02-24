@@ -35,66 +35,62 @@ object UtilityFunctions {
 //	def jseval( vm: VM, code: String ) = {
 //		jscompile( env, code ).eval
 //	}
-//
-//	def tableSchema( vm: VM, table: Table ) = {
-//		val primitive: PartialFunction[ColumnType, String] = {
-//			case StringType => "string"
-//			case TextType => "text"
-//			case BooleanType => "boolean"
-//			case IntegerType => "integer"
-//			case LongType => "long"
-//			case UUIDType => "uuid"
-//			case DateType => "date"
-//			case DatetimeType => "datetime"
-//			case TimeType => "time"
-//			case TimestampType => "timestamp"
-//			case BinaryType => "binary"
-//			case BLOBType( _ ) => "blob"
-//			case FloatType => "float"
-//			case DecimalType( _, _ ) => "decimal"
-//			case MediaType( _, _, _ ) => "media"
-//		}
-//
-//		def column( t: ColumnType ) =
-//			if (primitive isDefinedAt t)
-//				Map( "category" -> "primitive", "type" -> primitive(t) )
-//			else
-//				t match {
-//					case SingleReferenceType( table, _ ) => Map( "category" -> "one-to-many", "type" -> table )
-//					case ManyReferenceType( table, _ ) => Map( "category" -> "many-to-many", "type" -> table )
-//					case ArrayType( parm, _, _, _ ) => Map( "category" -> "array", "type" -> primitive(parm) )
-//				}
-//
-//		def modifiers( secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean ) =
-//			(if (secret) List("secret") else Nil) ++
-//			(if (required) List("required") else Nil) ++
-//			(if (unique) List("unique") else Nil) ++
-//			(if (indexed) List("indexed") else Nil)
-//
-//		def fields( cs: List[Column] ) =
-//			cs map {case Column( name, typ, secret, required, unique, indexed, validators ) =>	// todo: add validators support to schema
-//				Map( "name" -> name, "type" -> column(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
-//
-//		def uripath( path: URIPath ) = path.segments map {case NameURISegment( n ) => n} mkString ("/", "/", "")
-//
-//		val Table(name, columns, _, resource, base, _, _, _, _) = table
-//
-//		Map( "name" -> name, "resource" -> resource, "fields" -> fields(columns), "base" -> (base map uripath orNull) )
-//	}
 
-//	def databaseSchema( vm: VM ) = {
-//		val tables = env.tables.values map {t => tableSchema( env, t )}
-//
-//		Map( "tables" -> tables )
-//	}
+	def resourceSchema( vm: VM, resource: Resource ) = {
+		val primitive: PartialFunction[FieldType, String] = {
+			case StringType( len ) => s"string($len)"
+			case TextType => "text"
+			case BooleanType => "boolean"
+			case IntegerType => "integer"
+			case BigintType => "bigint"
+			case UUIDType => "uuid"
+			case DateType => "date"
+			case DatetimeType => "datetime"
+			case TimeType => "time"
+			case TimestampType => "timestamp"
+			case BinaryType => "binary"
+			case BLOBType( _ ) => "blob"
+			case FloatType => "float"
+			case DecimalType( precision, scale ) => s"decimal($precision,$scale)"
+			case MediaType( _ ) => "media"
+		}
+
+		def field( t: FieldType ) =
+			if (primitive isDefinedAt t)
+				Map( "category" -> "primitive", "type" -> primitive(t) )
+			else
+				t match {
+					case SingleReferenceType( _, res, _ ) => Map( "category" -> "one-to-many", "type" -> res )
+					case ManyReferenceType( _, res, _ ) => Map( "category" -> "many-to-many", "type" -> res )
+					case ArrayType( parm ) => Map( "category" -> "array", "type" -> primitive(parm) )
+				}
+
+		def modifiers( secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean ) =
+			(if (secret) List("secret") else Nil) ++
+			(if (required) List("required") else Nil) ++
+			(if (unique) List("unique") else Nil) ++
+			(if (indexed) List("indexed") else Nil)
+
+		def fields( cs: List[Field] ) =
+			cs map {case Field( fname, typ, secret, required, unique, indexed, _ ) =>	// todo: add validators support to schema
+				Map( "name" -> fname, "type" -> field(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
+
+		val Resource(rname, base, columns, _, visible, _, _, _, _) = resource
+
+		Map( "name" -> rname, "resource" -> visible, "fields" -> fields(columns), "base" -> (base map path2string orNull) )
+	}
+
+	def databaseSchema( vm: VM, proc: Processor ) = {
+		val tables = proc.resources.values map {r => resourceSchema( vm, r )}
+
+		Map( "tables" -> tables )
+	}
 
 	def populateDatabase( vm: VM, file: String ): Unit = {
-		new Importer().importFromFile( file, false ) foreach { table =>
-			val pro = vm.args.asInstanceOf[Processor]
-
-			pro.resources get pro.db.desensitize(table.name) match {
+		new Importer().importFromFile( file, false ) foreach { resource =>
+			vm.resources.get( vm.db.desensitize(resource.name) ) match {
 				case None =>
-				case Some( t ) => t.batchInsert( table.data, true )
+				case Some( t ) => t.batchInsert( resource.data, true )
 			}
 		}
 	}

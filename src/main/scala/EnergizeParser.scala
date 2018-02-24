@@ -87,7 +87,7 @@ class EnergizeParser extends FunLParser {
 		if (group contains null)
 			BlockExpressionAST(List(
 				ApplyExpressionAST(null, VariableExpressionAST(null, "access", "access"), null,
-					List((null, DotExpressionAST(null, VariableExpressionAST(null, "parameters", "parameters"), null, Symbol("access_token")))), false),
+					List((null, DefinedOptionExpressionAST(DotExpressionAST(null, DotExpressionAST(null, VariableExpressionAST(null, "req", "req"), null, Symbol("query")), null, Symbol("access_token"))))), false),
 				ApplyExpressionAST(null, VariableExpressionAST(null, "reject", "reject"), null, Nil, false)))
 		else
 			BlockExpressionAST(List(

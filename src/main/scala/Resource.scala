@@ -14,7 +14,7 @@ object Resource {
 
 }
 
-case class Resource( name: String, fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
+case class Resource( name: String, base: Option[PathSegment], fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
 										 manyToMany: Boolean, mediaArray: Boolean, statement: Statement, db: Database ) {
 	var preparedInsert: PreparedStatement = _
 	var preparedFullInsert: PreparedStatement = _

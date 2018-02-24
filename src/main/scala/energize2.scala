@@ -72,6 +72,13 @@ package object energize2 {
 
 	def integer( s: String ) = s.forall( _.isDigit )
 
+	def path2string( path: PathSegment ): String =
+		path match {
+			case ConcatenationPathSegment( segments ) => segments map path2string mkString
+			case LiteralPathSegment( s ) => s
+			case SlashPathSegment => "/"
+		}
+
 }
 
 //def problem( pos: Int, input: ParserInput, msg: String ): Unit = {

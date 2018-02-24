@@ -46,7 +46,7 @@ object Builtins {
 			|  GET     /schema      => Ok( res, tableSchema($resource) )
 			|  POST                 => Created( res, $resource.insert(req.body) )
 			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update(req.params.id, req.body, false), req.params.id )
-			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update( req.params.id, req.body, true), req.params.id )
+			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update(req.params.id, req.body, true), req.params.id )
 			|  DELETE  /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.delete(req.params.id), req.params.id )
 			|  DELETE   						=>
 			|    deleteMany( $resource, \\?req.query.filter )
@@ -107,7 +107,7 @@ object Builtins {
 			|  PUT     /resourse:/field:/newname:        => Ok( res, renameField(req.params.resourse, req.params.field, req.params.newname) )
 			|  DELETE  /resourse:/field:                 => Ok( res, deleteField(req.params.resourse, req.params.field) )
 			|  DELETE  /resourse:                        => Ok( res, deleteResource(req.params.resourse) )
-			|  GET     /schema												   => Ok( res, databaseSchema() )
+			|  GET     /schema												   => Ok( res, databaseSchema(req.proc) )
 			|
 			|routes <base>
 			|  POST    /login        => Ok( res, login(req.body) )

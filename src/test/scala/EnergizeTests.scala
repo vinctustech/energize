@@ -7,7 +7,9 @@ import prop.PropertyChecks
 class EnergizeTests extends FreeSpec with PropertyChecks with Matchers {
 
 //	"routes" in {
-//		runCapture(
+//		val (c, s, d) = Test.dbconnect
+//		val key = AUTHORIZATION.getString( "key" )
+//		val src =
 //			"""
 //				|val a = 2
 //				|
@@ -36,6 +38,8 @@ class EnergizeTests extends FreeSpec with PropertyChecks with Matchers {
 //				|write( _router_( 'GET', '/repp/ababcd', null, null, null, null, null ) )
 //				|write( _router_( 'GET', '/asdf/wow/zxvc', null, null, null, null, null ) )
 //			""".stripMargin
+//		val (pro, _) = Definition.define( io.Source.fromString( src ), c, s, d, key )
+//
 //		) shouldBe
 //			"""
 //				|two

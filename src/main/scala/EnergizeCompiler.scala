@@ -24,13 +24,6 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	var internal: Boolean = _
 	var specialsDone: Boolean = _
 
-	def path2string( path: PathSegment ): String =
-		path match {
-			case ConcatenationPathSegment( segments ) => segments map path2string mkString
-			case LiteralPathSegment( s ) => s
-			case SlashPathSegment => "/"
-		}
-
 	def path2pattern( path: PathSegment ): PatternAST =
 		path match {
 			case ConcatenationPathSegment( segments ) =>
@@ -131,13 +124,13 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	}
 
 	override def explicitsExtension: PartialFunction[(AST, AST => Unit), Any] = {
-		case (RoutesDefinition( pos, base, protection, mappings ), explicits) =>
+		case (RoutesDefinition( _, base, protection, mappings ), _) =>
 			mappings foreach {
 				case RouteMapping( pos, method, path, guard, action ) =>
 					if (method exists (c => !c.isLetter || !c.isUpper))
 						problem( pos, "request method must be uppercase word" )
 
-					val abspath = ConcatenationPathSegment( List(base getOrElse(EmptyPathSegment), path) )
+					val abspath = ConcatenationPathSegment( List(base getOrElse EmptyPathSegment, path) )
 					val pat = path2pattern( abspath )
 					val req =
 						AndExpressionAST(
@@ -158,7 +151,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 							case Some( Some(null) ) =>
 								BlockExpressionAST(List(ApplyExpressionAST(null, VariableExpressionAST(null, "access", "access"), null,
 									List(
-										(null, VariableExpressionAST(null, "req", "req"))
+										(null, DefinedOptionExpressionAST(DotExpressionAST(null, DotExpressionAST(null, VariableExpressionAST(null, "req", "req"), null, Symbol("query")), null, Symbol("access_token"))))
 									), false), action) )
 							case Some( pro ) =>
 								BlockExpressionAST(List(ApplyExpressionAST(null, VariableExpressionAST(null, "authorize", "authorize"), null,
@@ -181,7 +174,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 			val cols = new LinkedHashMap[String, Field]
 
 			fields foreach {
-				case col@ResourceField( pos, cname, tpos, tname, args, modifiers, array ) =>
+				case col@ResourceField( _, cname, tpos, tname, args, modifiers, array ) =>
 					if (cols contains db.desensitize( cname ))
 						problem( col.pos, s"field '$cname' defined twice" )
 
@@ -238,7 +231,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					cols(cname) = Field( cname, fieldType, secret, required, unique, indexed, Nil )
 			}
 
-			val res = Resource( name, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, statement, db )
+			val res = Resource( name, base, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, statement, db )
 
 			resources(db.desensitize( name )) = res
 			r.decl = VarAST( pos, name, name, Some(LiteralExpressionAST(res)))
@@ -294,8 +287,8 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 			for ((k, v) <- special.resources) {
 				resources get k match {
-					case Some( Resource(name, fields, fieldMap, _, mtm, ma, st, d )) =>
-						resources(k) = Resource(name, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma, st, d )
+					case Some( Resource(name, base, fields, fieldMap, _, mtm, ma, st, d )) =>
+						resources(k) = Resource(name, base, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma, st, d )
 					case None => resources(k) = v
 				}
 			}
@@ -305,13 +298,13 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	}
 
 	override def declsExtension: PartialFunction[(AST, AST => Unit), Any] = {
-		case (RoutesDefinition( pos, base, pro, mappings ), decls) =>
-		case (ResourceDefinition( protection, pos, name, base, fields, resource, decl ), decls) => decls( decl )
+		case (RoutesDefinition( _, _, _, _ ), _) =>
+		case (ResourceDefinition( _, _, _, _, _, _, decl ), decls) => decls( decl )
 	}
 
 	override def emitExtension: PartialFunction[(AST, AST => Unit), Any] = {
-		case (RoutesDefinition( pos, base, protection, mappings ), emit) =>
-		case (ResourceDefinition( protection, pos, name, base, fields, resource, decl ), emit) => emit( decl )
+		case (RoutesDefinition( _, _, _, _ ), _) =>
+		case (ResourceDefinition( _, _, _, _, _, _, decl ), emit) => emit( decl )
 	}
 
 	def compile( ast: AST, db: Database, statement: Statement, internal: Boolean ) = {
