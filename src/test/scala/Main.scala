@@ -21,7 +21,7 @@ object Main extends App {
 			|resource r
 			|  a string
 			|
-      |r.insert( {a: 'México'} )
+      |r.insert( {a: 'é'} )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
   val message =

@@ -248,6 +248,8 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					}
 
 				if (base isEmpty) {
+//					super.compile( Definition.parse( Builtins.routes("", name, authorize) ) )
+
 					addRoutes( Definition.compile( Builtins.routes("", name, authorize), db, statement, true ) )
 
 					if (mtm)
@@ -278,10 +280,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 	private def specials: Unit = {
 		if (!internal && !specialsDone) {
-			val special = Definition.compile( Builtins.special.
-				replaceAll( "<base>", AUTHORIZATION.getString("base") ).
-				replaceAll( "<email>", ADMIN.getString("email") ).
-				replaceAll( "<password>", ADMIN.getString("password") ), db, statement, true )
+			val special = Definition.compile( Builtins.special(AUTHORIZATION.getString("base")), db, statement, true )
 
 			addRoutes( special )
 

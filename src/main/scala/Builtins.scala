@@ -81,11 +81,8 @@ object Builtins {
 			|    NoContent( res )
 		""".stripMargin
 
-	val special =
-		"""
-			|resource asdf
-			|  a int
-			|
+	def special( base: String ) =
+		s"""
 			|resource users private
 			|  email string unique
 			|  createdTime timestamp
@@ -109,7 +106,7 @@ object Builtins {
 			|  DELETE  /resourse:                        => Ok( res, deleteResource(req.params.resourse) )
 			|  GET     /schema												   => Ok( res, databaseSchema(req.proc) )
 			|
-			|routes <base>
+			|routes $base
 			|  POST    /login        => Ok( res, login(req.body) )
 			|  GET     /logout       => OkAtLeastOneOrNotFound( logout(req), "token not found" )
 			|  POST    /register     => Created( res, register(req.body) )
