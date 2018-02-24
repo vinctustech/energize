@@ -38,21 +38,28 @@ object UtilityFunctions {
 
 	def resourceSchema( vm: VM, resource: Resource ) = {
 		val primitive: PartialFunction[FieldType, String] = {
+			case CharType( len ) => s"char($len)"
 			case StringType( len ) => s"string($len)"
+			case TinytextType => "tinytext"
+			case ShorttextType => "shorttext"
 			case TextType => "text"
+			case LongtextType => "longtext"
 			case BooleanType => "boolean"
+			case TinyintType => "tinyint"
+			case SmallintType => "smallint"
 			case IntegerType => "integer"
 			case BigintType => "bigint"
-			case UUIDType => "uuid"
+			case FloatType => "float"
+			case UUIDType => "UUID"
 			case DateType => "date"
 			case DatetimeType => "datetime"
 			case TimeType => "time"
 			case TimestampType => "timestamp"
 			case BinaryType => "binary"
-			case BLOBType( _ ) => "blob"
-			case FloatType => "float"
+			case BLOBType( rep ) => s"blob($rep)"
 			case DecimalType( precision, scale ) => s"decimal($precision,$scale)"
-			case MediaType( _ ) => "media"
+			case MediaType( Nil ) => "media"
+			case MediaType( allowed ) => s"media(${allowed map {case MimeType(typ, subtype) => s"$typ/$subtype"} mkString ","})"
 		}
 
 		def field( t: FieldType ) =
