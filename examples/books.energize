@@ -11,5 +11,5 @@ resource publishers
 
 
 if books.count( None ) == 0
-	insert( publishers, {name: "Spectra"} )
-	insert( books, {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`
+	publishers.insert( {name: "Spectra"} )
+	books.insert( {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`

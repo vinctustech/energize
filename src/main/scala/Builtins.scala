@@ -43,7 +43,7 @@ object Builtins {
 			|  GET     /avg/field:  => Ok( res, $resource.avg(\\?req.query.filter, req.params.field) )
 			|  GET     /min/field:  => Ok( res, $resource.min(\\?req.query.filter, req.params.field) )
 			|  GET     /max/field:  => Ok( res, $resource.max(\\?req.query.filter, req.params.field) )
-			|  GET     /schema      => Ok( res, tableSchema($resource) )
+			|  GET     /schema      => Ok( res, resourceSchema($resource) )
 			|  POST                 => Created( res, $resource.insert(req.body) )
 			|  PATCH   /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update(req.params.id, req.body, false), req.params.id )
 			|  PUT     /id:int64    => OkAtLeastOneOrNotFoundId( res, $resource.update(req.params.id, req.body, true), req.params.id )
