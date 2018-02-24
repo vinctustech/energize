@@ -19,10 +19,9 @@ object Main extends App {
   val src =
     """
 			|resource r
-			|  a int
+			|  a string
 			|
-      |insert( r, {a: 3} )
-			|insert( r, {a: 4} )
+      |r.insert( {a: 'México'} )
     """.trim.stripMargin
   val (pro, _) = Definition.define( src, c, s, d, key )
   val message =
@@ -63,7 +62,8 @@ object Main extends App {
       override def getParams: HttpParams = ???
       override def setParams(params: HttpParams): Unit = ???
    }
-  println( pro.process( "GET", "/r/sum/b", new HttpComponentsMessageHeaders(message), null, null ) )
+
+  println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

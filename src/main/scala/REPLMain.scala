@@ -100,22 +100,22 @@ object REPLMain extends App {
 				case List( "help"|"h" ) =>
 					"""
 					|config                                     set database parameters from config file
-					|connect (c)                                (re)connect to database using current database parameters
-					|connect (c) <url>                          connect to database using <url> clearing in-memory table and routing information
+					|connect|c                                  (re)connect to database using current database parameters
+					|connect|c <url>                            connect to database using <url>, clearing in-memory table and routing information
 					|db                                         show current database parameters
-					|driver (d) <driver>                        set database <driver>
-					|load (l)                                   reload previously loaded configuration
-					|load (l) <config>                          load a <config> (".energize" file) creating all tables and routes as specified
-					|help (h)                                   print this summary
-					|password (p) <password>                    set database <password>
-					|quit (q)                                   exit the REPL
-					|routes (r)                                 print all routes showing absolute paths
-					|trace (t) on/off                           turn exception stack trace on or off
-					|user (u) <user>                            set database <user>
-					|variable (v) <name> <value>                set variable <name> to <value> (added to environment)
-					|variable (v) <name>                        delete variable <name> (removed from environment)
-					|variable (v)                               show current REPL variables (not all environment variables)
-					|GET/POST/PUT/PATCH/DELETE <path> [<json>]  issue a request with optional <json> message body
+					|driver|d <driver>                          set database <driver>
+					|load|l                                     reload previously loaded configuration
+					|load|l <config>                            load a <config> (".energize" file), creating all tables and routes as specified
+					|help|h                                     print this command summary
+					|password|p <password>                      set database <password>
+					|quit|q                                     exit the REPL
+					|routes|r                                   print all routes showing absolute paths
+					|trace|t on|off                             turn exception stack trace on or off
+					|user|u <user>                              set database <user>
+					|variable|v <name> <value>                  set variable <name> to <value> (added to environment)
+					|variable|v <name>                          delete variable <name> (removed from environment)
+					|variable|v                                 show current REPL variables (not all environment variables)
+					|GET|POST|PUT|PATCH|DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                                 execute SQL query
 					|<SQL>                                      execute <SQL> non-query command
 					|?<expression>                              evaluate an ENERGIZE action script expression
