@@ -22,7 +22,6 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	var db: Database = _
 	var statement: Statement = _
 	var internal: Boolean = _
-	var specialsDone: Boolean = _
 
 	def path2pattern( path: PathSegment ): PatternAST =
 		path match {
@@ -277,24 +276,6 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		routes ++= d.routes
 	}
 
-	private def specials: Unit = {
-		if (!internal && !specialsDone) {
-			val special = Definition.compile( Builtins.special(AUTHORIZATION.getString("base")), db, statement, true )
-
-			addRoutes( special )
-
-			for ((k, v) <- special.resources) {
-				resources get k match {
-					case Some( Resource(name, base, fields, fieldMap, _, mtm, ma, st, d )) =>
-						resources(k) = Resource(name, base, v.fields ++ fields, v.fieldMap ++ fieldMap, v.visible, v.manyToMany || mtm, ma, st, d )
-					case None => resources(k) = v
-				}
-			}
-
-			specialsDone = true
-		}
-	}
-
 	override def declsExtension: PartialFunction[(AST, AST => Unit), Any] = {
 		case (RoutesDefinition( _, _, _, _ ), _) =>
 		case (ResourceDefinition( _, _, _, _, _, _, decl ), decls) => decls( decl )
@@ -312,7 +293,6 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		this.db = db
 		this.statement = statement
 		this.internal = internal
-		specialsDone = false
 
 		if (!internal) {
 			val spec = Definition.parse( Builtins.special(AUTHORIZATION.getString("base")) )
