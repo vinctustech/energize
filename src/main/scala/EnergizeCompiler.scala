@@ -86,7 +86,6 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 	override def sourceExplicitsExtension( explicits: AST => Unit ) = {
 		if (router == null && !internal) {
-			specials
 			val els = LiteralExpressionAST( 'nomatch )
 
 			router =
@@ -306,7 +305,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		case (ResourceDefinition( _, _, _, _, _, _, decl ), emit) => emit( decl )
 	}
 
-	def compile( ast: AST, db: Database, statement: Statement, internal: Boolean ) = {
+	def compile( src: SourceAST, db: Database, statement: Statement, internal: Boolean ) = {
 		router = null
 		conds.clear
 		routes.clear
@@ -314,7 +313,41 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		this.statement = statement
 		this.internal = internal
 		specialsDone = false
-		super.compile( ast )
+
+		if (!internal) {
+			val spec = Definition.parse( Builtins.special(AUTHORIZATION.getString("base")) )
+			val srcUsers =
+				(src.statements find {
+					case ResourceDefinition( _, _, "users", _, _, _, _ ) => true
+					case _ => false
+				}).asInstanceOf[Option[ResourceDefinition]]
+			val srcWithoutUsers =
+				src.statements filterNot {
+					case ResourceDefinition( _, _, "users", _, _, _, _ ) => true
+					case _ => false
+				}
+			val specUsers =
+				(spec.statements find {
+					case ResourceDefinition( _, _, "users", _, _, _, _ ) => true
+					case _ => false
+				}).asInstanceOf[Option[ResourceDefinition]]
+			val ast =
+				if (srcUsers.nonEmpty && specUsers.nonEmpty && srcUsers.get.base == specUsers.get.base) {
+					val specWithNewUsers =
+						spec.statements map {
+							case ResourceDefinition( protection, pos, "users", base, fields, resource, _ ) =>
+								ResourceDefinition( protection, pos, "users", base, fields ++ srcUsers.get.fields, resource )
+							case s => s
+						}
+
+					SourceAST( specWithNewUsers ++ srcWithoutUsers )
+				} else
+					SourceAST( spec.statements ++ src.statements )
+
+			super.compile( ast )
+		}
+		else
+			super.compile( src )
 	}
 
 }

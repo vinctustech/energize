@@ -264,7 +264,7 @@ object Definition {
 		define( SourceAST(decl toList), connection, statement, database, key )
 	}
 
-	def parse( src: String ): AST = parse( io.Source.fromString(src) )
+	def parse( src: String ): SourceAST = parse( io.Source.fromString(src) )
 
 	def parse( src: io.Source ) = {
 		val p = new EnergizeParser
@@ -274,7 +274,7 @@ object Definition {
 
 	def compile( src: String, db: Database, stat: Statement, internal: Boolean ): Definition = compile( parse(src), db, stat, internal )
 
-	def compile( ast: AST, db: Database, stat: Statement, internal: Boolean ) = {
+	def compile( ast: SourceAST, db: Database, stat: Statement, internal: Boolean ) = {
 		val compiler = new EnergizeCompiler
 		val code = compiler.compile( ast, db, stat, internal )
 

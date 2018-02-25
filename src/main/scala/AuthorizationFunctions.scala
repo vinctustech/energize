@@ -39,7 +39,7 @@ object AuthorizationFunctionHelpers {
 		token
 	}
 
-	def auth( req: Map[String, Any] ) =
+	def auth( req: OBJ ) =
 		req("parse").asInstanceOf[String => (String, Map[String, (String, Map[String, String])])]( "Authorization" ) match {
 			case null => None
 			case (_, elems) => elems get AuthorizationFunctionHelpers.SCHEME
@@ -70,7 +70,9 @@ object AuthorizationFunctions {
 		AuthorizationFunctionHelpers.performLogin( vm, users.insert(json1) )
 	}
 
-	def login( vm: VM, json: OBJ ) = {
+	def login( vm: VM, req: OBJ ) = {
+		val json: OBJ = req("body").asInstanceOf[OBJ]
+
 		val required = Set( "email", "password" )
 
 		if ((required -- json.keySet) nonEmpty)
@@ -94,7 +96,7 @@ object AuthorizationFunctions {
 		}
 	}
 
-	def logout( vm: VM, req: Map[String, Any] ) = {
+	def logout( vm: VM, req: OBJ ) = {
 		val access = AuthorizationFunctionHelpers.auth( req )
 
 		if (access isEmpty)
@@ -103,7 +105,7 @@ object AuthorizationFunctions {
 			(vm resource "tokens").deleteValue( "token", access.get )
 	}
 
-	def me( vm: VM, req: Map[String, Any] ) = {
+	def me( vm: VM, req: OBJ ) = {
 		val access = AuthorizationFunctionHelpers.auth( req )
 
 		def barred = throw new UnauthorizedException( "Protected" )
@@ -135,7 +137,7 @@ object AuthorizationFunctions {
 		}
 	}
 
-	def authorize( vm: VM, group: Option[String], req: Map[String, Any] ) {
+	def authorize( vm: VM, group: Option[String], req: OBJ ) {
 		val key = req("query").asInstanceOf[Map[String, String]] get "access_token"
 
 		if (key.isEmpty) {
