@@ -29,12 +29,12 @@ object EnergizeServer {
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 
 		val (pro, _) =
-//			if (json)
-//				Definition.configureFromJSON( config, connection, statement, db, key )//todo: eng - json
-//			else
+			if (json)
+				Definition.defineFromJSON( config, connection, statement, db, key )
+			else
 				Definition.define( config, connection, statement, db, key )
 
-		println( "starting server on port " + port )
+		println( s"starting server on port $port" )
 
 		val res = new EnergizeServer( pro, port )
 
@@ -55,7 +55,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 		.build
 	val server = ServerBootstrap.bootstrap
 		.setListenerPort( port )
-		.setServerInfo( SERVER.getString("name") + "/" + SERVER.getString("version") )
+		.setServerInfo( s"${SERVER.getString("name")}/$VERSION" )
 		.setIOReactorConfig(config)
 		.setSslContext(null)
 		.setExceptionLogger(ExceptionLogger.STD_ERR)

@@ -12,13 +12,13 @@ package object energize2 {
 
 	type OBJ = Map[String, AnyRef]
 
-	lazy val VERSION = "1.0-α1"
 	lazy val CONFIG = ConfigFactory.load
 	lazy val DATABASE = CONFIG.getConfig( "database" )
 	lazy val SERVER = CONFIG.getConfig( "server" )
 	lazy val AUTHORIZATION = CONFIG.getConfig( "authorization" )
 	lazy val DATETIME = CONFIG.getConfig( "datetime" )
 	lazy val ADMIN = CONFIG.getConfig( "admin" )
+	lazy val VERSION = SERVER.getString("version")
 
 	private val hex = "0123456789ABCDEF"
 
