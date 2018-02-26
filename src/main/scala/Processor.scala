@@ -17,6 +17,12 @@ import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 import xyz.hyperreal.bvm.{Compilation, VM, deref}
 
 
+object Processor {
+
+	val charset = Charset forName SERVER.getString( "charset" )
+
+}
+
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
 								 val resources: Map[String, Resource], val key: String ) {
 
@@ -84,7 +90,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 		val requri = new URI( uri )
 		val reqpath = requri.getPath
-		val reqquery = Map( URLEncodedUtils.parse( requri, Charset.forName("UTF-8") ).asScala map (p => (p.getName, p.getValue)): _* )	//todo: configuration charset for url decoding?
+		val reqquery = Map( URLEncodedUtils.parse( requri, Processor.charset ).asScala map (p => (p.getName, p.getValue)): _* )	//todo: configuration charset for url decoding?
 		val reqbody = if (body eq null) null else DefaultJSONReader.fromString( body.toString )
 		val req =
 			Map(
