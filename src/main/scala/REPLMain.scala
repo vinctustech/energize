@@ -51,9 +51,16 @@ object REPLMain extends App {
 		connection = c
 		statement = s
 		db = d
-		pro = Definition.define( "", connection, statement, db, key )._1
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
+
+		if (config eq null) {
+			println( "loading builtin definition" )
+			pro = Definition.define( "", connection, statement, db, key )._1
+		} else {
+			println( s"loading $config definition file" )
+			pro = Definition.define( io.Source.fromFile(config + ".energize"), connection, statement, db, key )._1 //todo: add vars
+		}
 	}
 
 	def reconnect = {
@@ -61,10 +68,6 @@ object REPLMain extends App {
 			connection.close
 
 		connect
-	}
-
-	def load( conf: String ) = {
-		pro = Definition.define( io.Source.fromFile(conf + ".energize"), connection, statement, db, key )._1 //todo: add vars
 	}
 
 	connect
@@ -125,10 +128,10 @@ object REPLMain extends App {
 						println( "no configuration has been loaded" )
 
 					reconnect
-					load( config )
 				case List( "load"|"l", conf ) =>
 					config = conf
-					load( conf )
+					reconnect
+
 //				case List( "wipe"|"w" ) =>
 //					connection.close
 //					new File( sys.props("user.home"), db + ".mv.db" ).delete
