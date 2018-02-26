@@ -63,7 +63,7 @@ object Main extends App {
       override def setParams(params: HttpParams): Unit = ???
    }
 
-  println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
+  println( pro.process( "GET", "/users?access_token=asdf", new HttpComponentsMessageHeaders(message), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

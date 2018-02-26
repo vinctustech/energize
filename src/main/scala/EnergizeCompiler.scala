@@ -125,14 +125,15 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		case (RoutesDefinition( _, base, protection, mappings ), _) =>
 			mappings foreach {
 				case RouteMapping( pos, method, path, guard, action ) =>
-					if (method exists (c => !c.isLetter || !c.isUpper))
-						problem( pos, "request method must be uppercase word" )
+					if (method exists (c => !c.isLetter))
+						problem( pos, "illegal request method" )
 
+					val method1 = method.toUpperCase
 					val abspath = ConcatenationPathSegment( List(base getOrElse EmptyPathSegment, path) )
 					val pat = path2pattern( abspath )
 					val req =
 						AndExpressionAST(
-							BinaryExpressionAST(null, VariableExpressionAST(null, "$method", "$method"), '==, null, null, LiteralExpressionAST(method)),
+							BinaryExpressionAST(null, VariableExpressionAST(null, "$method", "$method"), '==, null, null, LiteralExpressionAST(method1)),
 							SetValueExpressionAST( null, "req", "req",
 								BinaryExpressionAST( null, VariableExpressionAST(null, "$req", "$req"), '+, null, null,
 									MapExpressionAST( List(
@@ -160,7 +161,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 						})
 
 					conds += cond
-					routes += Route( method, pat, cond._1, cond._2 )
+					routes += Route( method1, pat, cond._1, cond._2 )
 			}
 		case (r@ResourceDefinition( protection, pos, name, base, fields, resource, _ ), explicits) =>
 			var mtm = false

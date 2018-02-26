@@ -76,6 +76,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 	//todo: need a router for each resource and a misc router
 	def process(method: String, uri: String, reqheaders: MessageHeaders, body: AnyRef, resheaders: MessageHeaders ) = resourceMutex.synchronized {
+//					println(method, uri, reqheaders, body, resheaders)//dbg
 		var resStatusCode = 200
 		var resType = "application/octet-stream"
 		var resTypeSet = false
