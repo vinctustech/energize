@@ -81,7 +81,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 	}
 
 	def shutdown: Unit = {
-		server.shutdown(0, TimeUnit.MILLISECONDS)
+		server.shutdown(1000, TimeUnit.MILLISECONDS)
 	}
 
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {

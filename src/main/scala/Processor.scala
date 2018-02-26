@@ -96,6 +96,14 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
+				"hostname" -> {
+					val h = reqheaders("Host")
+
+					h indexOf ':' match {
+						case -1 => h
+						case idx => h.substring( 0, idx )
+					}
+				},
 				"parse" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
