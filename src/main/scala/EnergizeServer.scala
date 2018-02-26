@@ -65,7 +65,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 	val MODIFIED = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
 
 	private def mktype( typ: String ) =
-		if (typ.startsWith( "text/" ))
+		if (typ.startsWith( "text/" ) || (typ containsSlice "json"))
 			ContentType.create( typ, charset )
 		else
 			ContentType.create( typ )
