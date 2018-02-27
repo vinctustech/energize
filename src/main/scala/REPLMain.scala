@@ -6,6 +6,8 @@ import java.io.PrintWriter
 import collection.mutable.HashMap
 import jline.console.ConsoleReader
 
+import org.apache.http.message.BasicHeaderValueParser
+
 import xyz.hyperreal.table.TextTable
 
 
@@ -44,7 +46,9 @@ object REPLMain extends App {
 	sys.addShutdownHook {
 		connection.close
 	}
-	
+
+  def parseHeader( h: String ) = BasicHeaderValueParser.parseElements( h, BasicHeaderValueParser.INSTANCE )
+
 	def connect {
 		val (c, s, d) = Definition.dbconnect( name, driver, url, user, password )
 		
