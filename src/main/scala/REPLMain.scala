@@ -1,13 +1,13 @@
 package xyz.hyperreal.energize2
 
-import java.sql._
+import java.sql.{Connection, Statement}
 import java.io.PrintWriter
 
 import collection.mutable.HashMap
 import jline.console.ConsoleReader
-
+import org.apache.http.{Header, HeaderIterator, HttpMessage, ProtocolVersion, HeaderElement, NameValuePair}
 import org.apache.http.message.BasicHeaderValueParser
-
+import org.apache.http.params.HttpParams
 import xyz.hyperreal.table.TextTable
 
 
@@ -31,6 +31,7 @@ object REPLMain extends App {
 	println
 
 	val vars = new HashMap[String, AnyRef]
+	val headers = new HashMap[String, String]
 	var pro: Processor = _
 	var connection: Connection = _
 	var statement: Statement = _
@@ -42,12 +43,42 @@ object REPLMain extends App {
 	var password = ""
 	var config: String = _
 	var key = AUTHORIZATION.getString( "key" )
+	val message =
+		new HttpMessage {
+			override def setHeaders(headers: Array[Header]): Unit = ???
+			override def headerIterator(): HeaderIterator = ???
+			override def headerIterator(name: String): HeaderIterator = ???
+			override def addHeader(header: Header): Unit = ???
+			override def addHeader(name: String, value: String): Unit = ???
+			override def getHeaders(name: String): Array[Header] = ???
+			override def getFirstHeader(name: String): Header =
+				headers get name match {
+					case Some( v ) =>
+						new Header {
+							override def getElements: Array[HeaderElement] = parseHeader( v )
+							override def getName: String = name
+							override def getValue: String = v
+						}
+					case _ => null
+				}
+			override def getLastHeader(name: String): Header = ???
+			override def getAllHeaders: Array[Header] = ???
+			override def removeHeaders(name: String): Unit = ???
+			override def setHeader(header: Header): Unit = ???
+			override def setHeader(name: String, value: String): Unit = ???
+			override def removeHeader(header: Header): Unit = ???
+			override def getProtocolVersion: ProtocolVersion = ???
+			override def containsHeader(name: String): Boolean = ???
+			override def getParams: HttpParams = ???
+			override def setParams(params: HttpParams): Unit = ???
+		}
+
 
 	sys.addShutdownHook {
 		connection.close
 	}
 
-  def parseHeader( h: String ) = BasicHeaderValueParser.parseElements( h, BasicHeaderValueParser.INSTANCE )
+  def parseHeader( v: String ) = BasicHeaderValueParser.parseElements( v, BasicHeaderValueParser.INSTANCE )
 
 	def connect {
 		val (c, s, d) = Definition.dbconnect( name, driver, url, user, password )
@@ -82,11 +113,11 @@ object REPLMain extends App {
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, uri: String, json: String ) =
-			println( pro.process(method.toUpperCase, uri, null, json, null) )
+			println( pro.process(method.toUpperCase, uri, new HttpComponentsMessageHeaders(message), json, null) )
 
 		try {
 			com match {
-        case List( "?" ) =>
+        case List( "?" ) => //todo: close database connection on shutdown: if (connection ne null) connection.close
           """
             |?                                          print this command summary
             |CTRL-D                                     exit the REPL
@@ -96,6 +127,7 @@ object REPLMain extends App {
             |db                                         show current database parameters
             |driver|d <driver>                          set database <driver>
             |eval|e <expression>                        evaluate an ENERGIZE action script expression
+						|header|h <header> <value>
             |load|l                                     reload previously loaded configuration
             |load|l <config>                            load a <config> (".energize" file), creating all tables and routes as specified
             |password|p <password>                      set database <password>
@@ -127,6 +159,8 @@ object REPLMain extends App {
 					println( driver, url, user, password )
 				case List( "driver"|"d", d ) =>
 					driver = d
+				case List( "header|h", h, v ) =>
+					headers(h) = v
 				case List( "load"|"l" ) =>
 					if (config eq null)
 						println( "no configuration has been loaded" )
@@ -144,11 +178,6 @@ object REPLMain extends App {
 //					env = null
 				case List( "password"|"p", p ) =>
 					password = p
-				case List( "quit"|"q" ) =>
-					if (connection ne null)
-						connection.close
-
-					sys.exit
 //				case List( "routes"|"r" ) =>
 //					for (Route(method, URIPath(path), action) <- env.routes ) {
 //						val pathbuf = new StringBuilder
