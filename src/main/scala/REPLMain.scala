@@ -26,7 +26,7 @@ object REPLMain extends App {
 	s"""
 	|Welcome to Energize version $VERSION.
 	|Type in expressions to have them evaluated.
-	|Type help for more information.
+	|Type ? for more information.
 	""".trim.stripMargin.lines foreach println
 	println
 
@@ -104,13 +104,14 @@ object REPLMain extends App {
 					println( driver, url, user, password )
 				case List( "driver"|"d", d ) =>
 					driver = d
-				case List( "help"|"h" ) =>
+				case List( "?" ) =>
 					"""
 					|config                                     set database parameters from config file
 					|connect|c                                  (re)connect to database using current database parameters
 					|connect|c <url>                            connect to database using <url>, clearing in-memory table and routing information
 					|db                                         show current database parameters
 					|driver|d <driver>                          set database <driver>
+          |eval|e <expression>                        evaluate an ENERGIZE action script expression
 					|load|l                                     reload previously loaded configuration
 					|load|l <config>                            load a <config> (".energize" file), creating all tables and routes as specified
 					|help|h                                     print this command summary
@@ -125,7 +126,6 @@ object REPLMain extends App {
 					|GET|POST|PUT|PATCH|DELETE <path> [<json>]  issue a request with optional <json> message body
 					|select ...                                 execute SQL query
 					|<SQL>                                      execute <SQL> non-query command
-					|?<expression>                              evaluate an ENERGIZE action script expression
 					""".trim.stripMargin.lines foreach out.println
 				case List( "load"|"l" ) =>
 					if (config eq null)
