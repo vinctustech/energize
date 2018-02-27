@@ -14,7 +14,7 @@ import scala.util.parsing.input.Position
 import org.apache.http.client.utils.URLEncodedUtils
 
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
-import xyz.hyperreal.bvm.{Compilation, VM, deref}
+import xyz.hyperreal.bvm.{Compilation, VM, deref, undefined}
 
 
 object Processor {
@@ -103,12 +103,16 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 						}
 					},
 				"hostname" -> {
-					val h = reqheaders("Host")
+          if (reqheaders eq null)
+            undefined
+          else {
+            val h = reqheaders("Host")
 
-					h indexOf ':' match {
-						case -1 => h
-						case idx => h.substring( 0, idx )
-					}
+            h indexOf ':' match {
+              case -1 => h
+              case idx => h.substring( 0, idx )
+            }
+          }
 				},
 				"parse" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
