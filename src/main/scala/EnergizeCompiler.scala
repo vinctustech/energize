@@ -9,7 +9,7 @@ import xyz.hyperreal.bvm._
 import xyz.hyperreal.funl2.Predef
 
 
-case class Route( method: String, path: PatternAST, cond: ExpressionAST, action: ExpressionAST )
+case class Route( method: String, path: PathSegment, pat: PatternAST, cond: ExpressionAST, action: ExpressionAST )
 
 class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ Builtins.map, Predef.sysvars, Predef.macros ) {
 
@@ -161,7 +161,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 						})
 
 					conds += cond
-					routes += Route( method1, pat, cond._1, cond._2 )
+					routes += Route( method1, abspath, pat, cond._1, cond._2 )
 			}
 		case (r@ResourceDefinition( protection, pos, name, base, fields, resource, _ ), explicits) =>
 			var mtm = false

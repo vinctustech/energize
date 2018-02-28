@@ -5,7 +5,7 @@ import java.io.PrintWriter
 
 import collection.mutable.HashMap
 import jline.console.ConsoleReader
-import org.apache.http.{Header, HeaderElement, HeaderIterator, HttpMessage, NameValuePair, ProtocolVersion}
+import org.apache.http.{Header, HeaderIterator, HttpMessage, ProtocolVersion}
 import org.apache.http.message.{BasicHeader, BasicHeaderValueParser}
 import org.apache.http.params.HttpParams
 import xyz.hyperreal.table.TextTable
@@ -30,7 +30,6 @@ object REPLMain extends App {
 	""".trim.stripMargin.lines foreach println
 	println
 
-	val vars = new HashMap[String, AnyRef]
 	val headers = new HashMap[String, String]
 	var pro: Processor = _
 	var connection: Connection = _
@@ -89,7 +88,7 @@ object REPLMain extends App {
 			pro = Definition.define( "", connection, statement, db, key )._1
 		} else {
 			println( s"loading $config definition file" )
-			pro = Definition.define( io.Source.fromFile(config + ".energize"), connection, statement, db, key )._1 //todo: add vars
+			pro = Definition.define( io.Source.fromFile(config + ".energize"), connection, statement, db, key )._1
 		}
 	}
 
@@ -115,26 +114,25 @@ object REPLMain extends App {
 
 		try {
 			com match {
-        case List( "?" ) => //todo: close database connection on shutdown: if (connection ne null) connection.close
+        case List( "?" ) =>
           """
             |?                                          print this command summary
-            |CTRL-D                                     exit the REPL
             |config                                     set database parameters from config file
             |connect|c                                  (re)connect to database using current database parameters
             |connect|c <url>                            connect to database using <url>, clearing in-memory table and routing information
             |db                                         show current database parameters
             |driver|d <driver>                          set database <driver>
-            |eval|e <expression>                        evaluate an ENERGIZE action script expression
-						|header|h <header> <value>
+            |eval|e <expression>                        evaluate an Energize action script expression
+						|header|h <header> <value>                  set header <name> to <value>
+						|header|h <header>                          delete header <name>
+						|header|h                                   show headers
             |load|l                                     reload previously loaded configuration
             |load|l <config>                            load a <config> (".energize" file), creating all tables and routes as specified
             |password|p <password>                      set database <password>
+						|quit|q                                     exit the REPL
             |routes|r                                   print all routes showing absolute paths
             |trace|t on|off                             turn exception stack trace on or off
             |user|u <user>                              set database <user>
-            |variable|v <name> <value>                  set variable <name> to <value> (added to environment)
-            |variable|v <name>                          delete variable <name> (removed from environment)
-            |variable|v                                 show current REPL variables (not all environment variables)
             |GET|POST|PUT|PATCH|DELETE <path> [<json>]  issue a request with optional <json> message body
             |select ...                                 execute SQL query
             |<SQL>                                      execute <SQL> non-query command
@@ -154,11 +152,16 @@ object REPLMain extends App {
 					url = u
 					connect
 				case List( "db" ) =>
-					println( driver, url, user, password )
+					println( s"driver: $driver, url: $url, user: $user, password: $password" )
 				case List( "driver"|"d", d ) =>
 					driver = d
 				case List( "header"|"h" ) =>
-					println( headers mkString "\n" )
+					if (headers nonEmpty) println( headers mkString "\n" )
+				case List( "header"|"h", h ) =>
+					headers remove h match {
+						case None => println( s"header $h wasn't set" )
+						case Some(_) => println( s"header $h removed" )
+					}
 				case ("header"|"h") :: h :: v if v != Nil =>
 					headers(h) = rest( 3 )
 					println( MessageHeaders.elements(new BasicHeader( h, rest(3) )) mkString "\n" )
@@ -179,33 +182,15 @@ object REPLMain extends App {
 //					env = null
 				case List( "password"|"p", p ) =>
 					password = p
-//				case List( "routes"|"r" ) =>
-//					for (Route(method, URIPath(path), action) <- env.routes ) {
-//						val pathbuf = new StringBuilder
-//
-//						path foreach {
-//							case NameURISegment( name ) =>
-//								pathbuf += '/'
-//								pathbuf ++= name
-//							case ParameterURISegment( parm, typ ) =>
-//								pathbuf += '/'
-//								pathbuf ++= parm
-//								pathbuf += ':'
-//								pathbuf ++= typ
-//						}
-//
-//						println( method + " " + pathbuf + " " + action )
-//					}
+				case List( "quit"|"q" ) =>
+					if (connection ne null) connection.close
+					sys.exit
+				case List( "routes"|"r" ) =>
+					for (Route(method, path, _, _, action) <- pro.routes )
+						println( s"$method ${path2string(path)} => $action" )
 				case List( "trace"|"t", "on" ) => stacktrace = true
 				case List( "trace"|"t", "off" ) => stacktrace = false
 				case List( "user"|"u", u ) => user = u
-//				case List( "variable"|"v" ) => println( vars )
-//				case List( "variable"|"v", n ) =>
-//					vars -= n
-//					env = env remove n
-//				case List( "variable"|"v", n, v ) =>
-//					vars(n) = v
-//					env = env add n -> v
 				case Nil|List( "" ) =>
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )

@@ -76,7 +76,17 @@ package object energize2 {
 		path match {
 			case ConcatenationPathSegment( segments ) => segments map path2string mkString
 			case LiteralPathSegment( s ) => s
+			case TypePathSegment( t ) => t
 			case SlashPathSegment => "/"
+			case AlternationPathSegment( segments ) => s"""(${segments map path2string mkString "|"})"""
+			case GroupedPathSegment( s ) => s"($s)"
+			case ParameterPathSegment( _, param, None ) => s"$param:"
+			case ParameterPathSegment( _, param, Some(p) ) => s"$param: ${path2string( p )}"
+			case ZeroOrMorePathSegment => "*"
+			case EmptyPathSegment => ""
+			case OptionalPathSegment( p ) => path2string( p ) + "?"
+			case OneOrMorePathSegment( p ) => path2string( p ) + "+"
+			case RepeatPathSegment( subpat, lower, _, upper ) => s"${path2string( subpat )}{$lower, $upper}"
 		}
 
 }

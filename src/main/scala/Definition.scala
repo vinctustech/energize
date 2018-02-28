@@ -316,7 +316,8 @@ object Definition {
 				r.media = media
 		}
 
-		val proc = new Processor( code, connection, statement, db, resources.toMap, key )
+		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key )
+
 		val admin =
 			Map( ADMIN.entrySet.asScala.toList.map( e =>
 				(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {

@@ -24,7 +24,7 @@ object Processor {
 }
 
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
-								 val resources: Map[String, Resource], val key: String ) {
+								 val resources: Map[String, Resource], val routes: List[Route], val key: String ) {
 
 	private val router = code.functions( "_router_" )._1
 	/*private [energize]*/ val vm = new VM( code, Array(), false, true, this )
@@ -53,7 +53,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		(typ, blob.getBytes( 0, blob.length.toInt ))
 	}
 
-	val miscellaneousRoutes = new ArrayBuffer[Route]
+//	val miscellaneousRoutes = new ArrayBuffer[Route]	// implement route partitioning based on resource
 
 	def resourceLookup( name: String ) = resourceMutex.synchronized {
 		resources get db.desensitize( name )
