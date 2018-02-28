@@ -4,7 +4,7 @@ package xyz.hyperreal.energize2
 
 abstract class Response {
 
-  def get( header: String ): Response
+  def get( header: String ): String
 
   def set( header: String, value: String ): Response
 

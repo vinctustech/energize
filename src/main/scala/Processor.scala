@@ -98,7 +98,9 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				"get" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
-							case h: String => reqheaders( h )
+							case h: String =>
+								val res = reqheaders( h )
+								res
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
@@ -108,10 +110,13 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
           else {
             val h = reqheaders("Host")
 
-            h indexOf ':' match {
-              case -1 => h
-              case idx => h.substring( 0, idx )
-            }
+						if (h eq null)
+							undefined
+						else
+							h indexOf ':' match {
+								case -1 => h
+								case idx => h.substring( 0, idx )
+							}
           }
 				},
 				"parse" -> {
@@ -131,7 +136,6 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			new Response {
 				def get( header: String ) = {
 					resheaders( header )
-					this
 				}
 
 				def set( header: String, value: String ) = {
@@ -154,6 +158,11 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
           resBody = body
 
           body match {
+						case null =>
+              if (!resTypeSet)
+                resType = "text/html"
+
+							resBody = "null"
             case _: String =>
               if (!resTypeSet)
                 resType = "text/html"
@@ -176,8 +185,11 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
       if (vm.call( router, List(method, reqpath, reqquery, reqbody, req, res) ) == 'nomatch)
         result( "NotFound", res, List("route not found") )
     } catch {
-			case e: InvocationTargetException => handleException( e.getCause, res )
-			case e: Exception => handleException( e, res )
+			case e: InvocationTargetException =>
+				handleException( e.getCause, res )
+			case e: Exception =>
+//				e.printStackTrace //todo: handle server side exceptions better so that we can get the error info
+				handleException( e, res )
 		}
 
 		(resStatusCode, resType, resBody)

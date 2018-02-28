@@ -24,9 +24,9 @@ object REPLMain extends App {
 	var stacktrace = false
 
 	s"""
-	|Welcome to Energize version $VERSION.
-	|Type in expressions to have them evaluated.
-	|Type ? for more information.
+		|Welcome to Energize version $VERSION.
+		|Type in expressions to have them evaluated.
+		|Type ? for more information.
 	""".trim.stripMargin.lines foreach println
 	println
 
@@ -51,16 +51,19 @@ object REPLMain extends App {
 			override def addHeader(header: Header): Unit = ???
 			override def addHeader(name: String, value: String): Unit = ???
 			override def getHeaders(name: String): Array[Header] = ???
-			override def getFirstHeader(name: String): Header =
+			override def getFirstHeader(name: String): Header = {
 				headers get name match {
 					case Some( v ) =>
 						new Header {
-							override def getElements: Array[HeaderElement] = parseHeader( v )
+							override def getElements: Array[HeaderElement] = parseHeader(v)
+
 							override def getName: String = name
+
 							override def getValue: String = v
 						}
-					case _ => null
+					case None => null
 				}
+			}
 			override def getLastHeader(name: String): Header = ???
 			override def getAllHeaders: Array[Header] = ???
 			override def removeHeaders(name: String): Unit = ???
@@ -72,7 +75,6 @@ object REPLMain extends App {
 			override def getParams: HttpParams = ???
 			override def setParams(params: HttpParams): Unit = ???
 		}
-
 
 	sys.addShutdownHook {
 		connection.close
@@ -159,7 +161,9 @@ object REPLMain extends App {
 					println( driver, url, user, password )
 				case List( "driver"|"d", d ) =>
 					driver = d
-				case List( "header|h", h, v ) =>
+				case List( "header"|"h" ) =>
+					println( headers mkString "\n" )
+				case List( "header"|"h", h, v ) =>
 					headers(h) = v
 				case List( "load"|"l" ) =>
 					if (config eq null)
