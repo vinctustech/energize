@@ -187,7 +187,7 @@ object REPLMain extends App {
 					sys.exit
 				case List( "routes"|"r" ) =>
 					for (Route(method, path, _, _, action) <- pro.routes )
-						println( s"$method ${path2string(path)} => $action" )
+						println( s"$method ${path2string(path)} => ${Unparse( action )}" )
 				case List( "trace"|"t", "on" ) => stacktrace = true
 				case List( "trace"|"t", "off" ) => stacktrace = false
 				case List( "user"|"u", u ) => user = u
