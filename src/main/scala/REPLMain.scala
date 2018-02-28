@@ -5,8 +5,8 @@ import java.io.PrintWriter
 
 import collection.mutable.HashMap
 import jline.console.ConsoleReader
-import org.apache.http.{Header, HeaderIterator, HttpMessage, ProtocolVersion, HeaderElement, NameValuePair}
-import org.apache.http.message.BasicHeaderValueParser
+import org.apache.http.{Header, HeaderElement, HeaderIterator, HttpMessage, NameValuePair, ProtocolVersion}
+import org.apache.http.message.{BasicHeader, BasicHeaderValueParser}
 import org.apache.http.params.HttpParams
 import xyz.hyperreal.table.TextTable
 
@@ -53,14 +53,7 @@ object REPLMain extends App {
 			override def getHeaders(name: String): Array[Header] = ???
 			override def getFirstHeader(name: String): Header = {
 				headers get name match {
-					case Some( v ) =>
-						new Header {
-							override def getElements: Array[HeaderElement] = parseHeader(v)
-
-							override def getName: String = name
-
-							override def getValue: String = v
-						}
+					case Some( v ) => new BasicHeader( name, v )
 					case None => null
 				}
 			}
@@ -112,6 +105,9 @@ object REPLMain extends App {
 
 	while ({line = reader.readLine; line != null}) {
 		val line1 = line.trim
+
+		def rest( count: Int ) = line1.split( "\\s+", count )(count - 1)
+
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, uri: String, json: String ) =
@@ -163,8 +159,9 @@ object REPLMain extends App {
 					driver = d
 				case List( "header"|"h" ) =>
 					println( headers mkString "\n" )
-				case List( "header"|"h", h, v ) =>
-					headers(h) = v
+				case ("header"|"h") :: h :: v if v != Nil =>
+					headers(h) = rest( 3 )
+					println( MessageHeaders.elements(new BasicHeader( h, rest(3) )) mkString "\n" )
 				case List( "load"|"l" ) =>
 					if (config eq null)
 						println( "no configuration has been loaded" )
@@ -213,7 +210,7 @@ object REPLMain extends App {
 				case List( method@("GET"|"get"|"DELETE"|"delete"), path ) =>
 					result( method, path, null )
 				case (method@("GET"|"get"|"POST"|"post"|"PUT"|"put"|"PATCH"|"patch")) :: path :: a if a != Nil =>
-					result( method, path, line1.split("\\s+", 3)(2) )
+					result( method, path, rest(3) )
 				case "select" :: _ =>
 					print( TextTable(statement.executeQuery(line1)) )
 //				case _ if line1 startsWith "?" =>

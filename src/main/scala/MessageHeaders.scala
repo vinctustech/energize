@@ -1,7 +1,7 @@
 //@
 package xyz.hyperreal.energize2
 
-import org.apache.http.HttpMessage
+import org.apache.http.{Header, HttpMessage}
 
 
 trait MessageHeaders {
@@ -11,6 +11,12 @@ trait MessageHeaders {
 	def parse( header: String ): (String, Map[String, (String, Map[String, String])])
 
 	def update( header: String, value: String )
+
+}
+
+object MessageHeaders {
+
+	def elements( h: Header ) = h.getElements map (e => e.getName -> (e.getValue, e.getParameters map (p => p.getName -> p.getValue) toMap)) toMap
 
 }
 
@@ -26,7 +32,7 @@ class HttpComponentsMessageHeaders( message: HttpMessage ) extends MessageHeader
 		message.getFirstHeader( header ) match {
 			case null => null
 			case h =>
-				(h.getValue, h.getElements map (e => e.getName -> (e.getValue, e.getParameters map (p => p.getName -> p.getValue) toMap)) toMap)
+				(h.getValue, MessageHeaders.elements( h ))
 		}
 	}
 
