@@ -1,15 +1,22 @@
+//@
 package xyz.hyperreal.energize2
 
 import java.time.{Instant, OffsetDateTime}
-import java.util.Base64
 
 import org.mindrot.jbcrypt.BCrypt
+import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim}
 import xyz.hyperreal.bvm.VM
+import xyz.hyperreal.json.{DefaultJSONReader, JSON}
+
+import scala.util.{Failure, Success}
+import scala.util.parsing.input.Position
 
 
 object AuthenticationFunctionHelpers {
+
 	val CREDENTIALS = "(.*):(.*)"r
 	lazy val SCHEME = AUTHENTICATION.getString( "scheme" )
+	lazy val KEY = AUTHENTICATION.getString( "key" )
 	lazy val EXPIRATION = if (AUTHENTICATION.getIsNull( "expiration" )) Int.MaxValue else AUTHENTICATION.getInt( "expiration" )
 
 	SCHEME match {
@@ -20,34 +27,35 @@ object AuthenticationFunctionHelpers {
 	if (EXPIRATION <= 0)
 		sys.error( "authentication expiration value must be positive" )
 
-	def performLogin( vm: VM, user: Long ) = {
-		val tokens = vm resource "tokens"
-		val token = {
-			def gentoken: String = {
-				val tok = UtilityFunctions.rndAlpha( vm, 15 )
-
-				tokens.findOption( "token", tok, false ) match {
-					case None => tok
-					case Some( _ ) => gentoken
-				}
-			}
-
-			gentoken
-		}
-
-		tokens.insert( Map("token" -> token, "created" -> now, "user" -> user).asInstanceOf[OBJ] )
-		token
-	}
-
-	def auth( req: OBJ ) =
-		req("parse").asInstanceOf[String => (String, Map[String, (String, Map[String, String])])]( "Authorization" ) match {
-			case null => None
-			case (_, elems) => elems get AuthenticationFunctionHelpers.SCHEME
-		}
+	def encodeToken( user: Long ) = Jwt.encode( JwtClaim(s"""{"user":$user}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
 
 }
 
 object AuthenticationFunctions {
+
+	def authorization( vm: VM, req: OBJ ) = {
+		val token =
+			req("get").asInstanceOf[(VM, Position, List[Position], Any) => String]( null, null, null, "Authorization" ) match {
+				case null => throw new UnauthorizedException( "no web token in request" )
+				case h =>
+					if (!h.startsWith("Bearer "))
+						throw new UnauthorizedException( """expected "Beaerer" token in request""" )
+					else
+						h.substring( 7 ).trim
+			}
+
+		Jwt.decode( token, AuthenticationFunctionHelpers.KEY, Seq(JwtAlgorithm.HS256) ) match {
+			case Success( payload ) =>
+				val user = DefaultJSONReader.fromString( payload )("user").asInstanceOf[Number].longValue
+
+				vm.users.findID( user, None, None, None, None ) match {
+					case Nil => throw new NotFoundException( s"user id $user not found" )
+					case List( u ) => u
+				}
+			case Failure( exception ) => throw new UnauthorizedException( exception.getMessage )
+		}
+	}
+
 	def register( vm: VM, json: OBJ ) = {
 		val required = vm.users.names.toSet -- Set( "createdTime", "updatedTime", "state", "groups" )
 
@@ -66,12 +74,10 @@ object AuthenticationFunctions {
 				case f => f
 			}) + ("groups" -> List("user")) + ("createdTime" -> now)
 
-		AuthenticationFunctionHelpers.performLogin( vm, vm.users.insert(json1) )
+		AuthenticationFunctionHelpers.encodeToken( vm.users.insert(json1) )
 	}
 
-	def login( vm: VM, req: OBJ ) = {
-		val json: OBJ = req("body").asInstanceOf[OBJ]
-
+	def login( vm: VM, json: OBJ ) = {
 		val required = Set( "email", "password" )
 
 		if ((required -- json.keySet) nonEmpty)
@@ -88,41 +94,9 @@ object AuthenticationFunctions {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
-					AuthenticationFunctionHelpers.performLogin( vm, u("_id").asInstanceOf[Long] )
+					AuthenticationFunctionHelpers.encodeToken( u("_id").asInstanceOf[Long] )
 				else
 					denied
-		}
-	}
-
-	def me( vm: VM, req: OBJ ) = {
-		val access = AuthenticationFunctionHelpers.auth( req )
-
-		def barred = throw new UnauthorizedException( "Protected" )
-
-		if (access isEmpty)
-			barred
-
-		if (AuthenticationFunctionHelpers.SCHEME == "Basic") {
-			val AuthenticationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
-
-			vm.users.findOption( "email", email, true ) match {
-				case None => barred
-				case Some(u) =>
-					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
-						barred
-
-					u
-			}
-		} else {
-			(vm resource "tokens").findOption( "token", access.get, false ) match {
-				case None => barred
-				case Some( t ) =>
-					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
-						AuthenticationFunctionHelpers.EXPIRATION)
-						throw new ExpiredException( "Protected" )
-
-					t("user").asInstanceOf[OBJ]
-			}
 		}
 	}
 
@@ -130,37 +104,10 @@ object AuthenticationFunctions {
 		val key = req("query").asInstanceOf[Map[String, String]] get "access_token"
 
 		if (key.isEmpty) {
-			val access = AuthenticationFunctionHelpers.auth( req )
+			val user = authorization( vm, req )
 
-			def barred = throw new UnauthorizedException( "Protected" )
-
-			if (access isEmpty)
-				barred
-
-			if (AuthenticationFunctionHelpers.SCHEME == "Basic") {
-				val AuthenticationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get._1 ) )
-
-				vm.users.findOption( "email", email, true ) match {
-					case None => barred
-					case Some( u ) =>
-						if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))
-							barred
-
-						if (group.nonEmpty && !u( "groups" ).asInstanceOf[List[String]].contains( group.get ))
-							barred
-				}
-			} else {
-				(vm resource "tokens").findOption( "token", access.get, false ) match {
-					case None => barred
-					case Some( t ) =>
-						if (group.nonEmpty && !t( "user" ).asInstanceOf[OBJ]( "groups" ).asInstanceOf[List[String]].contains( group.get ))
-							barred
-
-						if (Instant.now.getEpochSecond - OffsetDateTime.parse( t("created").asInstanceOf[String] ).toInstant.getEpochSecond >=
-							AuthenticationFunctionHelpers.EXPIRATION)
-							throw new ExpiredException( "Protected" )
-				}
-			}
+			if (group.nonEmpty && !user( "groups" ).asInstanceOf[List[String]].contains( group.get ))
+				throw new UnauthorizedException( s"""not a member of group "${group.get}"""" )
 		} else
 			access( vm, key )
 	}

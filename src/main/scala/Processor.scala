@@ -78,7 +78,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		}
 	}
 
-	def result( name: String, res: Response, args: List[Any] ) = call( name, res :: args )
+	def result( name: String, res: Response, error: String ) = call( name, List(res, error) )
 
 	//todo: need a router for each resource and a misc router
 	def process(method: String, uri: String, reqheaders: MessageHeaders, body: AnyRef, resheaders: MessageHeaders ) = resourceMutex.synchronized {
@@ -98,9 +98,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				"get" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
-							case h: String =>
-								val res = reqheaders( h )
-								res
+							case h: String => reqheaders( h )
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
@@ -183,7 +181,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
     //todo: handle non-string request body
     try {
       if (vm.call( router, List(method, reqpath, reqquery, reqbody, req, res) ) == 'nomatch)
-        result( "NotFound", res, List("route not found") )
+        result( "NotFound", res, s"route not found: $uri" )
     } catch {
 			case e: InvocationTargetException =>
 				handleException( e.getCause, res )
@@ -198,19 +196,17 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 	def handleException( e: Throwable, res: Response ) =
 		e match {
 			case e: UnauthorizedException =>
-				result( "Unauthorized", res, List(s"""realm="${e.getMessage}"""") )
-			case e: ExpiredException =>
-				result( "Unauthorized", res, List(s"""realm="${e.getMessage}", error="invalid_token", error_description="The access token expired"""") )
+				result( "Unauthorized", res, e.getMessage )
 			case e: ForbiddenException =>
-				result( "Forbidden", res, List(e.getMessage) )
+				result( "Forbidden", res, e.getMessage )
 			case e: BadRequestException =>
-				result( "BadRequest", res, List(e.getMessage) )
+				result( "BadRequest", res, e.getMessage )
 			case e: NotFoundException =>
-				result( "NotFound", res, List(e.getMessage) )
+				result( "NotFound", res, e.getMessage )
 			case e: SQLException if db.conflict( e.getMessage )  =>
-				result( "Conflict", res, List(e.getMessage) )
+				result( "Conflict", res, e.getMessage )
 			case e: Exception =>
-				result( "InternalServerError", res, List(e.getMessage) )
+				result( "InternalServerError", res, e.getMessage )
 		}
 
 }
@@ -222,5 +218,3 @@ class BadRequestException( error: String ) extends Exception( error )
 class ForbiddenException( error: String ) extends Exception( error )
 
 class UnauthorizedException( realm: String ) extends Exception( realm )
-
-class ExpiredException( realm: String ) extends Exception( realm )

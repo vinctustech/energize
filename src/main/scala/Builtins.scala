@@ -91,13 +91,8 @@ object Builtins {
 			|  groups [string]
 			|  password string secret
 			|
-			|routes protected
-			|  GET     /users/me  => Ok( res, me() )
-			|
-			|table tokens
-			|  token string unique
-			|  created timestamp
-			|  user users
+			|routes
+			|  GET     /users/me  => Ok( res, authorization(req) )
 			|
 			|routes /meta private
 			|  POST    /resourse:/field:                 => Ok( res, createField(req.params.resourse, req.params.field, req.body) )
