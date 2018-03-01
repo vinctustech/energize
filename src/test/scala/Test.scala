@@ -10,7 +10,7 @@ object Test {
 	def capture( code: String ) = {
 		val buf = new ByteArrayOutputStream
 		val (c, s, d) = dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 
 		Console.withOut( new PrintStream(buf) )( Definition.define(io.Source.fromString(code), c, s, d, key) )
 		c.close
@@ -20,7 +20,7 @@ object Test {
 	def captureReturn( code: String ) = {
 		val buf = new ByteArrayOutputStream
 		val (c, s, d) = dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val ret = Console.withOut( new PrintStream(buf) )( Definition.define(io.Source.fromString(code), c, s, d, key) )
 
 		c.close

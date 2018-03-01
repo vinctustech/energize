@@ -41,7 +41,7 @@ object REPLMain extends App {
 	var user = "sa"
 	var password = ""
 	var config: String = _
-	var key = AUTHORIZATION.getString( "key" )
+	var key = AUTHENTICATION.getString( "key" )
 	val message =
 		new HttpMessage {
 			override def setHeaders(headers: Array[Header]): Unit = ???
@@ -85,10 +85,10 @@ object REPLMain extends App {
 
 		if (config eq null) {
 			println( "loading builtin definition" )
-			pro = Definition.define( "", connection, statement, db, key )._1
+			pro = Definition.define( "", connection, statement, db, key )
 		} else {
 			println( s"loading $config definition file" )
-			pro = Definition.define( io.Source.fromFile(config + ".energize"), connection, statement, db, key )._1
+			pro = Definition.define( io.Source.fromFile(config + ".energize"), connection, statement, db, key )
 		}
 	}
 

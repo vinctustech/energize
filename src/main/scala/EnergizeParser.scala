@@ -11,11 +11,6 @@ class EnergizeParser extends FunLParser {
 	lexical.reserved += ("base", "enum", "table", "resource", "routes", "realm", "protected", "private")
 	lexical.delimiters += ("=>", "?")
 
-	//"unique", "indexed", "required", "optional", "secret",
-//	"string", "integer", "float", "uuid", "date", "long", "datetime", "time", "timestamp", "with", "timezone", "media",
-//	"text", "blob", "binary", "boolean", "decimal"
-//	"GET", "POST", "PUT", "PATCH", "DELETE",
-
 	import lexical.{Dedent, Indent}
 
 	override lazy val declaration = super.declarationdef | enumDefinition /*| baseDeclaration*/ | resourceDefinition | routesDefinition

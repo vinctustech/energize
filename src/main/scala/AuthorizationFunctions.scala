@@ -7,18 +7,18 @@ import org.mindrot.jbcrypt.BCrypt
 import xyz.hyperreal.bvm.VM
 
 
-object AuthorizationFunctionHelpers {
+object AuthenticationFunctionHelpers {
 	val CREDENTIALS = "(.*):(.*)"r
-	lazy val SCHEME = AUTHORIZATION.getString( "scheme" )
-	lazy val EXPIRATION = if (AUTHORIZATION.getIsNull( "expiration" )) Int.MaxValue else AUTHORIZATION.getInt( "expiration" )
+	lazy val SCHEME = AUTHENTICATION.getString( "scheme" )
+	lazy val EXPIRATION = if (AUTHENTICATION.getIsNull( "expiration" )) Int.MaxValue else AUTHENTICATION.getInt( "expiration" )
 
 	SCHEME match {
-		case "Basic"|"Bearer" =>
-		case _ => sys.error( """authorization scheme must be "Basic" or "Bearer" """ )
+		case "JWT" =>
+		case _ => sys.error( """authentication scheme can only be "JWT"""" )
 	}
 
 	if (EXPIRATION <= 0)
-		sys.error( "authorization expiration value must be positive" )
+		sys.error( "authentication expiration value must be positive" )
 
 	def performLogin( vm: VM, user: Long ) = {
 		val tokens = vm resource "tokens"
@@ -42,7 +42,7 @@ object AuthorizationFunctionHelpers {
 	def auth( req: OBJ ) =
 		req("parse").asInstanceOf[String => (String, Map[String, (String, Map[String, String])])]( "Authorization" ) match {
 			case null => None
-			case (_, elems) => elems get AuthorizationFunctionHelpers.SCHEME
+			case (_, elems) => elems get AuthenticationFunctionHelpers.SCHEME
 		}
 
 }
@@ -67,7 +67,7 @@ object AuthorizationFunctions {
 				case f => f
 			}) + ("groups" -> List("user")) + ("createdTime" -> now)
 
-		AuthorizationFunctionHelpers.performLogin( vm, users.insert(json1) )
+		AuthenticationFunctionHelpers.performLogin( vm, users.insert(json1) )
 	}
 
 	def login( vm: VM, req: OBJ ) = {
@@ -90,31 +90,22 @@ object AuthorizationFunctions {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
-					AuthorizationFunctionHelpers.performLogin( vm, u("_id").asInstanceOf[Long] )
+					AuthenticationFunctionHelpers.performLogin( vm, u("_id").asInstanceOf[Long] )
 				else
 					denied
 		}
 	}
 
-	def logout( vm: VM, req: OBJ ) = {
-		val access = AuthorizationFunctionHelpers.auth( req )
-
-		if (access isEmpty)
-			0
-		else
-			(vm resource "tokens").deleteValue( "token", access.get )
-	}
-
 	def me( vm: VM, req: OBJ ) = {
-		val access = AuthorizationFunctionHelpers.auth( req )
+		val access = AuthenticationFunctionHelpers.auth( req )
 
 		def barred = throw new UnauthorizedException( "Protected" )
 
 		if (access isEmpty)
 			barred
 
-		if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
-			val AuthorizationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
+		if (AuthenticationFunctionHelpers.SCHEME == "Basic") {
+			val AuthenticationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
 
 			(vm resource "users").findOption( "email", email, true ) match {
 				case None => barred
@@ -129,7 +120,7 @@ object AuthorizationFunctions {
 				case None => barred
 				case Some( t ) =>
 					if (Instant.now.getEpochSecond - OffsetDateTime.parse(t("created").asInstanceOf[String]).toInstant.getEpochSecond >=
-						AuthorizationFunctionHelpers.EXPIRATION)
+						AuthenticationFunctionHelpers.EXPIRATION)
 						throw new ExpiredException( "Protected" )
 
 					t("user").asInstanceOf[OBJ]
@@ -141,15 +132,15 @@ object AuthorizationFunctions {
 		val key = req("query").asInstanceOf[Map[String, String]] get "access_token"
 
 		if (key.isEmpty) {
-			val access = AuthorizationFunctionHelpers.auth( req )
+			val access = AuthenticationFunctionHelpers.auth( req )
 
 			def barred = throw new UnauthorizedException( "Protected" )
 
 			if (access isEmpty)
 				barred
 
-			if (AuthorizationFunctionHelpers.SCHEME == "Basic") {
-				val AuthorizationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get._1 ) )
+			if (AuthenticationFunctionHelpers.SCHEME == "Basic") {
+				val AuthenticationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get._1 ) )
 
 				(vm resource "users").findOption( "email", email, true ) match {
 					case None => barred
@@ -168,7 +159,7 @@ object AuthorizationFunctions {
 							barred
 
 						if (Instant.now.getEpochSecond - OffsetDateTime.parse( t("created").asInstanceOf[String] ).toInstant.getEpochSecond >=
-							AuthorizationFunctionHelpers.EXPIRATION)
+							AuthenticationFunctionHelpers.EXPIRATION)
 							throw new ExpiredException( "Protected" )
 				}
 			}

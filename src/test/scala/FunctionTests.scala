@@ -10,14 +10,14 @@ class FunctionTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"aggregates" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource r
 				|	i	integer
 				|	f	float
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString(config), c, s, d, key )
 
 		pro.process( "GET", "/r/count", null, null, null ) shouldBe
 			(SC_OK, "application/json",

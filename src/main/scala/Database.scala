@@ -336,7 +336,7 @@ abstract class Database {
 	val publicSchema: String
 
 	def zoneId =
-		DATETIME.getString( "timezone" ) match {
+		SERVER.getString( "timezone" ) match {
 			case "system" => ZoneId.systemDefault
 			case z => ZoneId.of( z )
 		}

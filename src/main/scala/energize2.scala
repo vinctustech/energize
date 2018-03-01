@@ -15,8 +15,7 @@ package object energize2 {
 	lazy val CONFIG = ConfigFactory.load
 	lazy val DATABASE = CONFIG.getConfig( "database" )
 	lazy val SERVER = CONFIG.getConfig( "server" )
-	lazy val AUTHORIZATION = CONFIG.getConfig( "authorization" )
-	lazy val DATETIME = CONFIG.getConfig( "datetime" )
+	lazy val AUTHENTICATION = CONFIG.getConfig( "authentication" )
 	lazy val ADMIN = CONFIG.getConfig( "admin" )
 	lazy val VERSION = SERVER.getString("version")
 

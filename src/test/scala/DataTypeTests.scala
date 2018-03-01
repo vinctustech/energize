@@ -10,14 +10,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"boolean" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource truths
 				|  statement   string  required
 				|  veracity    boolean required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/truths", null, """{statement: "crackers love cheese", veracity: true}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -83,7 +83,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //				|	suit suit
 //				|	number integer
 //			""".trim.stripMargin
-//		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+//		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 //
 //		pro.process( "POST", "/cards", null, """{suit: "hearts", number: 1}""", null ) shouldBe
 //			(SC_CREATED, "application/json",
@@ -123,13 +123,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"text" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource documents
 				|	document text
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/documents", null, """{document: "this is a document"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -167,13 +167,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"string" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource documents
 				|	document string
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/documents", null, """{document: "this is a document"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -211,13 +211,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"uuid" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource test
 				|	identifier uuid
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/test", null, """{identifier: "a94cae4a-8bdf-49f3-849b-e7d338f4400a"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -255,7 +255,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"float" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource r
@@ -267,7 +267,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|for a <- [1.3, .3, 1.3e3, .3e3, 1e3]
 				| r1.insert( {f: a} )
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString(config), c, s, d, key )
 
 		pro.process( "POST", "/r", null, """{f: 1.5}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -333,14 +333,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"date" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource events
 				|	title string
 				|	event date
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString(config), c, s, d, key )
 
 		pro.process( "POST", "/events", null, """{title: "finish coding date support", event: "2017-06-14"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -380,14 +380,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"time" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource alarms
 				|	title string
 				|	alarm time
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/alarms", null, """{title: "finish coding time support", alarm: "17:00:00"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -427,14 +427,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"timestamp" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource lunar
 				|	type string
 				|	eclipse timestamp
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/lunar", null, """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -474,14 +474,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"datetime" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource lunar
 				|	type string
 				|	eclipse datetime
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/lunar", null, """{type: "penumbral", eclipse: "2016-03-23T11:48:21.3Z"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -521,13 +521,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"array" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource arrays
 				|	a [integer]
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString(config), c, s, d, key )
 
 		pro.process( "POST", "/arrays", null, """{a: []}""", null ) shouldBe (SC_CREATED, "application/json",
 			"""
@@ -566,7 +566,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"blob" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource blobs
@@ -575,7 +575,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|	c blob (hex)
 				|	d blob (list)
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString(config), c, s, d, key )
 
 		pro.process( "POST", "/blobs", null, """{a: "AQID", b: "AQID", c: "010203", d: [1, 2, 3]}""", null ) shouldBe (SC_CREATED, "application/json",
 			"""
@@ -624,13 +624,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"binary" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource test
 				|	a binary
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString(config), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString(config), c, s, d, key )
 
 		pro.process( "POST", "/test", null, """{a: ""}""", null ) shouldBe (SC_CREATED, "application/json",
 			"""
@@ -665,13 +665,13 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"media" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
 				|resource test
 				|	a media
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( config ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
 
 		pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""", null ) shouldBe(SC_CREATED, "application/json",
 			"""

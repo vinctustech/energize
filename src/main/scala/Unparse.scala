@@ -2,8 +2,6 @@ package xyz.hyperreal.energize2
 
 import xyz.hyperreal.bvm._
 
-import scala.collection.mutable.ListBuffer
-
 
 object Unparse extends App {
 
@@ -18,17 +16,6 @@ object Unparse extends App {
 			indentation -= 2
 			res
 		}
-
-//		def flatten( l: List[AST] ): List[AST] = {
-//			val buf = new ListBuffer[AST]
-//
-//			l foreach {
-//				case BlockExpressionAST( bl ) => buf ++= flatten( bl )
-//				case e => buf += e
-//			}
-//
-//			buf.toList
-//		}
 
 		def block( l: List[AST] ) = l map (e => " "*indentation + unparse(e)) mkString "\n"
 

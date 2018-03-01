@@ -19,7 +19,7 @@ import org.apache.http.HttpStatus._
 object EnergizeServer {
 	def instance( config: io.Source, json: Boolean, port: Int ) = {
 		val (connection, statement, db) = Definition.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 
 		sys.addShutdownHook {
 			connection.close
@@ -28,7 +28,7 @@ object EnergizeServer {
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
 
-		val (pro, _) =
+		val pro =
 			if (json)
 				Definition.defineFromJSON( config, connection, statement, db, key )
 			else

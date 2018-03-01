@@ -105,10 +105,10 @@ object Definition {
 		(connection, connection.createStatement, Database( name ))
 	}
 
-	def define( src: String, connection: Connection, statement: Statement, database: Database, key: String ): (Processor, ArrayBuffer[Route]) =
+	def define( src: String, connection: Connection, statement: Statement, database: Database, key: String ): Processor =
 		define( io.Source.fromString(src), connection, statement, database, key )
 
-	def define( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): (Processor, ArrayBuffer[Route]) = {
+	def define( src: io.Source, connection: Connection, statement: Statement, database: Database, key: String ): Processor = {
 		val p = new EnergizeParser
 
 		define( p.parseFromSource(src, p.source), connection, statement, database, key )
@@ -281,7 +281,7 @@ object Definition {
 		Definition( code, compiler.resources, compiler.routes, compiler.conds )
 	}
 
-	def define( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): (Processor, ArrayBuffer[Route]) = {
+	def define( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): Processor = {
 		val Definition( code, resources, routes, _ ) = compile( ast, db, statement, false )
 
 		resources.values foreach {
@@ -317,7 +317,6 @@ object Definition {
 		}
 
 		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key )
-
 		val admin =
 			Map( ADMIN.entrySet.asScala.toList.map( e =>
 				(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
@@ -328,8 +327,7 @@ object Definition {
 			) :+ "createdTime" -> now: _* )
 
 		resources(db.desensitize("users")).insert( admin )
-
-		(proc, routes)
+		proc
 	}
 }
 

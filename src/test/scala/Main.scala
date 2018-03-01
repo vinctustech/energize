@@ -15,7 +15,7 @@ object Main extends App {
 //  run( program, "asdf" )
 
   val (c, s, d) = Test.dbconnect
-  val key = AUTHORIZATION.getString( "key" )
+  val key = AUTHENTICATION.getString( "key" )
   val src =
     """
 			|resource r
@@ -23,7 +23,7 @@ object Main extends App {
 			|
       |r.insert( {a: 'é'} )
     """.trim.stripMargin
-  val (pro, _) = Definition.define( src, c, s, d, key )
+  val pro = Definition.define( src, c, s, d, key )
   val message =
     new HttpMessage {
       override def setHeaders(headers: Array[Header]): Unit = ???

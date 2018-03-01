@@ -11,7 +11,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"empty database" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource todo /api/v1
@@ -22,7 +22,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource test /api/v1
 				|  asdf        integer required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/api/v1/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json",
@@ -78,7 +78,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"empty database (no base)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 			|resource todo
@@ -89,7 +89,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource test
 			|  asdf        integer required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
@@ -127,7 +127,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"post/put/get/delete" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource todo /api/v1
@@ -138,7 +138,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource test /api/v1
 				|  asdf       integer required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "POST", "/api/v1/todo", null, """{"name": "do something", "status": 1}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
@@ -272,7 +272,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"functions/evaluation" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|def f( x, y ) = {"a": x, "b": y, "sum": x + y}
@@ -283,7 +283,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|  POST  /combine               => Ok( res, {"a": 3} + req.body )
 				|  POST  /eval                  => Ok( res, eval(req.body.expr).toString() )			;; POST /eval {"expr": "3 + 4"}
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/f/3/4", null, null, null ) shouldBe
 			(SC_OK, "application/json",
@@ -322,7 +322,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"empty database (one-to-many)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 			|resource products
@@ -332,7 +332,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|resource types
 			|  name       string  unique required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json",
@@ -374,7 +374,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"post/get/put/delete (one-to-many)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource products
@@ -384,7 +384,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource types
 				|  name       string  unique required
 				|			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "POST", "/types", null, """{"name": "normal"}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
@@ -499,7 +499,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"empty database (many-to-many)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource customers
@@ -510,7 +510,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource products
 				|  name       string  unique required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/products", null, null, null ) shouldBe
 			(SC_OK, "application/json", """
@@ -548,7 +548,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"post/get/put/delete (many-to-many)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource customers
@@ -559,7 +559,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource products
 				|  name       string  unique required
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "POST", "/products", null, """{"name": "savings"}""", null ) shouldBe
 			(SC_CREATED, "application/json", """
@@ -674,7 +674,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"post/get/put/delete (mixed relationships)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource books
@@ -692,7 +692,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|if books.count( None ) == 0
 				|	publishers.insert( {name: "Spectra"} )
 				|	books.insert( {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`		""".trim.stripMargin
-		val (pro, _) = Definition.define( io.Source.fromString( src ), c, s, d, key )
+		val pro = Definition.define( io.Source.fromString( src ), c, s, d, key )
 
 		pro.process( "POST","/books/1/authors", null, """{"name": "Brian Herbert"}""", null ) shouldBe
 			(SC_CREATED, "application/json",
@@ -738,7 +738,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"request query parameters (no relationship) 1" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource db
@@ -776,7 +776,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	["Valentin","Billa","General Color Co Inc","6185 Bohn St #72","Pangman","SK","S0C 2C0","306-291-5073","306-316-7477","vbilla@yahoo.com","http://www.generalcolorcoinc.com"],
 				|	["Ilona","Dudash","Adams Balcom & Larose Pc","2 Sutton Pl S #5727","Rouyn-Noranda","QC","J9X 3V4","819-536-7034","819-413-1530","idudash@dudash.com","http://www.adamsbalcomlarosepc.com"]], false )
 				""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/db/20?fields=_id,first_name", null, null, null ) shouldBe
 			(SC_OK, "application/json",
@@ -845,7 +845,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"request query parameters (no relationship) 2" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource customers
@@ -864,7 +864,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	 ["Around the Horn",                    "Thomas Hardy",       "120 Hanover Sq.",               "London",      "WA1 1DP",  "UK"],
 				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]], false )
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/customers?order=City:asc,PostalCode:desc", null, null, null ) shouldBe
 			(SC_OK, "application/json",
@@ -940,7 +940,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"request query parameters (one-to-many)" in {
 		val (c, s, d) = Test.dbconnect
-		val key = AUTHORIZATION.getString( "key" )
+		val key = AUTHENTICATION.getString( "key" )
 		val src =
 			"""
 				|resource books
@@ -966,7 +966,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|	books.insert( {title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", publisher: "Enhanced Media"} )
 				|	books.insert( {title: "The Adventures of Huckleberry Finn", author: "Mark Twain", publisher: "Amazon Classics"} )
 			""".trim.stripMargin
-		val (pro, _) = Definition.define( src, c, s, d, key )
+		val pro = Definition.define( src, c, s, d, key )
 
 		pro.process( "GET", "/books", null, null, null ) shouldBe
 			(SC_OK, "application/json",

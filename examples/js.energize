@@ -1,8 +1,0 @@
-resource r
-	a string
-
-routes
-	POST /js	<<< Ok( req.body ) >>>
-	GET /js		<<< Ok( r.size ) >>>
-
-insert( r, {a: 'asdf'} )

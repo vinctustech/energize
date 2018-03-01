@@ -296,7 +296,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		this.internal = internal
 
 		if (!internal) {
-			val spec = Definition.parse( Builtins.special(AUTHORIZATION.getString("base")) )
+			val spec = Definition.parse( Builtins.special(AUTHENTICATION.getString("base")) )
 			val srcUsers =
 				(src.statements find {
 					case ResourceDefinition( _, _, "users", _, _, _, _ ) => true
