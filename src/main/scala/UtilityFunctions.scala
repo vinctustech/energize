@@ -16,7 +16,7 @@ object UtilityFunctions {
 
 	def rndInt( vm: VM, low: Int, high: Int ) = nextInt( high + 1 - low ) + low
 
-	def show( vm: VM, proc: Processor, tab: String ) = Console.print( TextTable(proc.statement.executeQuery(s"select * from $tab")) )
+	def show( vm: VM, tab: String ) = Console.print( TextTable(vm.statement.executeQuery(s"select * from $tab")) )
 
 //	def Some( vm: VM, v: Any ) = scala.Some( v )
 
@@ -87,8 +87,8 @@ object UtilityFunctions {
 		Map( "name" -> rname, "resource" -> visible, "fields" -> fields(columns), "base" -> (base map path2string orNull) )
 	}
 
-	def databaseSchema( vm: VM, proc: Processor ) = {
-		val tables = proc.resources.values map {r => resourceSchema( vm, r )}
+	def databaseSchema( vm: VM ) = {
+		val tables = vm.resources.values map {r => resourceSchema( vm, r )}
 
 		Map( "tables" -> tables )
 	}

@@ -47,10 +47,9 @@ object AuthenticationFunctionHelpers {
 
 }
 
-object AuthorizationFunctions {
+object AuthenticationFunctions {
 	def register( vm: VM, json: OBJ ) = {
-		val users = vm resource "users"
-		val required = users.names.toSet -- Set( "createdTime", "updatedTime", "state", "groups" )
+		val required = vm.users.names.toSet -- Set( "createdTime", "updatedTime", "state", "groups" )
 
 		if ((required -- json.keySet) nonEmpty)
 			throw new BadRequestException( "register: missing field(s): " + (required -- json.keySet).mkString(", ") )
@@ -67,7 +66,7 @@ object AuthorizationFunctions {
 				case f => f
 			}) + ("groups" -> List("user")) + ("createdTime" -> now)
 
-		AuthenticationFunctionHelpers.performLogin( vm, users.insert(json1) )
+		AuthenticationFunctionHelpers.performLogin( vm, vm.users.insert(json1) )
 	}
 
 	def login( vm: VM, req: OBJ ) = {
@@ -81,12 +80,11 @@ object AuthorizationFunctions {
 		if ((json.keySet -- required) nonEmpty)
 			throw new BadRequestException( "register: excess field(s): " + (required -- json.keySet).mkString(", ") )
 
-		val users = vm resource "users"
 		val email = json("email")
 
 		def denied = throw new UnauthorizedException( "email or password doesn't match" )
 
-		users.findOption( "email", email, true ) match {
+		vm.users.findOption( "email", email, true ) match {
 			case None => denied
 			case Some( u ) =>
 				if (BCrypt.checkpw( json("password").asInstanceOf[String], u("password").asInstanceOf[String] ))
@@ -107,7 +105,7 @@ object AuthorizationFunctions {
 		if (AuthenticationFunctionHelpers.SCHEME == "Basic") {
 			val AuthenticationFunctionHelpers.CREDENTIALS(email, password) = new String(Base64.getDecoder.decode(access.get.asInstanceOf[String]))
 
-			(vm resource "users").findOption( "email", email, true ) match {
+			vm.users.findOption( "email", email, true ) match {
 				case None => barred
 				case Some(u) =>
 					if (!BCrypt.checkpw(password, u("password").asInstanceOf[String]))
@@ -142,7 +140,7 @@ object AuthorizationFunctions {
 			if (AuthenticationFunctionHelpers.SCHEME == "Basic") {
 				val AuthenticationFunctionHelpers.CREDENTIALS( email, password ) = new String( Base64.getDecoder.decode( access.get._1 ) )
 
-				(vm resource "users").findOption( "email", email, true ) match {
+				vm.users.findOption( "email", email, true ) match {
 					case None => barred
 					case Some( u ) =>
 						if (!BCrypt.checkpw( password, u( "password" ).asInstanceOf[String] ))

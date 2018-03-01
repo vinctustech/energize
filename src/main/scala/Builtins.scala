@@ -24,7 +24,7 @@ object Builtins {
 	val natives =
 		Native( ResultFunctions ) ++
 		Native( UtilityFunctions ) ++
-		Native( AuthorizationFunctions ) ++
+		Native( AuthenticationFunctions ) ++
 		Native( FileFunctions )
 	val map =
 		pairs( natives ) ++ constants toMap
@@ -104,7 +104,7 @@ object Builtins {
 			|  PUT     /resourse:/field:/newname:        => Ok( res, renameField(req.params.resourse, req.params.field, req.params.newname) )
 			|  DELETE  /resourse:/field:                 => Ok( res, deleteField(req.params.resourse, req.params.field) )
 			|  DELETE  /resourse:                        => Ok( res, deleteResource(req.params.resourse) )
-			|  GET     /schema												   => Ok( res, databaseSchema(req.proc) )
+			|  GET     /schema												   => Ok( res, databaseSchema() )
 			|
 			|routes $base
 			|  POST    /login        => Ok( res, login(req.body) )

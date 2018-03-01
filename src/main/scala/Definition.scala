@@ -304,6 +304,7 @@ object Definition {
 		}
 
 		val media = resources( db.desensitize("_media_") )
+		val users = resources( db.desensitize("users") )
 
 		resources.values foreach {
 			case r@Resource( name, _, fields, _, _, _, _, _, _ ) =>
@@ -316,7 +317,7 @@ object Definition {
 				r.media = media
 		}
 
-		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key )
+		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key, users )
 		val admin =
 			Map( ADMIN.entrySet.asScala.toList.map( e =>
 				(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
@@ -326,7 +327,7 @@ object Definition {
 				}
 			) :+ "createdTime" -> now: _* )
 
-		resources(db.desensitize("users")).insert( admin )
+		users.insert( admin )
 		proc
 	}
 }

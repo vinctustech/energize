@@ -24,7 +24,7 @@ object Processor {
 }
 
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
-								 val resources: Map[String, Resource], val routes: List[Route], val key: String ) {
+								 val resources: Map[String, Resource], val routes: List[Route], val key: String, val users: Resource ) {
 
 	private val router = code.functions( "_router_" )._1
 	/*private [energize]*/ val vm = new VM( code, Array(), false, true, this )
