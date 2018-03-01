@@ -160,8 +160,10 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 									), false), action) )
 						})
 
-					conds += cond
-					routes += Route( method1, abspath, pat, cond._1, cond._2 )
+					conds.insert( 0, cond )
+					routes.insert( 0, Route( method1, abspath, pat, cond._1, cond._2 ) )
+//					conds += cond
+//					routes += Route( method1, abspath, pat, cond._1, cond._2 )
 			}
 		case (r@ResourceDefinition( protection, pos, name, base, fields, resource, _ ), explicits) =>
 			var mtm = false
@@ -273,8 +275,10 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	}
 
 	private def addRoutes( d: Definition ): Unit = {
-		conds ++= d.conds
-		routes ++= d.routes
+		conds.insertAll( 0, d.conds )
+		routes.insertAll( 0, d.routes )
+//		conds ++= d.conds
+//		routes ++= d.routes
 	}
 
 	override def declsExtension: PartialFunction[(AST, AST => Unit), Any] = {

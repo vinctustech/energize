@@ -8,4 +8,4 @@ resource r
 	a integer
 
 routes
-	GET  /r  private  ;; access( ?key ); reject()  ;; add privacy to "GET /r" route associated to resource "r"
+	GET  /r => private  ;; access( ?key ); reject()  ;; add privacy to "GET /r" route associated to resource "r"
