@@ -75,22 +75,24 @@ class EnergizeParser extends FunLParser {
 			case p ~ m ~ Some( path ) ~ g ~ action => RouteMapping( p, m, path, g, action )
 			case p ~ m ~ None ~ g ~ action => RouteMapping( p, m, EmptyPathSegment, g, action ) } |
 		pos ~ ident ~ opt(routePath) ~ opt("if" ~> expression) ~ ("=>" ~> protection <~ nl) ^^ {
-			case p ~ m ~ Some( path ) ~ g ~ pro => RouteMapping( p, m, path, g, authorize(pro) )
-			case p ~ m ~ None ~ g ~ pro => RouteMapping( p, m, EmptyPathSegment, g, authorize(pro) ) }
+			case p ~ m ~ Some( path ) ~ None ~ pro => RouteMapping( p, m, path, Some(authorize(pro)), LiteralExpressionAST(null) )
+			case p ~ m ~ None ~ None ~ pro => RouteMapping( p, m, EmptyPathSegment, Some(authorize(pro)), LiteralExpressionAST(null) )
+			case p ~ m ~ Some( path ) ~ Some(g) ~ pro => RouteMapping( p, m, path, Some(AndExpressionAST(g, authorize(pro))), LiteralExpressionAST(null) )
+			case p ~ m ~ None ~ Some(g) ~ pro => RouteMapping( p, m, EmptyPathSegment, Some(AndExpressionAST(g, authorize(pro))), LiteralExpressionAST(null) ) }
 
 	def authorize( group: Option[String] ) =
 		if (group contains null)
 			BlockExpressionAST(List(
 				ApplyExpressionAST(null, VariableExpressionAST(null, "access", "access"), null,
 					List((null, DefinedOptionExpressionAST(DotExpressionAST(null, DotExpressionAST(null, VariableExpressionAST(null, "req", "req"), null, Symbol("query")), null, Symbol("access_token"))))), false),
-				ApplyExpressionAST(null, VariableExpressionAST(null, "reject", "reject"), null, Nil, false)))
+				ApplyExpressionAST(null, FailExpressionAST, null, Nil, false)))
 		else
 			BlockExpressionAST(List(
 				ApplyExpressionAST(null, VariableExpressionAST(null, "authorize", "authorize"), null,
 					List(
 						(null, LiteralExpressionAST(group)),
-						(null, DotExpressionAST(null, VariableExpressionAST(null, "parameters", "parameters"), null, Symbol("access_token")))), false),
-				ApplyExpressionAST(null, VariableExpressionAST(null, "reject", "reject"), null, Nil, false)))
+						(null, VariableExpressionAST(null, "req", "req"))), false),
+				ApplyExpressionAST(null, FailExpressionAST, null, Nil, false)))
 
 	lazy val routePath: PackratParser[PathSegment] =
 		"/" ~> pathPathSegment ^^ { p => ConcatenationPathSegment( List(SlashPathSegment, p) ) } |
