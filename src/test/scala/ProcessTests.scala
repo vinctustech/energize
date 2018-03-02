@@ -70,7 +70,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
-					|  "error": "route not found: /api/v1/tod"
+					|  "error": "route not found: GET /api/v1/tod"
 					|}
 				""".trim.stripMargin)
 		c.close
@@ -120,7 +120,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
  		pro.process( "GET", "/tod", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""{
-					|  "error": "route not found: /tod"
+					|  "error": "route not found: GET /tod"
 					|}""".stripMargin)
 		c.close
 	}
@@ -366,7 +366,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			(SC_NOT_FOUND, "application/json",
 				"""
 					|{
-					|  "error": "route not found: /product"
+					|  "error": "route not found: GET /product"
 					|}
 				""".trim.stripMargin )
 		c.close
@@ -541,7 +541,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		pro.process( "GET", "/product", null, null, null ) shouldBe
 			(SC_NOT_FOUND, "application/json",
 				"""{
-					|  "error": "route not found: /product"
+					|  "error": "route not found: GET /product"
 					|}""".stripMargin )
 		c.close
 	}

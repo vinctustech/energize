@@ -181,7 +181,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
     //todo: handle non-string request body
     try {
       if (vm.call( router, List(method, reqpath, reqquery, reqbody, req, res) ) == 'nomatch)
-        result( "NotFound", res, s"route not found: $uri" )
+        result( "NotFound", res, s"route not found: $method $uri" )
     } catch {
 			case e: InvocationTargetException =>
 				handleException( e.getCause, res )

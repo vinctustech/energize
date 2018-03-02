@@ -9,5 +9,5 @@ object FileFunctions {
 
 	def readFileBase64( vm: VM, file: String ) = bytes2base64( Files.readAllBytes(Paths.get(file)) )
 
-	def readAsDataURL( vm: VM, file: String, mediaType: String ) = "data:image/jpeg;base64," + readFileBase64( vm, file )
+	def readAsDataURL( vm: VM, file: String, mediaType: String ) = s"data:$mediaType;base64,${readFileBase64( vm, file )}"
 }

@@ -1,4 +1,4 @@
-resource data
+resource people
 	first_name string indexed
 	last_name string indexed
 	company_name string indexed
@@ -11,7 +11,7 @@ resource data
 	email string indexed
 	web string indexed
 	
-batchInsert( data, [
+people.batchInsert( [
 	["Francoise","Rautenstrauch","Riebesell, H F Jr","2335 Canton Hwy #6","Windsor","ON","N8N 3N2","519-569-8399","519-978-6179","francoise.rautenstrauch@rautenstrauch.com","http://www.riebesellhfjr.com"],
 	["Kendra","Loud","Deloitte & Touche","6 Arch St #9757","Alcida","NB","E8J 2C4","506-363-1526","506-932-4472","kloud@gmail.com","http://www.deloittetouche.com"],
 	["Lourdes","Bauswell","Oklahoma Neon Inc","9547 Belmont Rd #21","Belleville","ON","K8P 1B3","613-903-7043","613-638-6682","lourdes_bauswell@aol.com","http://www.oklahomaneoninc.com"],
@@ -31,4 +31,4 @@ batchInsert( data, [
 	["Crissy","Pacholec","Cgi Systems Inc","85 S State St","Barrie","ON","L4N 6T7","705-477-2307","705-523-6746","crissy@aol.com","http://www.cgisystemsinc.com"],
 	["Gianna","Branin","All Brevard Cert Apprsls Inc","100 Main St","Calgary","AB","T2K 4X5","403-337-7162","403-540-5944","gianna@aol.com","http://www.allbrevardcertapprslsinc.com"],
 	["Valentin","Billa","General Color Co Inc","6185 Bohn St #72","Pangman","SK","S0C 2C0","306-291-5073","306-316-7477","vbilla@yahoo.com","http://www.generalcolorcoinc.com"],
-	["Ilona","Dudash","Adams Balcom & Larose Pc","2 Sutton Pl S #5727","Rouyn-Noranda","QC","J9X 3V4","819-536-7034","819-413-1530","idudash@dudash.com","http://www.adamsbalcomlarosepc.com"]])
+	["Ilona","Dudash","Adams Balcom & Larose Pc","2 Sutton Pl S #5727","Rouyn-Noranda","QC","J9X 3V4","819-536-7034","819-413-1530","idudash@dudash.com","http://www.adamsbalcomlarosepc.com"]], false)

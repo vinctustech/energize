@@ -1,2 +1,2 @@
 for i <- [1, 2, 3], j <- ['a', 'b', 'c']
-	print( i + j )
+  write( i + j )
