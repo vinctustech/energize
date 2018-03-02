@@ -1,12 +1,12 @@
 package xyz.hyperreal.energize2
 
 import java.sql.{Blob, Clob, Date, PreparedStatement, Statement}
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
+
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.ListBuffer
-
 import scala.util.parsing.input.Position
 
 
@@ -116,7 +116,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 							case 'hex => attr += (cname -> bytes2hex( array ))
 							case 'list => attr += (cname -> array.toList)
 						}
-					case Some( Field(cname,TextType, _, _, _, _, _) ) if obj.get ne null =>
+					case Some( Field(cname,TextType|TinytextType|ShorttextType|LongtextType, _, _, _, _, _) ) if obj.get ne null =>
 						val clob = obj.get.asInstanceOf[Clob]
 						val s = clob.getSubString( 1L, clob.length.toInt )
 
@@ -248,13 +248,14 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 			for (((i, t), v) <- types zip (if (full) r.tail else r)) {
 				(t, v) match {
 					case (_, null) => CommandFunctionHelpers.setNull( preparedStatement, i, t )
-					case (StringType( _ )|TextType, a: String) => preparedStatement.setString( i, a )
-					case (IntegerType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
+					case (StringType( _ )|CharType( _ )|TextType|TinytextType|ShorttextType|LongtextType|UUIDType|TimeType|DateType|BinaryType, a: String) => preparedStatement.setString( i, a )
+					case (IntegerType|TinyintType|SmallintType, a: Number) => preparedStatement.setInt( i, a.intValue )
+					case (BigintType, a: Number) => preparedStatement.setLong( i, a.longValue )
 					case (_: SingleReferenceType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
-					//					case (LongType, a: java.lang.Long) => preparedStatement.setLong( i, a )
-					case (BigintType, a: java.lang.Long) => preparedStatement.setLong( i, a )
 					case (DecimalType( _, _ ), a: BigDecimal) => preparedStatement.setBigDecimal( i, a.underlying )
-					case (DateType, a: LocalDate) => preparedStatement.setDate( i, Date.valueOf(a) )
+					case (DateType, d: LocalDate) => preparedStatement.setDate( i, Date.valueOf(d) )
+					case (DatetimeType|TimestampType, v: String) => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
+					case (DatetimeType|TimestampType, d: LocalDateTime) => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
 					case x => throw new BadRequestException( s"don't know what to do with $x, ${v.getClass}" )
 				}
 			}
@@ -295,11 +296,11 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 						//								throw new BadRequestException( s"insert: manay-to-many field cannot be NULL: $c" )
 						case SingleReferenceType( _, _, _ ) => preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 						case BooleanType => preparedInsert.setBoolean( i + 1, v.asInstanceOf[Boolean] )
-						case IntegerType => preparedInsert.setInt( i + 1, v.asInstanceOf[Number].intValue )
+						case IntegerType|TinyintType|SmallintType => preparedInsert.setInt( i + 1, v.asInstanceOf[Number].intValue )
 						case FloatType => preparedInsert.setDouble( i + 1, v.asInstanceOf[Number].doubleValue )
 						case BigintType => preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
-						case UUIDType | TimeType | DateType | BinaryType | StringType( _ ) | EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
-						case DatetimeType | TimestampType => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
+						case UUIDType|TimeType|DateType|BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
+						case DatetimeType|TimestampType => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>
 							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(this, allowed, _))
 
@@ -321,7 +322,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 								}
 
 							preparedInsert.setBlob( i + 1, new SerialBlob(array) )
-						case TextType => preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
+						case TextType|TinytextType|ShorttextType|LongtextType => preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed ) =>
 							preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(this, allowed, v.asInstanceOf[String]) )
 					}
@@ -396,9 +397,9 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 						val kIn = nameIn( k )
 
 						fieldMap(k).typ match {
-							case DatetimeType | TimestampType => kIn + " = '" + db.readTimestamp( v.toString ) + "'"
-							case UUIDType | TimeType | DateType | StringType( _ ) | BinaryType | EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
-							case TextType => throw new BadRequestException( "updating a text field isn't supported yet" )
+							case DatetimeType|TimestampType => kIn + " = '" + db.readTimestamp( v.toString ) + "'"
+							case UUIDType|TimeType|DateType|StringType( _ )|CharType( _ )|BinaryType|EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
+							case TextType|TinytextType|ShorttextType|LongtextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _ ) =>
 								kIn + " = " + v.asInstanceOf[Seq[Any]].
 									map {
@@ -586,39 +587,3 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 case class Field( name: String, typ: FieldType, secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean,
 									validators: List[Int] )	//todo: 'validators' is a list of function entry points
-
-trait FieldType
-
-trait ReferenceType extends FieldType {
-	val resource: String
-	var ref: Resource
-}
-
-trait PrimitiveFieldType extends FieldType
-case object BooleanType extends PrimitiveFieldType
-case class CharType( length: Int ) extends PrimitiveFieldType
-case class StringType( length: Int ) extends PrimitiveFieldType
-case object TinytextType extends PrimitiveFieldType
-case object ShorttextType extends PrimitiveFieldType
-case object TextType extends PrimitiveFieldType
-case object LongtextType extends PrimitiveFieldType
-case object TinyintType extends PrimitiveFieldType
-case object SmallintType extends PrimitiveFieldType
-case object IntegerType extends PrimitiveFieldType
-case object BigintType extends PrimitiveFieldType
-case object UUIDType extends PrimitiveFieldType
-case object DateType extends PrimitiveFieldType
-case object DatetimeType extends PrimitiveFieldType
-case object TimeType extends PrimitiveFieldType
-case object TimestampType extends PrimitiveFieldType
-case object BinaryType extends PrimitiveFieldType
-case object FloatType extends PrimitiveFieldType
-case class BLOBType( rep: Symbol ) extends PrimitiveFieldType
-case class DecimalType( precision: Int, scale: Int ) extends PrimitiveFieldType
-case class MediaType( allowed: List[MimeType]/*, limit: Option[Int]*/ ) extends PrimitiveFieldType
-case class ArrayType( parm: PrimitiveFieldType ) extends FieldType
-case class SingleReferenceType( pos: Position, resource: String, var ref: Resource = null ) extends ReferenceType
-case class ManyReferenceType( pos: Position, resource: String, var ref: Resource = null ) extends ReferenceType
-case class EnumType( name: String, enum: Vector[String] ) extends PrimitiveFieldType//todo: implement enum type using 'data'
-
-case class MimeType( typ: String, subtype: String )
