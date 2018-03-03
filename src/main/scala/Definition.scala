@@ -14,59 +14,116 @@ import xyz.hyperreal.json.{DefaultJSONReader, JSON}
 
 object Definition {
 
-	val MIME = """([a-z+]+)/(\*|[a-z+]+)"""r
-
 	def dbtype( pos: Position, name: String, args: List[Any], array: Boolean ) = {
 		val basic =
 			name match {
-				case "boolean" if args nonEmpty => problem( pos, "the 'boolean' type doesn't take parameters" )
-				case "boolean" => BooleanType
-				case "char" if args.isEmpty || args.length > 1 || !integer( args.head.toString ) =>
-					problem( pos, "the 'char' type takes a positve integer parameter" )
-				case "char" => CharType( args.head.toString.toInt )
-				case "string" if args.length > 1 || args.nonEmpty && !integer( args.head.toString ) =>
-					problem( pos, "the 'string' type takes a positve integer size parameter, or else the size defaults to 128" )
-				case "string" => StringType( if (args nonEmpty) args.head.toString.toInt else 128 )
-				case "tinytext" if args nonEmpty => problem( pos, "the 'tinytext' type doesn't take parameters" )
-				case "tinytext" => TinytextType
-				case "shorttext" if args nonEmpty => problem( pos, "the 'shorttext' type doesn't take parameters" )
-				case "shorttext" => ShorttextType
-				case "text" if args nonEmpty => problem( pos, "the 'text' type doesn't take parameters" )
-				case "text" => TextType
-				case "longtext" if args nonEmpty => problem( pos, "the 'longtext' type doesn't take parameters" )
-				case "longtext" => LongtextType
-				case "tinyint" if args nonEmpty => problem( pos, "the 'tinyint' type doesn't take parameters" )
-				case "tinyint" => TinyintType
-				case "smallint" if args nonEmpty => problem( pos, "the 'smallint' type doesn't take parameters" )
-				case "smallint" => SmallintType
-				case "integer"|"int" if args nonEmpty => problem( pos, "the 'integer' type doesn't take parameters" )
-				case "integer"|"int" => IntegerType
-				case "bigint" if args nonEmpty => problem( pos, "the 'bigint' type doesn't take parameters" )
-				case "bigint" => BigintType
-				case "UUID"|"uuid" if args nonEmpty => problem( pos, "the 'UUID' type doesn't take parameters" )
-				case "UUID"|"uuid" => UUIDType
-				case "date" if args nonEmpty => problem( pos, "the 'date' type doesn't take parameters" )
-				case "date" => DateType
-				case "datetime" if args nonEmpty => problem( pos, "the 'datetime' type doesn't take parameters" )
-				case "datetime" => DatetimeType
-				case "time" if args nonEmpty => problem( pos, "the 'time' type doesn't take parameters" )
-				case "time" => TimeType
-				case "timestamp" if args nonEmpty => problem( pos, "the 'timestamp' type doesn't take parameters" )
-				case "timestamp" => TimestampType
-				case "binary" if args nonEmpty => problem( pos, "the 'binary' type doesn't take parameters" )
-				case "binary" => BinaryType
-				case "float" if args nonEmpty => problem( pos, "the 'float' type doesn't take parameters" )
-				case "float" => FloatType
-				case "blob" if args.length > 1 || args.length == 1 && !(List("base64", "hex", "list", "urlchars") contains args.head.toString)  =>
-					problem( pos, """the 'blob' type takes an option blob type parameter: "base64", "hex", "list", or "urlchars"""" )
-				case "blob" if args nonEmpty => BLOBType( Symbol(args.head.toString) )
-				case "blob" => BLOBType( 'base64 )
-				case "media" if args exists (!_.isInstanceOf[MimeType]) =>
-					problem( pos, "the 'media' type takes zero or more media (MIME) type parameters" )
-				case "media" => MediaType( args.asInstanceOf[List[MimeType]] )
-				case "decimal" if args.length != 2 || args.nonEmpty && !integer( args.head.toString ) || args.length >= 2 && !integer( args.tail.head.toString ) =>
-					problem( pos, "the 'decimal' type takes two integer parameters" )
+				case "boolean" =>
+					if (args nonEmpty)
+						problem( pos, "the 'boolean' type doesn't take parameters" )
+
+					BooleanType
+				case "char" =>
+					if (args.isEmpty || args.length > 1 || !integer( args.head.toString ))
+						problem( pos, "the 'char' type takes a positve integer parameter" )
+
+					CharType( args.head.toString.toInt )
+				case "string" =>
+					if (args.length > 1 || args.nonEmpty && !integer( args.head.toString ))
+						problem( pos, "the 'string' type takes a positve integer size parameter, or else the size defaults to 128" )
+
+					StringType( if (args nonEmpty) args.head.toString.toInt else 128 )
+				case "tinytext" =>
+					if (args nonEmpty)
+						problem( pos, "the 'tinytext' type doesn't take parameters" )
+
+					TinytextType
+				case "shorttext" =>
+					if (args nonEmpty)
+						problem( pos, "the 'shorttext' type doesn't take parameters" )
+
+					ShorttextType
+				case "text" =>
+					if (args nonEmpty)
+						problem( pos, "the 'text' type doesn't take parameters" )
+
+					TextType
+				case "longtext" =>
+					if (args nonEmpty)
+						problem( pos, "the 'longtext' type doesn't take parameters" )
+
+					LongtextType
+				case "tinyint" =>
+					if (args nonEmpty)
+						problem( pos, "the 'tinyint' type doesn't take parameters" )
+
+					TinyintType
+				case "smallint" =>
+					if (args nonEmpty)
+						problem( pos, "the 'smallint' type doesn't take parameters" )
+
+					SmallintType
+				case "integer"|"int" =>
+					if (args nonEmpty)
+						problem( pos, "the 'integer' type doesn't take parameters" )
+
+					IntegerType
+				case "bigint" =>
+					if (args nonEmpty)
+						problem( pos, "the 'bigint' type doesn't take parameters" )
+
+					BigintType
+				case "UUID"|"uuid" =>
+					if (args nonEmpty)
+						problem( pos, "the 'UUID' type doesn't take parameters" )
+
+					UUIDType
+				case "date" =>
+					if (args nonEmpty)
+						problem( pos, "the 'date' type doesn't take parameters" )
+
+					DateType
+				case "datetime" =>
+					if (args nonEmpty)
+						problem( pos, "the 'datetime' type doesn't take parameters" )
+
+					DatetimeType
+				case "time" =>
+					if (args nonEmpty)
+						problem( pos, "the 'time' type doesn't take parameters" )
+
+					TimeType
+				case "timestamp" =>
+					if (args nonEmpty)
+						problem( pos, "the 'timestamp' type doesn't take parameters" )
+
+					TimestampType
+				case "binary" =>
+					if (args nonEmpty)
+						problem( pos, "the 'binary' type doesn't take parameters" )
+
+					BinaryType
+				case "float" =>
+					if (args nonEmpty)
+						problem( pos, "the 'float' type doesn't take parameters" )
+
+					FloatType
+				case "blob" =>
+					if (args.length > 1 || args.length == 1 && !(List("base64", "hex", "list", "urlchars") contains args.head.toString))
+						problem( pos, """the 'blob' type takes an option blob type parameter: "base64", "hex", "list", or "urlchars"""" )
+
+					if (args nonEmpty)
+						BLOBType( Symbol(args.head.toString) )
+					else
+						BLOBType( 'base64 )
+				case "media" =>
+					if (args exists (!_.isInstanceOf[MimeType]))
+						problem( pos, "the 'media' type takes zero or more media (MIME) type parameters" )
+
+					MediaType( args.asInstanceOf[List[MimeType]] )
 				case "decimal" =>
+					if (args.length != 2 || args.nonEmpty && !integer( args.head.toString ) || args.length >= 2 && !integer( args.tail.head.toString ))
+						problem( pos, "the 'decimal' type takes two integer parameters" )
+
 					val (precision, scale) = (args.head.toString.toInt, args.tail.head.toString.toInt)
 
 					if (precision < 1)
@@ -128,42 +185,6 @@ object Definition {
 
 		define( p.parseFromSource(src, p.source), connection, statement, database, key )
 	}
-
-//	def primitive( typ: JSON ): PrimitiveFieldType =
-//		typ getString "type" match {
-//			case "string" => StringType
-//			case "text" => TextType
-//			case "boolean" => BooleanType
-//			case "integer" => IntegerType
-//			case "long" => LongType
-//			case "uuid" => UUIDType
-//			case "date" => DateType
-//			case "datetime" => DatetimeType
-//			case "time" => TimeType
-//			case "timestamp" => TimestampType
-//			case "binary" => BinaryType
-//			case "blob" => BLOBType( 'base64 )
-//			case "float" => FloatType
-//			case "decimal" =>
-//				val List( prec, scale ) = typ.getList[Int]( "parameters" )
-//
-//				DecimalType( prec, scale )
-////			case "enum" => EnumType( _, typ.getList[String]("parameters").toVector )
-//			case "media" =>
-//				val List( allowed, limit ) = typ.getList[AnyRef]( "parameters" )
-//				val allowed1 =
-//					for (a <- allowed.asInstanceOf[List[String]])
-//						yield
-//							a match {
-//								case MIME( typ, subtype ) => MimeType( typ, subtype )
-//								case _ => sys.error( s"bad MIME type: $a" )
-//							}
-//
-//				if (limit eq null)
-//					MediaType( allowed1, null, Int.MaxValue )
-//				else
-//					MediaType( allowed1, null, limit.asInstanceOf[Int] )
-//		}
 
 	def parsePath( path: String ): Option[PathSegment] =
 		if (path endsWith "/")
