@@ -1,0 +1,5 @@
+resource r
+ amount decimal(10, 2)
+
+r.insert( {amount: 1.5} )
+write( r.list(None, None, None, None, None, None) )     ;; [{"_id": 1, "amount": 1.50}]

@@ -520,49 +520,49 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin )
 	}
 
-//	"decimal" in {
-//		val (c, s, d) = Test.dbconnect
-//		val key = AUTHENTICATION.getString( "key" )
-//		val config =
-//			"""
-//				|resource r
-//				|	a decimal(10, 2)
-//			""".trim.stripMargin
-//		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
-//
-//		pro.process( "POST", "/r", null, """{a: 1.01}""", null ) shouldBe
-//			(SC_CREATED, "application/json",
-//				"""
-//					|{
-//					|  "data": 1
-//					|}
-//				""".trim.stripMargin )
-//		pro.process( "GET", "/r", null, null, null ) shouldBe
-//			(SC_OK, "application/json",
-//				"""
-//					|{
-//					|  "data": [
-//					|    {
-//					|      "_id": 1,
-//					|      "a": 1.01
-//					|    }
-//					|  ]
-//					|}
-//				""".trim.stripMargin )
-//		pro.process( "PUT", "/r/1", null, """{a: 0.5}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
-//		pro.process( "GET", "/lunar", null, null, null ) shouldBe
-//			(SC_OK, "application/json",
-//				"""
-//					|{
-//					|  "data": [
-//					|    {
-//					|      "_id": 1,
-//					|      "a": 0.50
-//					|    }
-//					|  ]
-//					|}
-//				""".trim.stripMargin )
-//	}
+	"decimal" in {
+		val (c, s, d) = Test.dbconnect
+		val key = AUTHENTICATION.getString( "key" )
+		val config =
+			"""
+				|resource r
+				| a decimal(10, 2)
+			""".trim.stripMargin
+		val pro = Definition.define( io.Source.fromString( config ), c, s, d, key )
+
+		pro.process( "POST", "/r", null, """{a: 1.01}""", null ) shouldBe
+			(SC_CREATED, "application/json",
+				"""
+					|{
+					|  "data": 1
+					|}
+				""".trim.stripMargin )
+		pro.process( "GET", "/r", null, null, null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "_id": 1,
+					|      "a": 1.01
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+		pro.process( "PUT", "/r/1", null, """{a: 0.5}""", null ) shouldBe (SC_NO_CONTENT, "text/html", "No Content")
+		pro.process( "GET", "/r", null, null, null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": [
+					|    {
+					|      "_id": 1,
+					|      "a": 0.50
+					|    }
+					|  ]
+					|}
+				""".trim.stripMargin )
+	}
 
 	"array" in {
 		val (c, s, d) = Test.dbconnect
