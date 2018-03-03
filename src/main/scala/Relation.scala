@@ -4,8 +4,6 @@ import java.sql._
 
 import collection.mutable.ListBuffer
 
-import xyz.hyperreal.bvm.VM
-
 
 class Relation( db: Database, rs: ResultSet ) extends Iterable[IndexedSeq[AnyRef]] {
 	private val md = rs.getMetaData

@@ -7,7 +7,6 @@ import java.nio.charset.Charset
 import java.sql.{Connection, SQLException, Statement}
 
 import collection.JavaConverters._
-import collection.mutable.ArrayBuffer
 
 import scala.util.parsing.input.Position
 

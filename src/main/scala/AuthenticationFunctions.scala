@@ -1,12 +1,10 @@
 //@
 package xyz.hyperreal.energize2
 
-import java.time.{Instant, OffsetDateTime}
-
 import org.mindrot.jbcrypt.BCrypt
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim}
 import xyz.hyperreal.bvm.VM
-import xyz.hyperreal.json.{DefaultJSONReader, JSON}
+import xyz.hyperreal.json.{DefaultJSONReader}
 
 import scala.util.{Failure, Success}
 import scala.util.parsing.input.Position

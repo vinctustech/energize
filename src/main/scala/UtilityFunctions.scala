@@ -1,7 +1,5 @@
 package xyz.hyperreal.energize2
 
-import java.time.{Instant, ZoneOffset}
-
 import util.Random._
 import xyz.hyperreal.table.TextTable
 import xyz.hyperreal.importer.Importer

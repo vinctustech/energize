@@ -7,7 +7,6 @@ import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.ListBuffer
-import scala.util.parsing.input.Position
 
 
 object Resource {

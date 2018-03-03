@@ -3,7 +3,7 @@ package xyz.hyperreal.energize2
 import xyz.hyperreal.bvm._
 
 
-object Unparse extends App {
+object Unparse {
 
 	def apply( ast: AST ): String = {
 		var indentation = 0
@@ -50,13 +50,4 @@ object Unparse extends App {
 		unparse( ast ).replaceAll( """\n\s+\n""", "\n" )
 	}
 
-	val src =
-		"""
-			|for i <- 1..5
-			|  write( i + 1 )
-			|  write( i )
-		""".stripMargin
-	val p = new EnergizeParser
-
-	println( Unparse(p.parseFromSource(io.Source.fromString(src), p.source)) )
 }
