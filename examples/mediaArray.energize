@@ -1,4 +1,4 @@
 resource r
 	f [media]
 
-insert( r, {f: [readAsDataURL("examples/media/Peach_flowers.jpg", "image/jpeg"), readAsDataURL("examples/media/Test.pdf", "application/pdf")]} )
+r.insert( {f: [readAsDataURL("examples/media/Peach_flowers.jpg", "image/jpeg"), readAsDataURL("examples/media/Test.pdf", "application/pdf")]} )

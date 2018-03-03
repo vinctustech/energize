@@ -64,6 +64,21 @@ object Definition {
 				case "media" if args exists (!_.isInstanceOf[MimeType]) =>
 					problem( pos, "the 'media' type takes zero or more media (MIME) type parameters" )
 				case "media" => MediaType( args.asInstanceOf[List[MimeType]] )
+				case "decimal" if args.length != 2 || args.nonEmpty && !integer( args.head.toString ) || args.length >= 2 && !integer( args.tail.head.toString ) =>
+					problem( pos, "the 'decimal' type takes two integer parameters" )
+				case "decimal" =>
+					val (precision, scale) = (args.head.toString.toInt, args.tail.head.toString.toInt)
+
+					if (precision < 1)
+						problem( pos, "precision should be positive" )
+
+					if (scale < 0)
+						problem( pos, "scale should be non-negative" )
+
+					if (scale > precision)
+						problem( pos, "scale should be no greater than precision" )
+
+					DecimalType( precision, scale )
 				case r =>	//todo: could be EnumType if previously defined as such
 					if (array)
 						ManyReferenceType( pos, r )

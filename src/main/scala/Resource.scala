@@ -299,6 +299,11 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 						case IntegerType|TinyintType|SmallintType => preparedInsert.setInt( i + 1, v.asInstanceOf[Number].intValue )
 						case FloatType => preparedInsert.setDouble( i + 1, v.asInstanceOf[Number].doubleValue )
 						case BigintType => preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
+						case DecimalType( _, _ ) =>
+							v match {
+								case v: java.lang.Double => preparedInsert.setBigDecimal( i, new java.math.BigDecimal(v) )
+								case b: BigDecimal => preparedInsert.setBigDecimal( i, b.underlying )
+							}
 						case UUIDType|TimeType|DateType|BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
 						case DatetimeType|TimestampType => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>

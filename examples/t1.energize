@@ -11,7 +11,7 @@ resource r4s
 	a string unique
 
 if r1s.count( None ) == 0
-	insert( r4s, {a: "a"} )
-	insert( r3s, {r4: "a"} )
-	insert( r2s, {r3: 1} )
-	insert( r1s, {r2: 1} )
+	r4s.insert( {a: "a"} )
+	r3s.insert( {r4: "a"} )
+	r2s.insert( {r3: 1} )
+	r1s.insert( {r2: 1} )

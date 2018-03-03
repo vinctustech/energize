@@ -1,3 +1,7 @@
 resource users
 	firstName string
 	lastName string
+
+register( {email: "tom@example.com", password: "tompass", firstName: "Tom", lastName: "First"} )
+register( {email: "dick@example.com", password: "dickpass", firstName: "Dick", lastName: "Second"} )
+register( {email: "harry@example.com", password: "harrypass", firstName: "Harry", lastName: "Third"} )
