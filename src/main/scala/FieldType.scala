@@ -11,6 +11,7 @@ trait ReferenceType extends FieldType {
 }
 
 trait PrimitiveFieldType extends FieldType
+case object JSONType extends PrimitiveFieldType//todo: add json type
 case object BooleanType extends PrimitiveFieldType
 case class CharType( length: Int ) extends PrimitiveFieldType
 case class StringType( length: Int ) extends PrimitiveFieldType

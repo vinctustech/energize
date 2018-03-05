@@ -18,10 +18,13 @@ object Main extends App {
   val key = AUTHENTICATION.getString( "key" )
   val src =
     """
+      |enum e [a, b, c]
+      |
 			|resource r
-			|  a string
+			|  f e
 			|
-      |r.insert( {a: 'é'} )
+      |r.insert( {f: a} )
+      |write( r.list(None, None, None, None, None, None) )
     """.trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
   val message =
@@ -63,7 +66,7 @@ object Main extends App {
       override def setParams(params: HttpParams): Unit = ???
    }
 
-  println( pro.process( "GET", "/users?access_token=asdf", new HttpComponentsMessageHeaders(message), null, null ) )
+//  println( pro.process( "GET", "/users?access_token=asdf", new HttpComponentsMessageHeaders(message), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

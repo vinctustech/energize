@@ -11,19 +11,17 @@ class EnergizeParser extends FunLParser {
 	lexical.reserved += ("base", "enum", "table", "resource", "routes", "realm", "protected", "private")
 	lexical.delimiters += ("=>", "?")
 
-	import lexical.{Dedent, Indent}
+	import lexical.{Dedent, Indent, Newline}
 
-	override lazy val declaration = super.declarationdef | enumDefinition /*| baseDeclaration*/ | resourceDefinition | routesDefinition
+	override lazy val declaration = super.declarationdef | enumDefinitions  | resourceDefinition | routesDefinition
+
+	lazy val enumDefinitions =
+		"enum" ~> enumDefinition |
+		"enum" ~> Indent ~> rep1(enumDefinition <~ Newline) <~ Dedent ^^ DeclarationBlockAST
 
 	lazy val enumDefinition: PackratParser[EnumDefinition] =
-		"enum" ~> pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]") ^^ {
+		pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]") ^^ {
 			case p ~ i ~ e => EnumDefinition( p, i, e map {case ep ~ ei => (ep, ei)} ) }
-//		"enum" ~> (Indent ~> rep1(pos ~ ident ~ ("[" ~> rep1sep(pos ~ ident, ",") <~ "]")) <~ Dedent) ^^ { l =>
-//			l map {case p ~ i ~ e => EnumDefinition(p.pos, i, e map {case ep ~ ei => (ep.pos, ei)})}
-//		}
-
-//	lazy val baseDeclaration: PackratParser[DeclarationStatementAST] =
-//		"base" ~> basicPath ^^ BaseDeclaration
 
 	lazy val basicPath: PackratParser[PathSegment] =
 		"/" ~> basicSlashPathSegment ^^ { p => ConcatenationPathSegment( List(SlashPathSegment, p) ) }

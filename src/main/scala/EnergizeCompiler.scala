@@ -18,10 +18,146 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	val routes = new ArrayBuffer[Route]
 	val resources = new HashMap[String, Resource]
 	val conds = new ArrayBuffer[(ExpressionAST, ExpressionAST)]
-	var lastResource: Position = _
+	val enums = new HashMap[String, List[String]]
 	var db: Database = _
 	var statement: Statement = _
 	var internal: Boolean = _
+
+	def dbtype( pos: Position, name: String, args: List[Any], array: Boolean ) = {
+		val basic =
+			name match {
+				case "boolean" =>
+					if (args nonEmpty)
+						problem( pos, "the 'boolean' type doesn't take parameters" )
+
+					BooleanType
+				case "char" =>
+					if (args.isEmpty || args.length > 1 || !integer( args.head.toString ))
+						problem( pos, "the 'char' type takes a positve integer parameter" )
+
+					CharType( args.head.toString.toInt )
+				case "string" =>
+					if (args.length > 1 || args.nonEmpty && !integer( args.head.toString ))
+						problem( pos, "the 'string' type takes a positve integer size parameter, or else the size defaults to 128" )
+
+					StringType( if (args nonEmpty) args.head.toString.toInt else 128 )
+				case "tinytext" =>
+					if (args nonEmpty)
+						problem( pos, "the 'tinytext' type doesn't take parameters" )
+
+					TinytextType
+				case "shorttext" =>
+					if (args nonEmpty)
+						problem( pos, "the 'shorttext' type doesn't take parameters" )
+
+					ShorttextType
+				case "text" =>
+					if (args nonEmpty)
+						problem( pos, "the 'text' type doesn't take parameters" )
+
+					TextType
+				case "longtext" =>
+					if (args nonEmpty)
+						problem( pos, "the 'longtext' type doesn't take parameters" )
+
+					LongtextType
+				case "tinyint" =>
+					if (args nonEmpty)
+						problem( pos, "the 'tinyint' type doesn't take parameters" )
+
+					TinyintType
+				case "smallint" =>
+					if (args nonEmpty)
+						problem( pos, "the 'smallint' type doesn't take parameters" )
+
+					SmallintType
+				case "integer"|"int" =>
+					if (args nonEmpty)
+						problem( pos, "the 'integer' type doesn't take parameters" )
+
+					IntegerType
+				case "bigint" =>
+					if (args nonEmpty)
+						problem( pos, "the 'bigint' type doesn't take parameters" )
+
+					BigintType
+				case "UUID"|"uuid" =>
+					if (args nonEmpty)
+						problem( pos, "the 'UUID' type doesn't take parameters" )
+
+					UUIDType
+				case "date" =>
+					if (args nonEmpty)
+						problem( pos, "the 'date' type doesn't take parameters" )
+
+					DateType
+				case "datetime" =>
+					if (args nonEmpty)
+						problem( pos, "the 'datetime' type doesn't take parameters" )
+
+					DatetimeType
+				case "time" =>
+					if (args nonEmpty)
+						problem( pos, "the 'time' type doesn't take parameters" )
+
+					TimeType
+				case "timestamp" =>
+					if (args nonEmpty)
+						problem( pos, "the 'timestamp' type doesn't take parameters" )
+
+					TimestampType
+				case "binary" =>
+					if (args nonEmpty)
+						problem( pos, "the 'binary' type doesn't take parameters" )
+
+					BinaryType
+				case "float" =>
+					if (args nonEmpty)
+						problem( pos, "the 'float' type doesn't take parameters" )
+
+					FloatType
+				case "blob" =>
+					if (args.length > 1 || args.length == 1 && !(List("base64", "hex", "list", "urlchars") contains args.head.toString))
+						problem( pos, """the 'blob' type takes an option blob type parameter: "base64", "hex", "list", or "urlchars"""" )
+
+					if (args nonEmpty)
+						BLOBType( Symbol(args.head.toString) )
+					else
+						BLOBType( 'base64 )
+				case "media" =>
+					if (args exists (!_.isInstanceOf[MimeType]))
+						problem( pos, "the 'media' type takes zero or more media (MIME) type parameters" )
+
+					MediaType( args.asInstanceOf[List[MimeType]] )
+				case "decimal" =>
+					if (args.length != 2 || args.nonEmpty && !integer( args.head.toString ) || args.length >= 2 && !integer( args.tail.head.toString ))
+						problem( pos, "the 'decimal' type takes two integer parameters" )
+
+					val (precision, scale) = (args.head.toString.toInt, args.tail.head.toString.toInt)
+
+					if (precision < 1)
+						problem( pos, "precision should be positive" )
+
+					if (scale < 0)
+						problem( pos, "scale should be non-negative" )
+
+					if (scale > precision)
+						problem( pos, "scale should be no greater than precision" )
+
+					DecimalType( precision, scale )
+				case _ if enums contains name => EnumType( name, enums(name) )
+				case r =>
+					if (array)
+						ManyReferenceType( pos, r )
+					else
+						SingleReferenceType( pos, r )
+			}
+
+		if (array && !basic.isInstanceOf[ManyReferenceType])
+			ArrayType( basic.asInstanceOf[PrimitiveFieldType] )
+		else
+			basic
+	}
 
 	def path2pattern( path: PathSegment ): PatternAST =
 		path match {
@@ -122,6 +258,9 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	}
 
 	override def explicitsExtension: PartialFunction[(AST, AST => Unit), Any] = {
+		case (EnumDefinition( pos, name, enum ), explicits) =>
+			enums(name) = enum map ({case (_, e) => e}) toVector
+			explicits( DataAST(pos, name, enum map {case (p, e) => (e, Nil)}) )
 		case (RoutesDefinition( _, base, protection, mappings ), _) =>
 			mappings foreach {
 				case RouteMapping( pos, method, path, guard, action ) =>
@@ -179,7 +318,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					if (cols contains db.desensitize( cname ))
 						problem( col.pos, s"field '$cname' defined twice" )
 
-					val fieldType = Definition.dbtype( tpos, tname, args, array )
+					val fieldType = dbtype( tpos, tname, args, array )
 
 					var secret = false
 					var required = false
@@ -270,24 +409,21 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 						addRoutes( Definition.compile( Builtins.arrayroutes(basepath, name, authorize), db, statement, true ) )
 					}
 			}
-
-			lastResource = pos
 	}
 
 	private def addRoutes( d: Definition ): Unit = {
 		conds.insertAll( 0, d.conds )
 		routes.insertAll( 0, d.routes )
-//		conds ++= d.conds
-//		routes ++= d.routes
 	}
 
 	override def declsExtension: PartialFunction[(AST, AST => Unit), Any] = {
-		case (RoutesDefinition( _, _, _, _ ), _) =>
+		case (_: RoutesDefinition, _) =>
 		case (ResourceDefinition( _, _, _, _, _, _, decl ), decls) => decls( decl )
 	}
 
 	override def emitExtension: PartialFunction[(AST, AST => Unit), Any] = {
-		case (RoutesDefinition( _, _, _, _ ), _) =>
+		case (_: EnumDefinition, _) =>
+		case (_: RoutesDefinition, _) =>
 		case (ResourceDefinition( _, _, _, _, _, _, decl ), emit) => emit( decl )
 	}
 
