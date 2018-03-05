@@ -1,3 +1,4 @@
+//@
 package xyz.hyperreal.energize2
 
 import util.Random._
@@ -35,40 +36,47 @@ object UtilityFunctions {
 //	}
 
 	def resourceSchema( vm: VM, resource: Resource ) = {
-		val primitive: PartialFunction[FieldType, String] = {
-			case CharType( len ) => s"char($len)"
-			case StringType( len ) => s"string($len)"
-			case TinytextType => "tinytext"
-			case ShorttextType => "shorttext"
-			case TextType => "text"
-			case LongtextType => "longtext"
-			case BooleanType => "boolean"
-			case TinyintType => "tinyint"
-			case SmallintType => "smallint"
-			case IntegerType => "integer"
-			case BigintType => "bigint"
-			case FloatType => "float"
-			case UUIDType => "UUID"
-			case DateType => "date"
-			case DatetimeType => "datetime"
-			case TimeType => "time"
-			case TimestampType => "timestamp"
-			case BinaryType => "binary"
-			case BLOBType( rep ) => s"blob($rep)"
-			case DecimalType( precision, scale ) => s"decimal($precision,$scale)"
-			case MediaType( Nil ) => "media"
-			case MediaType( allowed ) => s"media(${allowed map {case MimeType(typ, subtype) => s"$typ/$subtype"} mkString ","})"
-		}
+		def primitive( typ: FieldType ): Map[String, Any] = {
+      val (name, args: List[String]) =
+        typ match {
+          case CharType( len ) => ("char", List(len.toString))
+          case StringType( len ) => ("string", List(len.toString))
+          case TinytextType => ("tinytext", null)
+          case ShorttextType => ("shorttext", null)
+          case TextType => ("text", null)
+          case LongtextType => ("longtext", null)
+          case BooleanType => ("boolean", null)
+          case TinyintType => ("tinyint", null)
+          case SmallintType => ("smallint", null)
+          case IntegerType => ("integer", null)
+          case BigintType => ("bigint", null)
+          case FloatType => ("float", null)
+          case UUIDType => ("UUID", null)
+          case DateType => ("date", null)
+          case DatetimeType => ("datetime", null)
+          case TimeType => ("time", null)
+          case TimestampType => ("timestamp", null)
+          case BinaryType => ("binary", null)
+          case BLOBType( rep ) => s"blob($rep)"
+          case DecimalType( precision, scale ) => s"decimal($precision,$scale)"
+          case MediaType( Nil ) => ("media", Nil)
+          case MediaType( allowed ) => ("media", allowed map {case MimeType(typ, subtype) => s"$typ/$subtype"})
+          case EnumType( name, elems ) => ("enum", name :: elems.toList)
+        }
+
+      if (args == null)
+        Map( "type" -> name )
+      else
+        Map( "type" -> name, "parameters" -> args )
+    }
 
 		def field( t: FieldType ) =
-			if (primitive isDefinedAt t)
-				Map( "category" -> "primitive", "type" -> primitive(t) )
-			else
-				t match {
-					case SingleReferenceType( _, res, _ ) => Map( "category" -> "one-to-many", "type" -> res )
-					case ManyReferenceType( _, res, _ ) => Map( "category" -> "many-to-many", "type" -> res )
-					case ArrayType( parm ) => Map( "category" -> "array", "type" -> primitive(parm) )
-				}
+      t match {
+        case SingleReferenceType( _, res, _ ) => Map( "category" -> "one-to-many", "type" -> res )
+        case ManyReferenceType( _, res, _ ) => Map( "category" -> "many-to-many", "type" -> res )
+        case ArrayType( parm ) => Map( "category" -> "array" ) ++ primitive( parm )
+        case _ => Map( "category" -> "primitive" ) ++ primitive( t )
+      }
 
 		def modifiers( secret: Boolean, required: Boolean, unique: Boolean, indexed: Boolean ) =
 			(if (secret) List("secret") else Nil) ++

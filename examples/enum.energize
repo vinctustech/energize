@@ -1,0 +1,6 @@
+enum e [a, b, c]
+
+resource r
+  f e
+
+r.insert( {f: b} )

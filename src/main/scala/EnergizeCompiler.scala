@@ -18,7 +18,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	val routes = new ArrayBuffer[Route]
 	val resources = new HashMap[String, Resource]
 	val conds = new ArrayBuffer[(ExpressionAST, ExpressionAST)]
-	val enums = new HashMap[String, List[String]]
+	val enums = new HashMap[String, Vector[String]]
 	var db: Database = _
 	var statement: Statement = _
 	var internal: Boolean = _
@@ -259,7 +259,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 
 	override def explicitsExtension: PartialFunction[(AST, AST => Unit), Any] = {
 		case (EnumDefinition( pos, name, enum ), explicits) =>
-			enums(name) = enum map ({case (_, e) => e}) toVector
+			enums(name) = enum.map( {case (_, e) => e} ).toVector
 			explicits( DataAST(pos, name, enum map {case (p, e) => (e, Nil)}) )
 		case (RoutesDefinition( _, base, protection, mappings ), _) =>
 			mappings foreach {

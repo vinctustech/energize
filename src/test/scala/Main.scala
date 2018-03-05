@@ -23,7 +23,7 @@ object Main extends App {
 			|resource r
 			|  f e
 			|
-      |r.insert( {f: a} )
+      |r.insert( {f: d} )
       |write( r.list(None, None, None, None, None, None) )
     """.trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
