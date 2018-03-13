@@ -1,3 +1,0 @@
-resource users
-	firstName string
-	lastName string

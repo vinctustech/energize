@@ -1,4 +1,0 @@
-resource r
-	f [integer]
-
-insert( r, {f: [1, 2, 3]} )
