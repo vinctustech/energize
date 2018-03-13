@@ -1,0 +1,4 @@
+resource todo
+  name        string  required
+  description string  optional
+  status      integer required

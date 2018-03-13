@@ -1,0 +1,15 @@
+resource books
+	title string required
+	authors [authors]
+	publisher publishers
+
+resource authors
+	name string unique
+
+resource publishers
+	name string unique
+
+
+if books.count( None ) == 0
+	publishers.insert( {name: "Spectra"} )
+	books.insert( {title: "Dune: House Atreides", publisher: "Spectra"} )	;; could also write `publisher: 1`

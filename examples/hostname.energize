@@ -1,0 +1,2 @@
+routes
+  get /h => res.send( req.hostname )

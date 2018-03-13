@@ -1,0 +1,34 @@
+resource people
+	first_name string indexed
+	last_name string indexed
+	company_name string indexed
+	address string indexed
+	city string indexed
+	province string indexed
+	postal string indexed
+	phone1 string indexed
+	phone2 string indexed
+	email string indexed
+	web string indexed
+	
+people.batchInsert( [
+	["Francoise","Rautenstrauch","Riebesell, H F Jr","2335 Canton Hwy #6","Windsor","ON","N8N 3N2","519-569-8399","519-978-6179","francoise.rautenstrauch@rautenstrauch.com","http://www.riebesellhfjr.com"],
+	["Kendra","Loud","Deloitte & Touche","6 Arch St #9757","Alcida","NB","E8J 2C4","506-363-1526","506-932-4472","kloud@gmail.com","http://www.deloittetouche.com"],
+	["Lourdes","Bauswell","Oklahoma Neon Inc","9547 Belmont Rd #21","Belleville","ON","K8P 1B3","613-903-7043","613-638-6682","lourdes_bauswell@aol.com","http://www.oklahomaneoninc.com"],
+	["Hannah","Edmison","M B A Paint Stores","73 Pittsford Victor Rd","Vancouver","BC","V5Z 3K2","604-334-3686","604-692-7694","hannah@yahoo.com","http://www.mbapaintstores.com"],
+	["Tom","Loeza","Sheraton Shreveport Hotel","447 Commercial St Se","LIle-Perrot","QC","J7V 4T4","514-487-6096","514-727-4760","tom.loeza@gmail.com","http://www.sheratonshreveporthotel.com"],
+	["Queenie","Kramarczyk","Goeman Wood Products Inc","47 Garfield Ave","Swift Current","SK","S9H 4V2","306-421-5793","306-302-7591","queenie.kramarczyk@kramarczyk.org","http://www.goemanwoodproductsinc.com"],
+	["Hui","Portaro","A Storage Inn Of Gloucester","3 Mill Rd","Baker Brook","NB","E7A 1T3","506-827-7755","506-276-4830","hui_portaro@cox.net","http://www.astorageinnofgloucester.com"],
+	["Josefa","Opitz","Norman Gale Isuzu","136 W Grand Ave #3","Delhi","ON","N4B 1C4","519-788-7645","519-526-3721","josefa.opitz@opitz.org","http://www.normangaleisuzu.com"],
+	["Lea","Steinhaus","James, Christopher Esq","80 Maplewood Dr #34","Bradford","ON","L3Z 2S4","905-618-8258","905-651-3298","lsteinhaus@cox.net","http://www.jameschristopheresq.com"],
+	["Paola","Vielma","Congress Title","58 Hancock St","Aurora","ON","L4G 2J7","905-456-1117","905-263-7711","paola_vielma@aol.com","http://www.congresstitle.com"],
+	["Hortencia","Bresser","Batavia Chamber Of Commerce","808 Calle De Industrias","New Waterford","NS","B1H 1Z4","902-256-6791","902-370-8282","hbresser@aol.com","http://www.bataviachamberofcommerce.com"],
+	["Leanna","Tijerina","Stephenson Land Surveying","2859 Dorsett Rd","North York","ON","M9L 2T9","416-719-2114","416-658-1773","leanna@cox.net","http://www.stephensonlandsurveying.com"],
+	["Danilo","Pride","Harry L Adams Incorporated","6857 Wall St","Red Deer","AB","T4R 2H5","403-212-4945","403-888-9985","danilo_pride@hotmail.com","http://www.harryladamsincorporated.com"],
+	["Huey","Marcille","Southern Idaho Pipe & Stl Corp","169 Journal Sq","Edmonton","AB","T5P 1G9","780-639-3619","780-520-1241","huey.marcille@gmail.com","http://www.southernidahopipestlcorp.com"],
+	["Apolonia","Warne","Kitchen People","3 E 31st St #77","Fredericton","NB","E3G 0A3","506-978-1488","506-221-1874","apolonia@gmail.com","http://www.kitchenpeople.com"],
+	["Chandra","Lagos","Meredith Realty Group Inc","7 N Dean St","Etobicoke","ON","M8Z 3P6","416-716-6446","416-822-1760","chandra.lagos@lagos.org","http://www.meredithrealtygroupinc.com"],
+	["Crissy","Pacholec","Cgi Systems Inc","85 S State St","Barrie","ON","L4N 6T7","705-477-2307","705-523-6746","crissy@aol.com","http://www.cgisystemsinc.com"],
+	["Gianna","Branin","All Brevard Cert Apprsls Inc","100 Main St","Calgary","AB","T2K 4X5","403-337-7162","403-540-5944","gianna@aol.com","http://www.allbrevardcertapprslsinc.com"],
+	["Valentin","Billa","General Color Co Inc","6185 Bohn St #72","Pangman","SK","S0C 2C0","306-291-5073","306-316-7477","vbilla@yahoo.com","http://www.generalcolorcoinc.com"],
+	["Ilona","Dudash","Adams Balcom & Larose Pc","2 Sutton Pl S #5727","Rouyn-Noranda","QC","J9X 3V4","819-536-7034","819-413-1530","idudash@dudash.com","http://www.adamsbalcomlarosepc.com"]], false)

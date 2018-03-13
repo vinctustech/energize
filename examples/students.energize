@@ -1,0 +1,15 @@
+resource students
+	name string unique
+	classrooms [classrooms]
+
+resource classrooms
+	room string unique
+
+
+if students.count( None ) == 0
+	students.batchInsert( [["rayna"], ["soren"], ["carys"], ["larkin"]], false )
+	classrooms.batchInsert( [["101"], ["105"], ["208"], ["302"], ["307"]], false )
+	students.associate( "name", "rayna", classrooms, "room", "105" )
+	students.associate( "name", "rayna", classrooms, "room", "307" )
+	students.associate( "name", "soren", classrooms, "room", "208" )
+	students.associate( "name", "soren", classrooms, "room", "307" )
