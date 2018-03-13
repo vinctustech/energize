@@ -1,5 +1,5 @@
 //@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import java.lang.reflect.InvocationTargetException
 import java.net.URI

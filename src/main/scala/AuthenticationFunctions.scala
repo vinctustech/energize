@@ -1,5 +1,5 @@
 //@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import org.mindrot.jbcrypt.BCrypt
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim}

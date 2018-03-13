@@ -8,7 +8,7 @@ import com.typesafe.config.ConfigFactory
 import xyz.hyperreal.bvm.{ExpressionAST, VM}
 
 
-package object energize2 {
+package object energize {
 
 	type OBJ = Map[String, AnyRef]
 

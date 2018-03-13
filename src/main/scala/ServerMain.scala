@@ -1,4 +1,4 @@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import xyz.hyperreal.options._
 
@@ -10,8 +10,8 @@ object ServerMain extends App {
 
 	if (!options.set( "--" ) && arg.length != 1 || options.set( "--" ) && arg.nonEmpty) {
 		s"""
-			|Energize2 v0.1
-			|Usage: java -jar energize2-0.1.jar [-j -c] <config>
+			|Energize v0.1
+			|Usage: java -jar energize-0.1.jar [-j -c] <config>
 			|  where <config> is either a file name (without .energize),
 			|                           a configuration string (if -c was used), or
 			|                           -- to read the configuration from standard input

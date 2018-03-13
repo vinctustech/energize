@@ -1,4 +1,4 @@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 
 class RequestException( error: String ) extends Exception( error )

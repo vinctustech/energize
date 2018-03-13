@@ -1,4 +1,4 @@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import java.sql.{Connection, Statement}
 import java.io.PrintWriter

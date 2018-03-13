@@ -1,5 +1,5 @@
 //@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import scala.util.parsing.input.Position
 

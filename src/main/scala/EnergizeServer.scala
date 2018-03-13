@@ -1,4 +1,4 @@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import java.util.concurrent.TimeUnit
 import java.io.{ByteArrayOutputStream, File}

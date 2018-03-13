@@ -1,4 +1,4 @@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import java.sql.Timestamp
 import java.time.format.DateTimeFormatter

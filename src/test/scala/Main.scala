@@ -1,5 +1,5 @@
 //@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import org.apache.http._
 import org.apache.http.params.HttpParams

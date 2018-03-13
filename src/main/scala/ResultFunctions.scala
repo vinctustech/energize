@@ -1,4 +1,4 @@
-package xyz.hyperreal.energize2
+package xyz.hyperreal.energize
 
 import org.apache.http.HttpStatus._
 import xyz.hyperreal.bvm.VM
