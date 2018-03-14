@@ -31,6 +31,10 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 	vm.execute
 
+	def discard: Unit = {
+		connection.close
+	}
+
 	def resource( name: String ) = resources( db.desensitize(name) )
 
 	def renameResource( oldname: String, newname: String ) = resourceMutex.synchronized {
