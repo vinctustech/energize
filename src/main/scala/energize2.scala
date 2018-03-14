@@ -1,5 +1,6 @@
 package xyz.hyperreal
 
+import java.sql.Types
 import java.time.{Instant, ZoneOffset}
 import java.util.Base64
 
@@ -86,6 +87,22 @@ package object energize {
 			case OptionalPathSegment( p ) => path2string( p ) + "?"
 			case OneOrMorePathSegment( p ) => path2string( p ) + "+"
 			case RepeatPathSegment( subpat, lower, _, upper ) => s"${path2string( subpat )}{$lower, $upper}"
+		}
+
+	def field2sql( typ: FieldType ) =	//todo: might have to be a method of Database
+		typ match {
+			case BooleanType => Types.BOOLEAN
+			case StringType( _ ) => Types.VARCHAR
+			case TinytextType|ShorttextType|TextType|LongtextType => Types.CLOB
+			case TinyintType|SmallintType|IntegerType => Types.INTEGER
+			case FloatType => Types.FLOAT
+			case BigintType|SingleReferenceType( _, _, _ )|MediaType( _ ) => Types.BIGINT
+			case BLOBType( _ ) => Types.BLOB
+			case TimestampType => Types.TIMESTAMP
+			case ArrayType( _ ) => Types.ARRAY
+			case DecimalType( _, _ ) => Types.DECIMAL
+			case TimeType => Types.TIME
+			case DateType => Types.DATE
 		}
 
 }

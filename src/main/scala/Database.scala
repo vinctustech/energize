@@ -146,7 +146,7 @@ object PostgresDatabase extends Database {
 			case DatetimeType => "TIMESTAMP"
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
-			case BLOBType( _ ) => "BLOB"
+			case BLOBType( _ ) => "BYTEA"
 			case MediaType( _ ) => "BIGINT"
 		}
 

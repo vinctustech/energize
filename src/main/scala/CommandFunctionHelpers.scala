@@ -81,22 +81,7 @@ object CommandFunctionHelpers {
 		}
 
 	def setNull( preparedStatement: PreparedStatement, col: Int, typ: FieldType ): Unit = {
-		val t =
-			typ match {
-				case BooleanType => Types.BOOLEAN
-				case StringType( _ ) => Types.VARCHAR
-				case TinytextType|ShorttextType|TextType => Types.CLOB
-				case IntegerType => Types.INTEGER
-				case FloatType => Types.FLOAT
-				case BigintType|SingleReferenceType( _, _, _ )|MediaType( _ ) => Types.BIGINT
-				case BLOBType( _ ) => Types.BLOB
-				case TimestampType => Types.TIMESTAMP
-				case ArrayType( _ ) => Types.ARRAY
-				case DecimalType( _, _ ) => Types.DECIMAL
-				case DateType => Types.DATE
-			}
-
-		preparedStatement.setNull( col, t )
+		preparedStatement.setNull( col, field2sql(typ) )
 	}
 
 }

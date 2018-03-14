@@ -200,7 +200,7 @@ object Definition {
 
 		if (resources.nonEmpty && !connection.getMetaData.getTables( null, db.publicSchema, resources.head._1, null ).next) {
 			//			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
-//				println( db.create(sorted) )
+			println( db.create(sorted) )
 			statement.execute( db.create(sorted) )
 		}
 
