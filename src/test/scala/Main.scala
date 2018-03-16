@@ -31,7 +31,6 @@ object Main extends App {
 			|  f int
 			|
       |r.insert( {f: 123} )
-      |;;write( r.list(None, None, None, None, None, None) )
     """.trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
   val message =
@@ -73,7 +72,8 @@ object Main extends App {
       override def setParams(params: HttpParams): Unit = ???
    }
 
-  println( pro.process( "GET", "/users?access_token=asdf", new HttpComponentsMessageHeaders(message), null, null ) )
+  println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
+  pro.dropPostgresTables
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

@@ -217,7 +217,7 @@ object Definition {
 
 				r.preparedInsert =
           connection.prepareStatement(
-            s"INSERT INTO $name ($fieldstr) VALUES ($values)" + (if (db == PostgresDatabase) " RETURNING _id" else "") )
+            s"INSERT INTO $name ($fieldstr) VALUES ($values)" + (if (db == PostgresDatabase) s" RETURNING $idIn" else "") )
 				r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
 				r.media = media
 				r.processor = proc

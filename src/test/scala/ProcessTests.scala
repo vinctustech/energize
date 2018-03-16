@@ -73,7 +73,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "route not found: GET /api/v1/tod"
 					|}
 				""".trim.stripMargin)
-		c.close
+		Test.close( pro )
 	}
 
 	"empty database (no base)" in {
@@ -122,7 +122,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				"""{
 					|  "error": "route not found: GET /tod"
 					|}""".stripMargin)
-		c.close
+		Test.close( pro )
 	}
 
 	"post/put/get/delete" in {
@@ -267,7 +267,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		c.close
+		Test.close( pro )
 	}
 
 	"functions/evaluation" in {
@@ -317,7 +317,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			|  "data": "-1/2+i"
 			|}
 			""".trim.stripMargin )
-		c.close
+		Test.close( pro )
 	}
 
 	"empty database (one-to-many)" in {
@@ -369,7 +369,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "route not found: GET /product"
 					|}
 				""".trim.stripMargin )
-		c.close
+		Test.close( pro )
 	}
 
 	"post/get/put/delete (one-to-many)" in {
@@ -494,7 +494,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		c.close
+		Test.close( pro )
 	}
 
 	"empty database (many-to-many)" in {
@@ -543,7 +543,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				"""{
 					|  "error": "route not found: GET /product"
 					|}""".stripMargin )
-		c.close
+		Test.close( pro )
 	}
 
 	"post/get/put/delete (many-to-many)" in {
@@ -669,7 +669,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|  "error": "id 1 not found"
 					|}
 				""".trim.stripMargin )
-		c.close
+		Test.close( pro )
 	}
 
 	"post/get/put/delete (mixed relationships)" in {

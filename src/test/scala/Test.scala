@@ -1,11 +1,16 @@
 package xyz.hyperreal.energize
 
-import java.io.{PrintStream, ByteArrayOutputStream}
+import java.io.{ByteArrayOutputStream, PrintStream}
 
 
 object Test {
 
-  def dbconnect = Definition.dbconnect( "H2", "org.h2.Driver", "jdbc:h2:mem:", "sa", "" )
+  def dbconnect = Definition.dbconnect//( "H2", "org.h2.Driver", "jdbc:h2:mem:", "sa", "" )
+
+	def close( pro: Processor ): Unit = {
+		pro.dropPostgresTables
+		pro.connection.close
+	}
 
 	def capture( code: String ) = {
 		val buf = new ByteArrayOutputStream

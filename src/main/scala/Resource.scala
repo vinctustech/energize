@@ -53,7 +53,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 	def query( sql: Query, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
-		val res = QueryFunctionHelpers.synchronized( new Relation( processor.db, processor.statement.executeQuery(sql.query) ) )
+		val res = processor.mutex.synchronized( new Relation( processor.db, processor.statement.executeQuery(sql.query) ) )
 		val list = new ListBuffer[OBJ]
 
 		def mkOBJ( table: Resource, fields: List[String] ): OBJ = {
@@ -92,9 +92,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 				//						}
 				//						case Some( t ) if t == table =>
 				table.fieldMap get cn match {
-					case None if cn == "_id" =>
-//						println(obj)
-						attr += ("_id" -> obj.get)
+					case None if cn == "_id" => attr += ("_id" -> obj.get)
 					case None => sys.error( s"data from an unknown column: $cn" )
 					case Some( Field(cname, SingleReferenceType(_, _, reft), _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> mkOBJ( reft, Nil ))

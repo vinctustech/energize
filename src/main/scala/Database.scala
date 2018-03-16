@@ -216,7 +216,7 @@ object PostgresDatabase extends Database {
 			case Resource( name, _, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
-				buf ++= " (_id BIGSERIAL NOT NULL PRIMARY KEY"
+				buf ++= s" ($idIn BIGSERIAL NOT NULL PRIMARY KEY"
 
 				columns foreach {
 					case Field( cname, typ, secret, required, unique, indexed, _ ) =>
