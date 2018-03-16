@@ -1,7 +1,7 @@
 //@
 package xyz.hyperreal.energize
 
-import java.sql.Statement
+import java.sql.{Connection, Statement}
 
 import collection.mutable.{ArrayBuffer, HashMap, LinkedHashMap}
 import scala.util.parsing.input.Position
@@ -19,6 +19,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 	val resources = new HashMap[String, Resource]
 	val conds = new ArrayBuffer[(ExpressionAST, ExpressionAST)]
 	val enums = new HashMap[String, Vector[String]]
+	var connection: Connection = _
 	var db: Database = _
 	var statement: Statement = _
 	var internal: Boolean = _
@@ -371,7 +372,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					cols(cname) = Field( cname, fieldType, secret, required, unique, indexed, Nil )
 			}
 
-			val res = Resource( name, base, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, statement, db )
+			val res = Resource( name, base, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, connection, statement, db )
 
 			resources(db.desensitize( name )) = res
 			r.decl = VarAST( pos, name, name, Some(LiteralExpressionAST(res)))
@@ -390,23 +391,23 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 				if (base isEmpty) {
 //					super.compile( Definition.parse( Builtins.routes("", name, authorize) ) )
 
-					addRoutes( Definition.compile( Builtins.routes("", name, authorize), db, statement, true ) )
+					addRoutes( Definition.compile( Builtins.routes("", name, authorize), connection, db, statement, true ) )
 
 					if (mtm)
-						addRoutes( Definition.compile( Builtins.mtmroutes("", name, authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.mtmroutes("", name, authorize), connection, db, statement, true ) )
 
 					if (cols exists {case (_, c) => c.typ.isInstanceOf[ArrayType]})
-						addRoutes( Definition.compile( Builtins.arrayroutes("", name, authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.arrayroutes("", name, authorize), connection, db, statement, true ) )
 				} else {
 					val basepath = path2string( base get )
 
-					addRoutes( Definition.compile( Builtins.routes(basepath, name, authorize), db, statement, true ) )
+					addRoutes( Definition.compile( Builtins.routes(basepath, name, authorize), connection, db, statement, true ) )
 
 					if (mtm)
-						addRoutes( Definition.compile( Builtins.mtmroutes(basepath, name, authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.mtmroutes(basepath, name, authorize), connection, db, statement, true ) )
 
 					if (cols exists { case (_, c) => c.typ.isInstanceOf[ArrayType] })
-						addRoutes( Definition.compile( Builtins.arrayroutes(basepath, name, authorize), db, statement, true ) )
+						addRoutes( Definition.compile( Builtins.arrayroutes(basepath, name, authorize), connection, db, statement, true ) )
 					}
 			}
 	}
@@ -427,10 +428,11 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 		case (ResourceDefinition( _, _, _, _, _, _, decl ), emit) => emit( decl )
 	}
 
-	def compile( src: SourceAST, db: Database, statement: Statement, internal: Boolean ) = {
+	def compile( src: SourceAST, connection: Connection, db: Database, statement: Statement, internal: Boolean ) = {
 		router = null
 		conds.clear
 		routes.clear
+		this.connection = connection
 		this.db = db
 		this.statement = statement
 		this.internal = internal

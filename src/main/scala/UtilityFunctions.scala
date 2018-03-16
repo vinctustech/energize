@@ -88,7 +88,7 @@ object UtilityFunctions {
 			cs map {case Field( fname, typ, secret, required, unique, indexed, _ ) =>	// todo: add validators support to schema
 				Map( "name" -> fname, "type" -> field(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
 
-		val Resource(rname, base, columns, _, visible, _, _, _, _) = resource
+		val Resource(rname, base, columns, _, visible, _, _, _, _, _) = resource
 
 		Map( "name" -> rname, "resource" -> visible, "fields" -> fields(columns), "base" -> (base map path2string orNull) )
 	}

@@ -1,10 +1,9 @@
 package xyz.hyperreal.energize
 
-import java.sql._
+import java.sql.{Connection, Statement, DriverManager}
 
 import collection.mutable.{ArrayBuffer, HashMap, ListBuffer}
 import collection.JavaConverters._
-import scala.util.parsing.input.Position
 
 import org.mindrot.jbcrypt.BCrypt
 
@@ -173,20 +172,20 @@ object Definition {
 		p.parseFromSource( src, p.source )
 	}
 
-	def compile( src: String, db: Database, stat: Statement, internal: Boolean ): Definition = compile( parse(src), db, stat, internal )
+	def compile( src: String, connection: Connection, db: Database, stat: Statement, internal: Boolean ): Definition = compile( parse(src), connection, db, stat, internal )
 
-	def compile( ast: SourceAST, db: Database, stat: Statement, internal: Boolean ) = {
+	def compile( ast: SourceAST, connection: Connection, db: Database, stat: Statement, internal: Boolean ) = {
 		val compiler = new EnergizeCompiler
-		val code = compiler.compile( ast, db, stat, internal )
+		val code = compiler.compile( ast, connection, db, stat, internal )
 
 		Definition( code, compiler.resources, compiler.routes, compiler.conds )
 	}
 
 	def define( ast: SourceAST, connection: Connection, statement: Statement, db: Database, key: String ): Processor = {
-		val Definition( code, resources, routes, _ ) = compile( ast, db, statement, false )
+		val Definition( code, resources, routes, _ ) = compile( ast, connection, db, statement, false )
 
 		resources.values foreach {
-			case Resource( _, _, fields, _, _, _, _, _, _ ) =>
+			case Resource( _, _, fields, _, _, _, _, _, _, _ ) =>
 				fields foreach {
 					case Field( _, t@SingleReferenceType(pos, table, _), _, _, _, _, _ ) =>
 						t.ref = resources.getOrElse( db.desensitize(table), problem(pos, s"'$table' not found") )
@@ -208,7 +207,7 @@ object Definition {
 		val users = resources( db.desensitize("users") )
 
 		resources.values foreach {
-			case r@Resource( name, _, fields, _, _, _, _, _, _ ) =>
+			case r@Resource( name, _, fields, _, _, _, _, _, _, _ ) =>
 				val cnames1 = fields filterNot (_.typ.isInstanceOf[ManyReferenceType]) map (_.name)
 				val fieldstr = cnames1 map nameIn mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","

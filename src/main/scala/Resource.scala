@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Clob, Date, PreparedStatement, Statement}
+import java.sql.{Blob, Clob, Date, PreparedStatement, Statement, Connection}
 import java.time.{LocalDate, LocalDateTime}
 
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
@@ -14,7 +14,7 @@ object Resource {
 }
 
 case class Resource( name: String, base: Option[PathSegment], fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
-										 manyToMany: Boolean, mediaArray: Boolean, statement: Statement, db: Database ) {
+										 manyToMany: Boolean, mediaArray: Boolean, conn: Connection, statement: Statement, db: Database ) {
 	var preparedInsert: PreparedStatement = _
 	var preparedFullInsert: PreparedStatement = _
 	var media: Resource = _
