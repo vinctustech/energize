@@ -84,7 +84,7 @@ object H2Database extends Database {
 		val buf = new StringBuilder
 
 		tables foreach {
-			case Resource( name, _, columns, _, _, _, _, _, _, _ ) =>
+			case Resource( name, _, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
 				buf ++= s" ($idIn IDENTITY NOT NULL PRIMARY KEY"
@@ -213,7 +213,7 @@ object PostgresDatabase extends Database {
 		val buf = new StringBuilder
 
 		tables foreach {
-			case Resource( name, _, columns, _, _, _, _, _, _, _ ) =>
+			case Resource( name, _, columns, _, _, _, _ ) =>
 				buf ++= "CREATE TABLE "
 				buf ++= name
 				buf ++= " (_id BIGSERIAL NOT NULL PRIMARY KEY"

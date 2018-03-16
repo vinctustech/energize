@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Clob, Date, PreparedStatement, Statement, Types, Connection}
+import java.sql.{Blob, Clob, Date, PreparedStatement}
 import java.time.{LocalDate, LocalDateTime}
 
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
@@ -14,10 +14,11 @@ object Resource {
 }
 
 case class Resource( name: String, base: Option[PathSegment], fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
-										 manyToMany: Boolean, mediaArray: Boolean, conn: Connection, statement: Statement, db: Database ) {
+										 manyToMany: Boolean, mediaArray: Boolean ) {
 	var preparedInsert: PreparedStatement = _
 	var preparedFullInsert: PreparedStatement = _
 	var media: Resource = _
+	var processor: Processor = _
 
 	def names = fields map (_.name)
 
@@ -31,7 +32,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 	def count( filter: Option[String] ) = QueryFunctionHelpers.synchronized {
 		val where = QueryFunctionHelpers.filtering( filter )
-		val res = statement.executeQuery( s"SELECT COUNT(*) FROM $name $where" )
+		val res = processor.statement.executeQuery( s"SELECT COUNT(*) FROM $name $where" )
 
 		res.next
 
@@ -52,7 +53,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 	def query( sql: Query, page: Option[String], start: Option[String], limit: Option[String],
 						 allowsecret: Boolean ): List[OBJ] = {
-		val res = QueryFunctionHelpers.synchronized( new Relation( db, statement.executeQuery(sql.query) ) )
+		val res = QueryFunctionHelpers.synchronized( new Relation( processor.db, processor.statement.executeQuery(sql.query) ) )
 		val list = new ListBuffer[OBJ]
 
 		def mkOBJ( table: Resource, fields: List[String] ): OBJ = {
@@ -91,7 +92,9 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 				//						}
 				//						case Some( t ) if t == table =>
 				table.fieldMap get cn match {
-					case None if cn == "_id" => attr += ("_id" -> obj.get)
+					case None if cn == "_id" =>
+//						println(obj)
+						attr += ("_id" -> obj.get)
 					case None => sys.error( s"data from an unknown column: $cn" )
 					case Some( Field(cname, SingleReferenceType(_, _, reft), _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> mkOBJ( reft, Nil ))
@@ -123,7 +126,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 					case Some( Field(cname, MediaType(_), _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> s"/media/${obj.get}")
 					case Some( Field(cname, DatetimeType|TimestampType, _, _, _, _, _) ) if obj.get ne null =>
-						attr += (cname -> db.writeTimestamp( obj.get ))
+						attr += (cname -> processor.db.writeTimestamp( obj.get ))
 					case Some( Field(cname, EnumType(_, enum), _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> enum(obj.get.asInstanceOf[Int]))
 					case Some( Field(cname, DateType|TimeType|UUIDType, _, _, _, _, _) ) if obj.get ne null =>
@@ -188,7 +191,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 		query( Query(s"SELECT ${nameIn(field)} FROM $name WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
 
 	def readField( id: Long, field: String ) = {
-		val res = statement.executeQuery( s"SELECT ${nameIn(field)} FROM $name WHERE $idIn = $id" )
+		val res = processor.statement.executeQuery( s"SELECT ${nameIn(field)} FROM $name WHERE $idIn = $id" )
 
 		res.next
 		res.getObject( 1 )
@@ -209,7 +212,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 	//
 
 
-	def command( sql: String ) = statement.executeUpdate( sql )
+	def command( sql: String ) = processor.statement.executeUpdate( sql )
 
 	def delete( id: Long ): Int = {
 		if (mediaArray)
@@ -253,8 +256,8 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 					case (_: SingleReferenceType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
 					case (DecimalType( _, _ ), a: BigDecimal) => preparedStatement.setBigDecimal( i, a.underlying )
 					case (DateType, d: LocalDate) => preparedStatement.setDate( i, Date.valueOf(d) )
-					case (DatetimeType|TimestampType, v: String) => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
-					case (DatetimeType|TimestampType, d: LocalDateTime) => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
+					case (DatetimeType|TimestampType, v: String) => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
+					case (DatetimeType|TimestampType, d: LocalDateTime) => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 					case x => throw new BadRequestException( s"don't know what to do with $x, ${v.getClass}" )
 				}
 			}
@@ -304,13 +307,13 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 								case b: BigDecimal => preparedInsert.setBigDecimal( i + 1, b.underlying )
 							}
 						case UUIDType|TimeType|DateType|BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
-						case DatetimeType|TimestampType => preparedInsert.setTimestamp( i + 1, db.readTimestamp(v.toString) )
+						case DatetimeType|TimestampType => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>
 							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(this, allowed, _))
 
 							preparedInsert.setObject( i + 1, s.asInstanceOf[Seq[java.lang.Long]].toArray )
 						case ArrayType( prim ) =>
-							preparedInsert.setArray( i + 1, conn.createArrayOf(db.array(prim), v.asInstanceOf[Seq[AnyRef]].toArray) )
+							preparedInsert.setArray( i + 1, processor.connection.createArrayOf(processor.db.array(prim), v.asInstanceOf[Seq[AnyRef]].toArray) )
 						case BLOBType( rep ) =>
 							val array =
 								rep match {
@@ -335,7 +338,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 		}
 
 		val id =
-			if (db == PostgresDatabase) {
+			if (processor.db == PostgresDatabase) {
 				val res = preparedInsert.executeQuery
 
 				res.next
@@ -399,7 +402,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 						val kIn = nameIn( k )
 
 						fieldMap(k).typ match {
-							case DatetimeType|TimestampType => kIn + " = '" + db.readTimestamp( v.toString ) + "'"
+							case DatetimeType|TimestampType => kIn + " = '" + processor.db.readTimestamp( v.toString ) + "'"
 							case UUIDType|TimeType|DateType|StringType( _ )|CharType( _ )|BinaryType|EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
 							case TextType|TinytextType|ShorttextType|LongtextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _ ) =>
@@ -430,7 +433,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 			com ++= s" WHERE $idIn = "
 			com ++= id.toString
 
-			val res = statement.executeUpdate( com.toString )
+			val res = processor.statement.executeUpdate( com.toString )
 
 			for (id <- mediaDeletes)
 				deleteMedia( id )

@@ -372,7 +372,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 					cols(cname) = Field( cname, fieldType, secret, required, unique, indexed, Nil )
 			}
 
-			val res = Resource( name, base, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma, connection, statement, db )
+			val res = Resource( name, base, cols map {case (_, cinfo) => cinfo} toList, cols.toMap, resource, mtm, ma )
 
 			resources(db.desensitize( name )) = res
 			r.decl = VarAST( pos, name, name, Some(LiteralExpressionAST(res)))

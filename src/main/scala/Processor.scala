@@ -25,9 +25,10 @@ object Processor {
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
 								 val resources: Map[String, Resource], val routes: List[Route], val key: String, val users: Resource ) {
 
+	val mutex = new Object
+
 	private val router = code.functions( "_router_" )._1
 	/*private [energize]*/ val vm = new VM( code, Array(), false, true, this )
-	private val resourceMutex = new Object
 
 	vm.execute
 
@@ -37,11 +38,11 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 	def resource( name: String ) = resources( db.desensitize(name) )
 
-	def renameResource( oldname: String, newname: String ) = resourceMutex.synchronized {
+	def renameResource( oldname: String, newname: String ) = mutex.synchronized {
 
 	}
 
-	def renameField( resource: String, oldname: String, newname: String ) = resourceMutex.synchronized {
+	def renameField( resource: String, oldname: String, newname: String ) = mutex.synchronized {
 
 	}
 
@@ -58,7 +59,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 //	val miscellaneousRoutes = new ArrayBuffer[Route]	// implement route partitioning based on resource
 
-	def resourceLookup( name: String ) = resourceMutex.synchronized {
+	def resourceLookup( name: String ) = mutex.synchronized {
 		resources get db.desensitize( name )
 	}
 
@@ -84,7 +85,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 	def result( name: String, res: Response, error: String ) = call( name, List(res, error) )
 
 	//todo: need a router for each resource and a misc router
-	def process(method: String, uri: String, reqheaders: MessageHeaders, body: AnyRef, resheaders: MessageHeaders ) = resourceMutex.synchronized {
+	def process( method: String, uri: String, reqheaders: MessageHeaders, body: AnyRef, resheaders: MessageHeaders ) = mutex.synchronized {
 //					println(method, uri, reqheaders, body, resheaders)//dbg
 		var resStatusCode = 200
 		var resType = "application/octet-stream"
@@ -209,6 +210,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			case e: SQLException if db.conflict( e.getMessage )  =>
 				result( "Conflict", res, e.getMessage )
 			case e: Exception =>
+//				e.printStackTrace()
 				result( "InternalServerError", res, e.getMessage )
 		}
 

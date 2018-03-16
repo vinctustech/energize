@@ -186,7 +186,7 @@ object Definition {
 		val Definition( code, resources, routes, _ ) = compile( ast, connection, db, statement, false )
 
 		resources.values foreach {
-			case Resource( _, _, fields, _, _, _, _, _, _, _ ) =>
+			case Resource( _, _, fields, _, _, _, _ ) =>
 				fields foreach {
 					case Field( _, t@SingleReferenceType(pos, table, _), _, _, _, _, _ ) =>
 						t.ref = resources.getOrElse( db.desensitize(table), problem(pos, s"'$table' not found") )
@@ -207,9 +207,10 @@ object Definition {
 
 		val media = resources( db.desensitize("_media_") )
 		val users = resources( db.desensitize("users") )
+		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key, users )
 
 		resources.values foreach {
-			case r@Resource( name, _, fields, _, _, _, _, _, _, _ ) =>
+			case r@Resource( name, _, fields, _, _, _, _ ) =>
 				val cnames1 = fields filterNot (_.typ.isInstanceOf[ManyReferenceType]) map (_.name)
 				val fieldstr = cnames1 map nameIn mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
@@ -219,9 +220,8 @@ object Definition {
             s"INSERT INTO $name ($fieldstr) VALUES ($values)" + (if (db == PostgresDatabase) " RETURNING _id" else "") )
 				r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
 				r.media = media
+				r.processor = proc
 		}
-
-		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key, users )
 
     if (!created) {
       val admin =

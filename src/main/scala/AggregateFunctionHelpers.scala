@@ -12,7 +12,7 @@ object AggregateFunctionHelpers {
 	def aggregate( func: String, resource: Resource, filter: Option[String], field: String ) = QueryFunctionHelpers.synchronized {
 		val typ = AggregateFunctionHelpers.checkField( resource, field )
 		val where = QueryFunctionHelpers.filtering( filter )
-		val res = resource.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
+		val res = resource.processor.statement.executeQuery( s"SELECT $func(${nameIn(field)}) FROM ${resource.name} $where" )
 
 		res.next
 

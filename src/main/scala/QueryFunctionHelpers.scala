@@ -73,7 +73,7 @@ object QueryFunctionHelpers {
 //			else
 //				fs mkString ","
 		val buf = new StringBuilder( s"SELECT * FROM ${resource.name}" )
-		val fssd = fss map (f => resource.db.desensitize( f ))
+		val fssd = fss map (f => resource.processor.db.desensitize( f ))
 
 		def innerReferenceFieldJoin( tname: String, tref: Resource ): Unit = {
 			tref.fields foreach {
