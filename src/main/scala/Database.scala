@@ -221,34 +221,36 @@ object PostgresDatabase extends Database {
 				columns foreach {
 					case Field( cname, typ, secret, required, unique, indexed, _ ) =>
 
-					buf ++= ", "
-					buf ++= nameIn( cname )
-					buf += ' '
-					parameters( typ )
-					buf ++=
-						(typ match {
-							case EnumType( ename, enum ) =>
-								enums ++= s"CREATE TYPE $ename AS ENUM ("
-								enums ++= enum map (i => s"'$i'") mkString ","
-								enums ++= ");"
-								ename
-							case p: PrimitiveFieldType => primitive( p )
-							case SingleReferenceType( _, _, _ ) => "BIGINT"
-							case ArrayType( t ) => primitive( t ) + "[]"
-						})
+					if (!typ.isInstanceOf[ManyReferenceType]) {
+						buf ++= ", "
+						buf ++= nameIn( cname )
+						buf += ' '
+						parameters( typ )
+						buf ++=
+							(typ match {
+								case EnumType( ename, enum ) =>
+									enums ++= s"CREATE TYPE $ename AS ENUM ("
+									enums ++= enum map (i => s"'$i'") mkString ","
+									enums ++= ");"
+									ename
+								case p: PrimitiveFieldType => primitive( p )
+								case SingleReferenceType( _, _, _ ) => "BIGINT"
+								case ArrayType( t ) => primitive( t ) + "[]"
+							})
 
-					if (required)
-						buf ++= " NOT NULL"
+						if (required)
+							buf ++= " NOT NULL"
 
-					if (unique)
-						buf ++= " UNIQUE"
+						if (unique)
+							buf ++= " UNIQUE"
+					}
 				}
 
 				columns foreach {
 					case Field( fk, SingleReferenceType(_, ref, _), _, _, _, _, _ ) =>
-						buf ++= s", FOREIGN KEY ($fk) REFERENCES $ref (_id) ON DELETE CASCADE"
+						buf ++= s", FOREIGN KEY (${nameIn(fk)}) REFERENCES $ref ($idIn) ON DELETE CASCADE"
 					case Field( fk, MediaType(_), _, _, _, _, _ ) =>
-						buf ++= s", FOREIGN KEY ($fk) REFERENCES _media_ (_id) ON DELETE CASCADE"
+						buf ++= s", FOREIGN KEY (${nameIn(fk)}) REFERENCES _media_ ($idIn) ON DELETE CASCADE"
 					case _ =>
 				}
 

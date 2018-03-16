@@ -72,7 +72,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 //	"enum" in {
@@ -167,7 +167,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //					|}
 //				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"string" in {
@@ -213,7 +213,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 							|}
 						""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"uuid" in {
@@ -259,7 +259,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"float" in {
@@ -339,7 +339,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"date" in {
@@ -388,7 +388,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"time" in {
@@ -437,7 +437,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"timestamp" in {
@@ -486,7 +486,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"datetime" in {
@@ -535,7 +535,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"decimal" in {
@@ -581,7 +581,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"array" in {
@@ -628,7 +628,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|}
 			""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"blob" in {
@@ -688,7 +688,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //				|}
 //			""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"binary" in {
@@ -731,7 +731,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|}
 			""".trim.stripMargin )
 
-		Test.close( pro )
+		c.close
 	}
 
 	"media" in {
@@ -778,7 +778,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 		(pro.process( "GET", "/media/2", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
 			(SC_OK, "text/plain", "Hello, World!" map (_.toInt) toList)
 
-		Test.close( pro )
+		c.close
 	}
 
 }

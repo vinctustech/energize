@@ -1,7 +1,7 @@
 //@
 package xyz.hyperreal
 
-import java.sql.Types
+import java.sql.{Connection, Statement, Types}
 import java.time.{Instant, ZoneOffset}
 import java.util.Base64
 
@@ -105,6 +105,19 @@ package object energize {
 			case TimeType => Types.TIME
 			case DateType => Types.DATE
 		}
+
+	def dropPostgresTables( connection: Connection, statement: Statement, db: Database ): Unit = {
+		if (db == PostgresDatabase) {
+			val rs = connection.getMetaData.getTables( null, db.publicSchema, null, null )
+
+			while (rs.next) {
+				val t = rs.getString( 3 )
+
+				if (!(t matches ".*(__seq|_pkey|__key)"))
+					statement.execute( s"drop table $t" )
+			}
+		}
+	}
 
 }
 

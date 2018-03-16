@@ -214,20 +214,6 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				result( "InternalServerError", res, e.getMessage )
 		}
 
-
-	def dropPostgresTables: Unit = {
-		if (db == PostgresDatabase) {
-			val rs = connection.getMetaData.getTables( null, db.publicSchema, null, null )
-
-			while (rs.next) {
-				val t = rs.getString( 3 )
-
-				if (!(t matches ".*(__seq|_pkey|__key)"))
-					statement.execute( s"drop table $t" )
-			}
-		}
-	}
-
 }
 
 class NotFoundException( error: String ) extends Exception( error )

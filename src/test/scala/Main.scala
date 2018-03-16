@@ -14,7 +14,7 @@ object Main extends App {
 //
 //  run( program, "asdf" )
 
-  val (c, s, d) = Definition.dbconnect//Test.dbconnect
+  val (c, s, d) = Test.dbconnect
   val key = AUTHENTICATION.getString( "key" )
   val src =
 //    """
@@ -73,7 +73,6 @@ object Main extends App {
    }
 
   println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
-  pro.dropPostgresTables
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

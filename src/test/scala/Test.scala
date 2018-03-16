@@ -5,11 +5,11 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 
 object Test {
 
-  def dbconnect = Definition.dbconnect//( "H2", "org.h2.Driver", "jdbc:h2:mem:", "sa", "" )
+  def dbconnect = {
+		val res@(c, s, d) = Definition.dbconnect
 
-	def close( pro: Processor ): Unit = {
-		pro.dropPostgresTables
-		pro.connection.close
+		dropPostgresTables( c, s, d )
+		res
 	}
 
 	def capture( code: String ) = {
