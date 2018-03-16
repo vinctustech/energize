@@ -223,6 +223,8 @@ object Definition {
 				r.processor = proc
 		}
 
+		proc.vm.execute
+
     if (!created) {
       val admin =
         Map( ADMIN.entrySet.asScala.toList.map( e =>

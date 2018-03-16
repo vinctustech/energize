@@ -30,7 +30,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 	private val router = code.functions( "_router_" )._1
 	/*private [energize]*/ val vm = new VM( code, Array(), false, true, this )
 
-	vm.execute
+	//vm.execute
 
 	def discard: Unit = {
 		connection.close

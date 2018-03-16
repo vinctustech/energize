@@ -271,7 +271,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 	def insert( json: OBJ ): Long = {
 		val json1 = escapeQuotes( json )
-		val cols = fields filterNot (c => c.typ.isInstanceOf[ManyReferenceType])
+		val cols = fields filterNot (_.typ.isInstanceOf[ManyReferenceType])
 		val diff = json.keySet -- (cols map (_.name) toSet)
 
 		if (diff nonEmpty)

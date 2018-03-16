@@ -30,8 +30,8 @@ object Main extends App {
 			|resource r
 			|  f int
 			|
-      |;;r.insert( {f: 123} )
-      |write( r.list(None, None, None, None, None, None) )
+      |r.insert( {f: 123} )
+      |;;write( r.list(None, None, None, None, None, None) )
     """.trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
   val message =
