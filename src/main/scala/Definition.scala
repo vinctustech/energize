@@ -1,3 +1,4 @@
+//@
 package xyz.hyperreal.energize
 
 import java.sql.{Connection, Statement, DriverManager}
@@ -196,9 +197,9 @@ object Definition {
 		}
 
 		val sorted = ResourceSorter.sort( resources.values ) getOrElse sys.error( "resources cannot be topologically ordered" )
+    val created = db.created( connection, resources )
 
-    println( db.created( connection, resources ) )
-		if (resources.nonEmpty && !db.created( connection, resources )) {
+		if (resources.nonEmpty && !created) {
 			//			print( xyz.hyperreal.table.TextTable(connection.getMetaData.getTables( null, null, tables.head._1, null )) )
 			//println( db.create(sorted) )
 			statement.execute( db.create(sorted) )
@@ -213,23 +214,28 @@ object Definition {
 				val fieldstr = cnames1 map nameIn mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 
-				r.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($fieldstr) VALUES ($values)" )
+				r.preparedInsert =
+          connection.prepareStatement(
+            s"INSERT INTO $name ($fieldstr) VALUES ($values)" + (if (db == PostgresDatabase) " RETURNING _id" else "") )
 				r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
 				r.media = media
 		}
 
 		val proc = new Processor( code, connection, statement, db, resources.toMap, routes.toList, key, users )
-		val admin =
-			Map( ADMIN.entrySet.asScala.toList.map( e =>
-				(e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
-					case (k, o: java.util.List[_]) => (k, o.asScala)
-					case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
-					case (k, o) => (k, o)
-				}
-			) :+ "createdTime" -> now: _* )
 
-    println( admin )//dbg
-		users.insert( admin )
+    if (!created) {
+      val admin =
+        Map( ADMIN.entrySet.asScala.toList.map( e =>
+          (e.getKey, ADMIN.getValue(e.getKey).unwrapped) match {
+            case (k, o: java.util.List[_]) => (k, o.asScala)
+            case ("password", p: String) => ("password", BCrypt.hashpw( p, BCrypt.gensalt ))
+            case (k, o) => (k, o)
+          }
+        ) :+ "createdTime" -> now: _* )
+
+      users.insert( admin )
+    }
+
 		proc
 	}
 }

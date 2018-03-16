@@ -222,7 +222,7 @@ object PostgresDatabase extends Database {
 					case Field( cname, typ, secret, required, unique, indexed, _ ) =>
 
 					buf ++= ", "
-					buf ++= cname
+					buf ++= nameIn( cname )
 					buf += ' '
 					parameters( typ )
 					buf ++=

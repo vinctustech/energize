@@ -274,7 +274,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 		if (diff nonEmpty)
 			throw new BadRequestException( "insert: excess field(s): " + diff.mkString(", ") )
 
-		//val mtms = fields filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
+		// val mtms = fields filter (c => c.typ.isInstanceOf[ManyReferenceType])	// todo: mtm fields cannot be null; still needs to be checked
 
 		for ((c, i) <- cols zipWithIndex) {
 			json1 get c.name match {
@@ -335,24 +335,21 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 		}
 
 		val id =
-		//			if (db == PostgresDatabase) {
-		//				val res = statement.executeQuery( com + "RETURNING _id" )
-		//
-		//				res.next
-		//				res.getLong( 1 )
-		//			} else {
-		{
-			preparedInsert.executeUpdate
-			//( Statement.RETURN_GENERATED_KEYS )
-			val g = preparedInsert.getGeneratedKeys
+			if (db == PostgresDatabase) {
+				val res = preparedInsert.executeQuery
 
-			g.next
+				res.next
+				res.getLong( 1 )
+			} else {
+				preparedInsert.executeUpdate
+				//( Statement.RETURN_GENERATED_KEYS )
+				val g = preparedInsert.getGeneratedKeys
 
-			val res = g.getLong( 1 )
+				g.next
+				g.getLong( 1 )
+			}
 
-			preparedInsert.clearParameters
-			res
-		}
+		preparedInsert.clearParameters
 
 		/* todo: this code allows values to be inserted into junction table for mtm fields
 		val values = new ListBuffer[(String, String)]
