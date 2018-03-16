@@ -81,7 +81,7 @@ object CommandFunctionHelpers {
 		}
 
 	def setNull( preparedStatement: PreparedStatement, col: Int, typ: FieldType ): Unit = {
-		preparedStatement.setNull( col, field2sql(typ) )
+		preparedStatement.setNull( col, field2types(typ) )
 	}
 
 }

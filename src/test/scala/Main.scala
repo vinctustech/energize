@@ -14,16 +14,23 @@ object Main extends App {
 //
 //  run( program, "asdf" )
 
-  val (c, s, d) = Test.dbconnect
+  val (c, s, d) = Definition.dbconnect//Test.dbconnect
   val key = AUTHENTICATION.getString( "key" )
   val src =
+//    """
+//      |enum e [a, b, c]
+//      |
+//			|resource r
+//			|  f e
+//			|
+//      |r.insert( {f: d} )
+//      |write( r.list(None, None, None, None, None, None) )
+//    """.trim.stripMargin
     """
-      |enum e [a, b, c]
-      |
 			|resource r
-			|  f e
+			|  f int
 			|
-      |r.insert( {f: d} )
+      |;;r.insert( {f: 123} )
       |write( r.list(None, None, None, None, None, None) )
     """.trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )

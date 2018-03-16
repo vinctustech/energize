@@ -1,3 +1,4 @@
+//@
 package xyz.hyperreal
 
 import java.sql.Types
@@ -89,7 +90,7 @@ package object energize {
 			case RepeatPathSegment( subpat, lower, _, upper ) => s"${path2string( subpat )}{$lower, $upper}"
 		}
 
-	def field2sql( typ: FieldType ) =	//todo: might have to be a method of Database
+	def field2types( typ: FieldType ) =	//todo: might have to be a method of Database
 		typ match {
 			case BooleanType => Types.BOOLEAN
 			case StringType( _ ) => Types.VARCHAR

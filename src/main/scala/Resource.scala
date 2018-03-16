@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Clob, Date, PreparedStatement, Statement, Types}
+import java.sql.{Blob, Clob, Date, PreparedStatement, Statement, Types, Connection}
 import java.time.{LocalDate, LocalDateTime}
 
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
@@ -14,7 +14,7 @@ object Resource {
 }
 
 case class Resource( name: String, base: Option[PathSegment], fields: List[Field], fieldMap: Map[String, Field], visible: Boolean,
-										 manyToMany: Boolean, mediaArray: Boolean, statement: Statement, db: Database ) {
+										 manyToMany: Boolean, mediaArray: Boolean, conn: Connection, statement: Statement, db: Database ) {
 	var preparedInsert: PreparedStatement = _
 	var preparedFullInsert: PreparedStatement = _
 	var media: Resource = _
@@ -309,8 +309,8 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(this, allowed, _))
 
 							preparedInsert.setObject( i + 1, s.asInstanceOf[Seq[java.lang.Long]].toArray )
-						case ArrayType( typ ) =>
-							preparedInsert.setArray( i + 1, v.asInstanceOf[Seq[Any]].toArray )
+						case ArrayType( prim ) =>
+							preparedInsert.setArray( i + 1, conn.createArrayOf(db.array(prim), v.asInstanceOf[Seq[AnyRef]].toArray) )
 						case BLOBType( rep ) =>
 							val array =
 								rep match {
