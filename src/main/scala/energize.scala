@@ -113,8 +113,8 @@ package object energize {
 			while (rs.next) {
 				val t = rs.getString( 3 )
 
-				if (!(t matches ".*(__seq|_pkey|__key)"))
-					statement.execute( s"drop table $t" )
+				if (!(t matches ".*(__seq|_pkey|__key|__idx)"))
+					statement.execute( s"drop table $t cascade" )
 			}
 		}
 	}

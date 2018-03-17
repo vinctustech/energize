@@ -15,8 +15,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val src =
 			"""
 				|resource todo /api/v1
-				|  name        text  required
-				|  description text  optional
+				|  name        string  required
+				|  description string  optional
 				|  status      integer required
 				|
 				|resource test /api/v1
@@ -82,8 +82,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val src =
 			"""
 			|resource todo
-			|  name        text  required
-			|  description text  optional
+			|  name        string  required
+			|  description string  optional
 			|  status      integer required
 			|
 			|resource test
@@ -395,7 +395,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		pro.process( "POST", "/types", null, """{"name": "normal"}""", null ) shouldBe
 			(SC_CONFLICT, "application/json", s"""
 																				 |{
-																				 |  "error": "Unique index or primary key violation: \\"CONSTRAINT_INDEX_4C ON PUBLIC.TYPES(${nameIn("NAME")}) VALUES ('normal', 1)\\"; SQL statement:\\nINSERT INTO types (${nameIn("name")}) VALUES (?) [23505-196]"
+																				 |  "error": "unique constraint violation"
 																				 |}
 																			 """.trim.stripMargin )
 		pro.process( "POST", "/types", null, """{"name": "special"}""", null ) shouldBe
@@ -503,8 +503,8 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val src =
 			"""
 				|resource customers
-				|  lastname   text  required
-				|  firstname  text  required
+				|  lastname   string  required
+				|  firstname  string  required
 				|  products   [products]
 				|
 				|resource products
@@ -570,7 +570,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		pro.process( "POST", "/products", null, """{"name": "savings"}""", null ) shouldBe
 			(SC_CONFLICT, "application/json", s"""
 																					|{
-																					|  "error": "Unique index or primary key violation: \\"CONSTRAINT_INDEX_F ON PUBLIC.PRODUCTS(${nameIn("NAME")}) VALUES ('savings', 1)\\"; SQL statement:\\nINSERT INTO products (${nameIn("name")}) VALUES (?) [23505-196]"
+																					|  "error": "unique constraint violation"
 																					|}
 																				""".trim.stripMargin )
 		pro.process( "POST", "/products", null, """{"name": "credit card"}""", null ) shouldBe
@@ -678,7 +678,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val src =
 			"""
 				|resource books
-				|	title text
+				|	title string
 				|	authors [authors]
 				|	publisher publishers
 				|
@@ -851,7 +851,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				|resource customers
 				|	CustomerName string indexed
 				|	ContactName string indexed
-				|	Address text
+				|	Address string
 				|	City string indexed
 				|	PostalCode string indexed
 				|	Country string indexed
@@ -944,7 +944,7 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 		val src =
 			"""
 				|resource books
-				|	title text required
+				|	title string required
 				|	author authors
 				|	publisher publishers
 				|

@@ -26,53 +26,26 @@ object Main extends App {
 //      |r.insert( {f: d} )
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
-    """
-			|resource r
-			|  f int
-			|
-      |r.insert( {f: 123} )
-    """.trim.stripMargin
+			"""
+				|resource customers
+				|	CustomerName string indexed
+				|	ContactName string indexed
+				|	Address string
+				|	City string indexed
+				|	PostalCode string indexed
+				|	Country string indexed
+				|
+				|if customers.count( None ) == 0
+				|	customers.batchInsert( [
+				|	 ["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
+				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
+				|	 ["Antonio Moreno Taquería",            "Antonio Moreno",     "Mataderos 2312",                "México D.F.", "05023",    "Mexico"],
+				|	 ["Around the Horn",                    "Thomas Hardy",       "120 Hanover Sq.",               "London",      "WA1 1DP",  "UK"],
+				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]], false )
+			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
-  val message =
-    new HttpMessage {
-      override def setHeaders(headers: Array[Header]): Unit = ???
-      override def headerIterator(): HeaderIterator = ???
-      override def headerIterator(name: String): HeaderIterator = ???
-      override def addHeader(header: Header): Unit = ???
-      override def addHeader(name: String, value: String): Unit = ???
-      override def getHeaders(name: String): Array[Header] = ???
-      override def getFirstHeader(name: String): Header =
-        name match {
-          case "Host" =>
-            new Header {
-              override def getElements: Array[HeaderElement] =
-                Array(
-                  new HeaderElement {
-                    override def getName: String = "elem1"
-                    override def getParameterCount: Int = 1
-                    override def getParameterByName(name: String): NameValuePair = ???
-                    override def getValue: String = "value1"
-                    override def getParameters: Array[NameValuePair] = Array()
-                    override def getParameter(index: Int): NameValuePair = ???
-                    })
-              override def getName: String = "SomeHeader"
-              override def getValue: String = "blah"
-            }
-          case _ => null
-        }
-      override def getLastHeader(name: String): Header = ???
-      override def getAllHeaders: Array[Header] = ???
-      override def removeHeaders(name: String): Unit = ???
-      override def setHeader(header: Header): Unit = ???
-      override def setHeader(name: String, value: String): Unit = ???
-      override def removeHeader(header: Header): Unit = ???
-      override def getProtocolVersion: ProtocolVersion = ???
-      override def containsHeader(name: String): Boolean = ???
-      override def getParams: HttpParams = ???
-      override def setParams(params: HttpParams): Unit = ???
-   }
 
-  println( pro.process( "GET", "/r", new HttpComponentsMessageHeaders(message), null, null ) )
+//  println( pro.process( "GET", "/r", null, null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

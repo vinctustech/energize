@@ -207,8 +207,8 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				result( "BadRequest", res, e.getMessage )
 			case e: NotFoundException =>
 				result( "NotFound", res, e.getMessage )
-			case e: SQLException if db.conflict( e.getMessage )  =>
-				result( "Conflict", res, e.getMessage )
+			case e: SQLException if db.conflict( e.getMessage ) =>
+				result( "Conflict", res, "unique constraint violation" )
 			case e: Exception =>
 //				e.printStackTrace()
 				result( "InternalServerError", res, e.getMessage )

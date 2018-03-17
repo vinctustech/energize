@@ -180,6 +180,7 @@ object PostgresDatabase extends Database {
 			case DatetimeType => "TIMESTAMP"
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
+			case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
 			case BLOBType( _ ) => "BYTEA"
 			case MediaType( _ ) => "BIGINT"
 		}
@@ -200,13 +201,14 @@ object PostgresDatabase extends Database {
 			case DatetimeType => "TIMESTAMP"
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
+			case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
 			case BLOBType( _ ) => "BYTEA"
 			case MediaType( _ ) => "BIGINT"
 		}
 
 	def desensitize( name: String ) = name.toLowerCase
 
-	def conflict( error: String ) = sys.error( "not done yet" )
+	def conflict( error: String ) = error startsWith "ERROR: duplicate key value violates unique constraint"
 
 	def create( tables: List[Resource] ) = {
 		val enums = new StringBuilder
@@ -261,11 +263,11 @@ object PostgresDatabase extends Database {
 						buf ++= "CREATE INDEX ON "
 						buf ++= name
 						buf += '('
-						buf ++= c
+						buf ++= nameIn( c )
 						buf ++= ");\n"
 					case Field( _, ManyReferenceType(_, ref, _), _, _, _, _, _ ) =>
-						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name (_id) ON DELETE CASCADE, "
-						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref (_id) ON DELETE CASCADE, "
+						buf ++= s"CREATE TABLE $name$$$ref ($name$$id BIGINT, FOREIGN KEY ($name$$id) REFERENCES $name ($idIn) ON DELETE CASCADE, "
+						buf ++= s"$ref$$id BIGINT, FOREIGN KEY ($ref$$id) REFERENCES $ref ($idIn) ON DELETE CASCADE, "
 						buf ++= s"PRIMARY KEY ($name$$id, $ref$$id));\n"
 					case _ =>
 				}

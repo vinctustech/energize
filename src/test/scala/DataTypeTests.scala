@@ -633,6 +633,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 
 	"blob" in {
 		val (c, s, d) = Test.dbconnect
+		if (d != PostgresDatabase) {
 		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
@@ -687,12 +688,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 //				|  ]
 //				|}
 //			""".trim.stripMargin )
+		}
 
 		c.close
 	}
 
 	"binary" in {
 		val (c, s, d) = Test.dbconnect
+		if (d != PostgresDatabase) {
 		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
@@ -730,12 +733,14 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 				|  ]
 				|}
 			""".trim.stripMargin )
+		}
 
 		c.close
 	}
 
 	"media" in {
 		val (c, s, d) = Test.dbconnect
+		if (d != PostgresDatabase) {
 		val key = AUTHENTICATION.getString( "key" )
 		val config =
 			"""
@@ -777,6 +782,7 @@ class DataTypeTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin)
 		(pro.process( "GET", "/media/2", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)}) shouldBe
 			(SC_OK, "text/plain", "Hello, World!" map (_.toInt) toList)
+		}
 
 		c.close
 	}
