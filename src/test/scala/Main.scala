@@ -27,13 +27,15 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-				|resource test
-				|	identifier uuid
+				|resource events
+				|	title string
+				|	event date
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "POST", "/test", null, """{identifier: "a94cae4a-8bdf-49f3-849b-e7d338f4400a"}""", null ) )
-  println( pro.process( "GET", "/test", null, null, null ) )
+  println( pro.process( "POST", "/events", null, """{title: "finish coding date support", event: "2017-06-14"}""", null ) )
+
+  println( pro.process( "GET", "/events", null, null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

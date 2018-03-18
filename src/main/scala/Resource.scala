@@ -1,7 +1,7 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Clob, Date, PreparedStatement, Array => SQLArray}
-import java.time.{LocalDate, LocalDateTime}
+import java.sql.{Blob, Clob, Date => SQLDate, Time, PreparedStatement, Array => SQLArray}
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 import java.util.UUID
 
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
@@ -259,7 +259,8 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 					case (BigintType, a: Number) => preparedStatement.setLong( i, a.longValue )
 					case (_: SingleReferenceType, a: java.lang.Integer) => preparedStatement.setInt( i, a )
 					case (DecimalType( _, _ ), a: BigDecimal) => preparedStatement.setBigDecimal( i, a.underlying )
-					case (DateType, d: LocalDate) => preparedStatement.setDate( i, Date.valueOf(d) )
+					case (DateType, d: LocalDate) => preparedStatement.setDate( i, SQLDate.valueOf(d) )
+					case (TimeType, d: LocalTime) => preparedStatement.setTime( i, Time.valueOf(d) )
 					case (DatetimeType|TimestampType, v: String) => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 					case (DatetimeType|TimestampType, d: LocalDateTime) => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 					case x => throw new BadRequestException( s"don't know what to do with $x, ${v.getClass}" )
@@ -310,7 +311,9 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 								case v: java.lang.Double => preparedInsert.setBigDecimal( i + 1, new java.math.BigDecimal(v) )
 								case b: BigDecimal => preparedInsert.setBigDecimal( i + 1, b.underlying )
 							}
-						case TimeType|DateType|BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
+						case BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
+						case DateType => preparedInsert.setDate( i + 1, SQLDate.valueOf(v.toString) )
+						case TimeType => preparedInsert.setTime( i + 1, Time.valueOf(v.toString) )
 						case UUIDType => preparedInsert.setObject( i + 1, UUID.fromString(v.toString) )
 						case DatetimeType|TimestampType => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>
