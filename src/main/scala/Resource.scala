@@ -2,6 +2,7 @@ package xyz.hyperreal.energize
 
 import java.sql.{Blob, Clob, Date, PreparedStatement, Array => SQLArray}
 import java.time.{LocalDate, LocalDateTime}
+import java.util.UUID
 
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
@@ -309,7 +310,8 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 								case v: java.lang.Double => preparedInsert.setBigDecimal( i + 1, new java.math.BigDecimal(v) )
 								case b: BigDecimal => preparedInsert.setBigDecimal( i + 1, b.underlying )
 							}
-						case UUIDType|TimeType|DateType|BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
+						case TimeType|DateType|BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
+						case UUIDType => preparedInsert.setObject( i + 1, UUID.fromString(v.toString) )
 						case DatetimeType|TimestampType => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 						case ArrayType( MediaType(allowed) ) =>
 							val s = v.asInstanceOf[Seq[String]] map (CommandFunctionHelpers.mediaInsert(this, allowed, _))

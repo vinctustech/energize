@@ -27,15 +27,13 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-				|resource arrays
-				|	a [integer]
-        |
-        |arrays.insert( {a: [1]} )
-      """.trim.stripMargin
+				|resource test
+				|	identifier uuid
+			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "PUT", "/arrays/1", null, """{a: [1, 2, 3]}""", null ) )
-  println( pro.process( "GET", "/arrays", null, null, null ) )
+  println( pro.process( "POST", "/test", null, """{identifier: "a94cae4a-8bdf-49f3-849b-e7d338f4400a"}""", null ) )
+  println( pro.process( "GET", "/test", null, null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
