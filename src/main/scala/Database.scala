@@ -13,9 +13,8 @@ object H2Database extends Database {
 	val publicSchema = "PUBLIC"
 	val arrayOpen = "("
 	val arrayClose = ")"
-	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss.SSS" )
+//	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss.SSS" )
 	val ZONEID = zoneId
-	val SYSTEM_ZONEID = ZoneId.systemDefault
 
 	def created( connection: Connection, resources: mutable.HashMap[String, Resource] ) = connection.getMetaData.getTables( null, publicSchema, resources.head._1, null ).next
 
@@ -148,14 +147,15 @@ object PostgresDatabase extends Database {
 	val publicSchema = "public"
 	val arrayOpen = "'{"
 	val arrayClose = "}'"
-	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
+//	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 	val ZONEID = zoneId
 
 	def created( connection: Connection, resources: mutable.HashMap[String, Resource] ) = connection.getMetaData.getTables( null, publicSchema, resources.head._1, null ).next
 
 	def readTimestamp( d: String ) = {
 		val t = OffsetDateTime.parse( d )
-		val u = t.toInstant.atOffset( ZoneOffset.UTC ).toLocalDateTime
+		val u = t.toInstant.atZone( SYSTEM_ZONEID ).toLocalDateTime//atOffset( ZoneOffset.UTC )
+//		val u = t.toInstant.atOffset( ZoneOffset.UTC ).toLocalDateTime
 
 //		u.format( TIMESTAMP_FORMAT )
 		Timestamp.valueOf( u )
@@ -395,6 +395,7 @@ object Database {
 }
 
 abstract class Database {
+	val SYSTEM_ZONEID = ZoneId.systemDefault
 	val publicSchema: String
 
 	def zoneId =

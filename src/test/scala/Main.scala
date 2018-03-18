@@ -27,9 +27,8 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-				|resource events
-				|	title string
-				|	event date
+				|resource documents
+				|	document text
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
