@@ -27,25 +27,15 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-				|resource customers
-				|	CustomerName string indexed
-				|	ContactName string indexed
-				|	Address string
-				|	City string indexed
-				|	PostalCode string indexed
-				|	Country string indexed
-				|
-				|if customers.count( None ) == 0
-				|	customers.batchInsert( [
-				|	 ["Alfreds Futterkiste",                "Maria Anders",       "Obere Str. 57",                 "Berlin",      "12209",    "Germany"],
-				|	 ["Ana Trujillo Emparedados y helados", "Ana Trujillo",       "Avda. de la Constitución 2222", "México D.F.", "05021",    "Mexico"],
-				|	 ["Antonio Moreno Taquería",            "Antonio Moreno",     "Mataderos 2312",                "México D.F.", "05023",    "Mexico"],
-				|	 ["Around the Horn",                    "Thomas Hardy",       "120 Hanover Sq.",               "London",      "WA1 1DP",  "UK"],
-				|	 ["Berglunds snabbköp",                 "Christina Berglund", "Berguvsvägen 8",                "Luleå",       "S-958 22", "Sweden"]], false )
-			""".trim.stripMargin
+				|resource arrays
+				|	a [integer]
+        |
+        |arrays.insert( {a: [1]} )
+      """.trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-//  println( pro.process( "GET", "/r", null, null, null ) )
+  println( pro.process( "PUT", "/arrays/1", null, """{a: [1, 2, 3]}""", null ) )
+  println( pro.process( "GET", "/arrays", null, null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

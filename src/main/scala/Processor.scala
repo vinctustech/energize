@@ -210,7 +210,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 			case e: SQLException if db.conflict( e.getMessage ) =>
 				result( "Conflict", res, "unique constraint violation" )
 			case e: Exception =>
-//				e.printStackTrace()
+				e.printStackTrace()
 				result( "InternalServerError", res, e.getMessage )
 		}
 

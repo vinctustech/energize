@@ -11,6 +11,8 @@ import scala.collection.mutable
 object H2Database extends Database {
 	val caseSensitive = false
 	val publicSchema = "PUBLIC"
+	val arrayOpen = "("
+	val arrayClose = ")"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss.SSS" )
 	val ZONEID = zoneId
 	val SYSTEM_ZONEID = ZoneId.systemDefault
@@ -144,6 +146,8 @@ object H2Database extends Database {
 
 object PostgresDatabase extends Database {
 	val publicSchema = "public"
+	val arrayOpen = "'{"
+	val arrayClose = "}'"
 	val TIMESTAMP_FORMAT =  DateTimeFormatter.ofPattern( "yyyy-MM-dd kk:mm:ss.SSS" )
 	val ZONEID = zoneId
 
@@ -417,6 +421,10 @@ abstract class Database {
 //			case _ =>
 //		}
 	}
+
+	val arrayOpen: String
+
+	val arrayClose: String
 
 	def readTimestamp( d: String ): Timestamp
 

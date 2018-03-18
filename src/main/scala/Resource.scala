@@ -1,6 +1,6 @@
 package xyz.hyperreal.energize
 
-import java.sql.{Blob, Clob, Date, PreparedStatement}
+import java.sql.{Blob, Clob, Date, PreparedStatement, Array => SQLArray}
 import java.time.{LocalDate, LocalDateTime}
 
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
@@ -104,7 +104,12 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 					case Some( Field(cname, ArrayType(MediaType(_)), _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList.map( m => s"/media/$m" ))
 					case Some( Field(cname, ArrayType(_), _, _, _, _, _) ) if obj.get ne null =>
-						attr += (cname -> obj.get.asInstanceOf[Array[AnyRef]].toList)
+						val array =
+							obj.get match {
+								case o: SQLArray => o.getArray.asInstanceOf[Array[AnyRef]]
+								case a: Array[AnyRef] => a
+							}
+						attr += (cname -> array.toList)
 					case Some( Field(cname, BinaryType, _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> bytes2hex( obj.get.asInstanceOf[Array[Byte]] ))
 					case Some( Field(cname, BLOBType(rep), _, _, _, _, _) ) if obj.get ne null =>
@@ -406,9 +411,9 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 							case ArrayType( _ ) =>
 								kIn + " = " + v.asInstanceOf[Seq[Any]].
 									map {
-										case e: String => s"'$e'"//todo: escape string (taylored for database)
+										case e: String => s"'$e'"//todo: escape string (tailored for database)
 										case e => String.valueOf( e )
-									}.mkString( "(", ", ", ")" )
+									}.mkString( processor.db.arrayOpen, ", ", processor.db.arrayClose )
 							case BLOBType( _ ) => throw new BadRequestException( "updating a blob field isn't supported yet" )
 							case MediaType( allowed ) =>
 								val oldid = readField( id, k ).asInstanceOf[Long]
