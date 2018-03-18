@@ -122,7 +122,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 							case 'hex => attr += (cname -> bytes2hex( array ))
 							case 'list => attr += (cname -> array.toList)
 						}
-					case Some( Field(cname,TextType|TinytextType|ShorttextType|LongtextType, _, _, _, _, _) ) if obj.get ne null =>
+					case Some( Field(cname,TextType|TinytextType|ShorttextType|LongtextType, _, _, _, _, _) ) if obj.get != null && processor.db != PostgresDatabase =>
 						val clob = obj.get.asInstanceOf[Clob]
 						val s = clob.getSubString( 1L, clob.length.toInt )
 
@@ -338,7 +338,11 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 								}
 
 							preparedInsert.setBlob( i + 1, new SerialBlob(array) )
-						case TextType|TinytextType|ShorttextType|LongtextType => preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
+						case TextType|TinytextType|ShorttextType|LongtextType =>
+							if (processor.db == PostgresDatabase)
+								preparedInsert.setString( i + 1, v.toString )
+							else
+								preparedInsert.setClob( i + 1, new SerialClob(v.toString.toCharArray) )
 						case MediaType( allowed ) =>
 							preparedInsert.setLong( i + 1, CommandFunctionHelpers.mediaInsert(this, allowed, v.asInstanceOf[String]) )
 					}

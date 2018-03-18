@@ -32,9 +32,9 @@ object Main extends App {
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "POST", "/events", null, """{title: "finish coding date support", event: "2017-06-14"}""", null ) )
+  println( pro.process( "POST", "/documents", null, """{document: "this is a document"}""", null ) )
 
-  println( pro.process( "GET", "/events", null, null, null ) )
+  println( pro.process( "GET", "/documents", null, null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
