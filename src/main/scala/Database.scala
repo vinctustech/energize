@@ -185,6 +185,7 @@ object PostgresDatabase extends Database {
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
 			case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
+			case BinaryType => "BYTEA"
 			case BLOBType( _ ) => "BYTEA"
 			case MediaType( _ ) => "BIGINT"
 		}
@@ -206,6 +207,7 @@ object PostgresDatabase extends Database {
 			case TimeType => "TIME"
 			case TimestampType => "TIMESTAMP"
 			case DecimalType( prec, scale ) => s"DECIMAL($prec,$scale)"
+			case BinaryType => "BYTEA"
 			case BLOBType( _ ) => "BYTEA"
 			case MediaType( _ ) => "BIGINT"
 		}

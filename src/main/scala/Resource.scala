@@ -1,3 +1,4 @@
+//@
 package xyz.hyperreal.energize
 
 import java.sql.{Blob, Clob, Date => SQLDate, Time, PreparedStatement, Array => SQLArray}
@@ -114,8 +115,13 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 					case Some( Field(cname, BinaryType, _, _, _, _, _) ) if obj.get ne null =>
 						attr += (cname -> bytes2hex( obj.get.asInstanceOf[Array[Byte]] ))
 					case Some( Field(cname, BLOBType(rep), _, _, _, _, _) ) if obj.get ne null =>
-						val blob = obj.get.asInstanceOf[Blob]
-						val array = blob.getBytes( 0L, blob.length.toInt )
+						val array =
+							if (processor.db == PostgresDatabase)
+								obj.get.asInstanceOf[Array[Byte]]
+							else {
+								val blob = obj.get.asInstanceOf[Blob]
+								blob.getBytes(0L, blob.length.toInt)
+							}
 
 						rep match {
 							case 'base64 => attr += (cname -> bytes2base64( array ))
@@ -311,7 +317,7 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 								case v: java.lang.Double => preparedInsert.setBigDecimal( i + 1, new java.math.BigDecimal(v) )
 								case b: BigDecimal => preparedInsert.setBigDecimal( i + 1, b.underlying )
 							}
-						case BinaryType|StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
+						case StringType( _ )|CharType( _ )|EnumType(_, _) => preparedInsert.setString( i + 1, v.toString )
 						case DateType => preparedInsert.setDate( i + 1, SQLDate.valueOf(v.toString) )
 						case TimeType => preparedInsert.setTime( i + 1, Time.valueOf(v.toString) )
 						case UUIDType => preparedInsert.setObject( i + 1, UUID.fromString(v.toString) )
@@ -322,6 +328,13 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 							preparedInsert.setObject( i + 1, s.asInstanceOf[Seq[java.lang.Long]].toArray )
 						case ArrayType( prim ) =>
 							preparedInsert.setArray( i + 1, processor.connection.createArrayOf(processor.db.array(prim), v.asInstanceOf[Seq[AnyRef]].toArray) )
+						case BinaryType =>
+							if (processor.db == PostgresDatabase) {
+								println( (v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray) toList)
+								preparedInsert.setBytes( i + 1, v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray )
+							}
+							else
+								preparedInsert.setString( i + 1, v.toString )
 						case BLOBType( rep ) =>
 							val array =
 								rep match {
@@ -337,7 +350,10 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 									case 'list => Array( v.asInstanceOf[Seq[Int]].map(a => a.toByte): _* )
 								}
 
-							preparedInsert.setBlob( i + 1, new SerialBlob(array) )
+							if (processor.db == PostgresDatabase)
+								preparedInsert.setBytes( i + 1, array )
+							else
+								preparedInsert.setBlob( i + 1, new SerialBlob(array) )
 						case TextType|TinytextType|ShorttextType|LongtextType =>
 							if (processor.db == PostgresDatabase)
 								preparedInsert.setString( i + 1, v.toString )

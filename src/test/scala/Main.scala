@@ -27,14 +27,14 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-				|resource documents
-				|	document text
+				|resource test
+				|	a media
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "POST", "/documents", null, """{document: "this is a document"}""", null ) )
+  println( pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""", null ) )
 
-  println( pro.process( "GET", "/documents", null, null, null ) )
+  println( pro.process( "GET", "/media/1", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)} )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

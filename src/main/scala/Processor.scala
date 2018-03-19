@@ -52,9 +52,14 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		res.next
 
 		val typ = res.getString( 2 )
-		val blob = res.getBlob( 3 )
 
-		(typ, blob.getBytes( 0, blob.length.toInt ))
+		if (db == PostgresDatabase)
+			(typ, res.getBytes( 3 ))
+		else {
+			val blob = res.getBlob( 3 )
+
+			(typ, blob.getBytes( 0, blob.length.toInt ))
+		}
 	}
 
 //	val miscellaneousRoutes = new ArrayBuffer[Route]	// implement route partitioning based on resource
