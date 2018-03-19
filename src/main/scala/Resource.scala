@@ -329,10 +329,8 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 						case ArrayType( prim ) =>
 							preparedInsert.setArray( i + 1, processor.connection.createArrayOf(processor.db.array(prim), v.asInstanceOf[Seq[AnyRef]].toArray) )
 						case BinaryType =>
-							if (processor.db == PostgresDatabase) {
-								println( (v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray) toList)
+							if (processor.db == PostgresDatabase)
 								preparedInsert.setBytes( i + 1, v.toString grouped 2 map (s => Integer.valueOf(s, 16) toByte) toArray )
-							}
 							else
 								preparedInsert.setString( i + 1, v.toString )
 						case BLOBType( rep ) =>
@@ -431,7 +429,12 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 						fieldMap(k).typ match {
 							case DatetimeType|TimestampType => kIn + " = '" + processor.db.readTimestamp( v.toString ) + "'"
-							case UUIDType|TimeType|DateType|StringType( _ )|CharType( _ )|BinaryType|EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
+							case UUIDType|TimeType|DateType|StringType( _ )|CharType( _ )|EnumType(_, _) if v ne null => s"$kIn = '$v'"//todo: escape string (taylored for database)
+							case BinaryType if v ne null =>
+								if (processor.db == PostgresDatabase)
+									s"$kIn = E'\\\\x$v'"
+								else
+									s"$kIn = '$v'"
 							case TextType|TinytextType|ShorttextType|LongtextType => throw new BadRequestException( "updating a text field isn't supported yet" )
 							case ArrayType( _ ) =>
 								kIn + " = " + v.asInstanceOf[Seq[Any]].

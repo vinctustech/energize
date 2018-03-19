@@ -28,13 +28,13 @@ object Main extends App {
 //    """.trim.stripMargin
 			"""
 				|resource test
-				|	a media
+				|	a binary
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "POST", "/test", null, """{"a": "data:image/gif;base64,R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}""", null ) )
-
-  println( pro.process( "GET", "/media/1", null, null, null ) match {case (sc, typ, data) => (sc, typ, data.asInstanceOf[Array[Byte]].toList)} )
+  println( pro.process( "POST", "/test", null, """{"a": "123457"}""", null ) )
+  println( pro.process( "PUT", "/test/1", null, """{a: "123458"}""", null ) )
+  println( pro.process( "GET", "/test", null, null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
