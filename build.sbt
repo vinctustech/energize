@@ -68,7 +68,7 @@ mainClass in assembly := Some( "xyz.hyperreal." + name.value.replace('-', '_') +
 
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 
-coverageExcludedPackages := ".*PostgresDatabase;.*EnergizeServer.*;.*ServerMain;.*REPLMain"
+coverageExcludedPackages := ".*PostgresDatabase;.*EnergizeServer.*;.*ServerMain;.*REPLMain;.*Unparse"
 
 publishMavenStyle := true
 
