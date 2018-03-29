@@ -2,7 +2,7 @@ name := "energize"
 
 version := "0.12.1"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.5"
 
 //crossScalaVersions := Seq( "2.11.11" )
 
@@ -67,6 +67,8 @@ mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', 
 mainClass in assembly := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
 
 assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
+
+coverageExcludedPackages := ".*PostgresDatabase;.*EnergizeServer.*;.*ServerMain;.*REPLMain"
 
 publishMavenStyle := true
 
