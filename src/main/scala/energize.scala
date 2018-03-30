@@ -90,34 +90,18 @@ package object energize {
 			case RepeatPathSegment( subpat, lower, _, upper ) => s"${path2string( subpat )}{$lower, $upper}"
 		}
 
-	def field2types( typ: FieldType ) =	//todo: might have to be a method of Database
-		typ match {
-			case BooleanType => Types.BOOLEAN
-			case StringType( _ ) => Types.VARCHAR
-			case TinytextType|ShorttextType|TextType|LongtextType => Types.CLOB
-			case TinyintType|SmallintType|IntegerType => Types.INTEGER
-			case FloatType => Types.FLOAT
-			case BigintType|SingleReferenceType( _, _, _ )|MediaType( _ ) => Types.BIGINT
-			case BLOBType( _ ) => Types.BLOB
-			case TimestampType => Types.TIMESTAMP
-			case ArrayType( _ ) => Types.ARRAY
-			case DecimalType( _, _ ) => Types.DECIMAL
-			case TimeType => Types.TIME
-			case DateType => Types.DATE
-		}
-
-	def dropPostgresTables( connection: Connection, statement: Statement, db: Database ): Unit = {
-		if (db == PostgresDatabase) {
-			val rs = connection.getMetaData.getTables( null, db.publicSchema, null, null )
-
-			while (rs.next) {
-				val t = rs.getString( 3 )
-
-				if (!(t matches ".*(__seq|_pkey|__key|__idx)"))
-					statement.execute( s"drop table $t cascade" )
-			}
-		}
-	}
+//	def dropPostgresTables( connection: Connection, statement: Statement, db: Database ): Unit = {
+//		if (db == PostgresDatabase) {
+//			val rs = connection.getMetaData.getTables( null, db.publicSchema, null, null )
+//
+//			while (rs.next) {
+//				val t = rs.getString( 3 )
+//
+//				if (!(t matches ".*(__seq|_pkey|__key|__idx)"))
+//					statement.execute( s"drop table $t cascade" )
+//			}
+//		}
+//	}
 
 }
 

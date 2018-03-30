@@ -391,7 +391,8 @@ object Database {
 		"PostgreSQL" -> PostgresDatabase
 //		"MySQL" -> MySQLDatabase
 	)
-	def isSupported( name: String ) = supported contains name
+
+//	def isSupported( name: String ) = supported contains name
 
 	def apply( name: String ) = supported( name )
 }

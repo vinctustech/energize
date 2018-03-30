@@ -33,36 +33,36 @@ object CommandFunctionHelpers {
 	// RFC2396 section 3.0
 	// uric_no_slash = unreserved | escaped | ";" | "?" | ":" | "@" | "&" | "=" | "+" | "$" | ","
 
-	def decode( urlchars: String ): Either[String, String] = {
-		val res = new StringBuilder
-
-		def hexchar( c: Char ) = "0123456789abcdefABCDEF" contains c
-
-		def _decode( s: Stream[Char] ): Option[String] =
-			s match {
-				case Stream.Empty => None
-				case h #:: t =>
-					if ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'()" contains h) {
-						res += h
-						_decode( t )
-					} else if (h == '%')
-						if (t != Stream.empty && hexchar( t.head ) && t.tail != Stream.empty && hexchar( t.tail.head )) {
-							res += Integer.parseUnsignedInt( t take 2 mkString, 16).toChar
-							_decode (t.tail.tail)
-						} else
-							Some( s"invalid data URL escape sequence: '${(h #:: t) take 3 mkString}'" )
-					else if (h == '+') {
-						res += ' '
-						_decode( t )
-					} else
-						Some( s"invalid character in data URL: '$h'" )
-			}
-
-		_decode( urlchars toStream ) match {
-			case None => Right( res toString )
-			case Some( error ) => Left( error )
-		}
-	}
+//	def decode( urlchars: String ): Either[String, String] = {
+//		val res = new StringBuilder
+//
+//		def hexchar( c: Char ) = "0123456789abcdefABCDEF" contains c
+//
+//		def _decode( s: Stream[Char] ): Option[String] =
+//			s match {
+//				case Stream.Empty => None
+//				case h #:: t =>
+//					if ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!~*'()" contains h) {
+//						res += h
+//						_decode( t )
+//					} else if (h == '%')
+//						if (t != Stream.empty && hexchar( t.head ) && t.tail != Stream.empty && hexchar( t.tail.head )) {
+//							res += Integer.parseUnsignedInt( t take 2 mkString, 16).toChar
+//							_decode (t.tail.tail)
+//						} else
+//							Some( s"invalid data URL escape sequence: '${(h #:: t) take 3 mkString}'" )
+//					else if (h == '+') {
+//						res += ' '
+//						_decode( t )
+//					} else
+//						Some( s"invalid character in data URL: '$h'" )
+//			}
+//
+//		_decode( urlchars toStream ) match {
+//			case None => Right( res toString )
+//			case Some( error ) => Left( error )
+//		}
+//	}
 
 	def uniqueField( resource: Resource ) =
 		resource.fields find (_.unique ) match {
@@ -78,6 +78,22 @@ object CommandFunctionHelpers {
 					throw new BadRequestException( s"insert: MIME type not allowed: $typ/$subtype" )
 
 				resource.media.insert( Map("type" -> s"$typ/$subtype$parameter", "data" -> data) )
+		}
+
+	def field2types( typ: FieldType ) =
+		typ match {
+			case BooleanType => Types.BOOLEAN
+			case StringType( _ ) => Types.VARCHAR
+			case TinytextType|ShorttextType|TextType|LongtextType => Types.CLOB
+			case TinyintType|SmallintType|IntegerType => Types.INTEGER
+			case FloatType => Types.FLOAT
+			case BigintType|SingleReferenceType( _, _, _ )|MediaType( _ ) => Types.BIGINT
+			case BLOBType( _ ) => Types.BLOB
+			case TimestampType => Types.TIMESTAMP
+			case ArrayType( _ ) => Types.ARRAY
+			case DecimalType( _, _ ) => Types.DECIMAL
+			case TimeType => Types.TIME
+			case DateType => Types.DATE
 		}
 
 	def setNull( preparedStatement: PreparedStatement, col: Int, typ: FieldType ): Unit = {

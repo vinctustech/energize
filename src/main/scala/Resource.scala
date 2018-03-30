@@ -184,9 +184,9 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 		query( QueryFunctionHelpers.listQuery(this, fields, s" WHERE $name.$idIn = $id",
 			page, start, limit), None, None, None, false )
 
-	def findIDMany( id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
-		query( QueryFunctionHelpers.listQuery(this, Some(fields), s" WHERE $name.$idIn = $id",
-			None, None, None), page, start, limit, false )
+//	def findIDMany( id: Long, fields: String, page: Option[String], start: Option[String], limit: Option[String] ) =
+//		query( QueryFunctionHelpers.listQuery(this, Some(fields), s" WHERE $name.$idIn = $id",
+//			None, None, None), page, start, limit, false )
 
 	def findValue( field: String, value: Any, allowsecret: Boolean ) =
 		query( QueryFunctionHelpers.listQuery(this, None, s" WHERE $name.${nameIn(field)} = '$value'",
@@ -197,8 +197,8 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 	def findOption( field: String, value: Any, allowsecret: Boolean ) =
 		findValue( field, value, allowsecret ).headOption
 
-	def findField( id: Long, field: String ) =
-		query( Query(s"SELECT ${nameIn(field)} FROM $name WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
+//	def findField( id: Long, field: String ) =
+//		query( Query(s"SELECT ${nameIn(field)} FROM $name WHERE $idIn = $id", List(field)), None, None, None, false ).head( field )
 
 	def readField( id: Long, field: String ) = {
 		val res = processor.statement.executeQuery( s"SELECT ${nameIn(field)} FROM $name WHERE $idIn = $id" )
@@ -243,11 +243,11 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 
 	def deleteMedia( id: Long ) = media.delete( id )
 
-	def deleteValue( field: String, value: Any ) =
-		value match {
-			case s: String => command( s"DELETE FROM $name WHERE ${nameIn(field)} = '$s';" )
-			case _ => command( s"DELETE FROM $name WHERE ${nameIn(field)} = $value;" )
-		}
+//	def deleteValue( field: String, value: Any ) =
+//		value match {
+//			case s: String => command( s"DELETE FROM $name WHERE ${nameIn(field)} = '$s';" )
+//			case _ => command( s"DELETE FROM $name WHERE ${nameIn(field)} = $value;" )
+//		}
 
 	def batchInsert( rows: List[Seq[AnyRef]], full: Boolean ) {
 		val types = for ((c, i) <- fields zipWithIndex) yield (i + (if (full) 2 else 1), c.typ)
@@ -473,89 +473,90 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 		}
 	}
 
-	def arrayInsert( id: Long, field: String, idx: Int, json: OBJ ): Unit = {
-		json get "data" match {
-			case None => throw new BadRequestException( "arrayInsert: 'data' not found in JSON body" )
-			case Some( data ) =>
-				val oldarray = readField( id, field ).asInstanceOf[Array[Any]]
+	// todo: find out what arrayInsert/Update/Delete were for
+//	def arrayInsert( id: Long, field: String, idx: Int, json: OBJ ): Unit = {
+//		json get "data" match {
+//			case None => throw new BadRequestException( "arrayInsert: 'data' not found in JSON body" )
+//			case Some( data ) =>
+//				val oldarray = readField( id, field ).asInstanceOf[Array[Any]]
+//
+//				if (idx < 0 || idx > oldarray.length)
+//					throw new BadRequestException( s"arrayInsert: array index is out of range: $idx" )
+//
+//				val newarray = ListBuffer[Any]( oldarray.view(0, idx): _* )
+//				val item =
+//					fieldMap get field match {
+//						case None => throw new NotFoundException( s"arrayInsert: '$field' not found" )
+//						case Some( Field(_, ArrayType(MediaType(allowed)), _, _, _, _, _) ) =>
+//							CommandFunctionHelpers.mediaInsert( this, allowed, data.toString )
+//						case _ => data
+//					}
+//
+//				newarray += item
+//				newarray ++= oldarray.view( idx, oldarray.length )
+//				update( id, Map(field -> newarray), false )
+//		}
+//	}
 
-				if (idx < 0 || idx > oldarray.length)
-					throw new BadRequestException( s"arrayInsert: array index is out of range: $idx" )
+//	def arrayUpdate( id: Long, field: String, idx: Int, json: OBJ ): Unit = {
+//		json get "data" match {
+//			case None => throw new BadRequestException( "arrayUpdate: 'data' not found in JSON body" )
+//			case Some( data ) =>
+//				val oldarray = readField( id, field ).asInstanceOf[Array[Any]]
+//
+//				if (idx < 0 || idx > oldarray.length)
+//					throw new BadRequestException( s"arrayUpdate: array index is out of range: $idx" )
+//
+//				val newarray = ListBuffer[Any]( oldarray: _* )
+//				val (item, todelete) =
+//					fieldMap get field match {
+//						case None => throw new NotFoundException( s"arrayUpdate: '$field' not found" )
+//						case Some( Field(_, ArrayType(MediaType(allowed)), _, _, _, _, _) ) =>
+//							(CommandFunctionHelpers.mediaInsert( this, allowed, data.toString ), Some( oldarray(idx).asInstanceOf[Long] ))
+//						case _ => (data, None)
+//					}
+//
+//				newarray(idx) = item
+//				update( id, Map(field -> newarray), false )
+//
+//				if (todelete isDefined)
+//					media.delete( todelete get )
+//		}
+//	}
 
-				val newarray = ListBuffer[Any]( oldarray.view(0, idx): _* )
-				val item =
-					fieldMap get field match {
-						case None => throw new NotFoundException( s"arrayInsert: '$field' not found" )
-						case Some( Field(_, ArrayType(MediaType(allowed)), _, _, _, _, _) ) =>
-							CommandFunctionHelpers.mediaInsert( this, allowed, data.toString )
-						case _ => data
-					}
+//	def arrayDelete( id: Long, field: String, idx: Int ): Unit = {
+//		val oldarray = readField( id, field ).asInstanceOf[Array[Any]]
+//
+//		if (idx < 0 || idx > oldarray.length)
+//			throw new BadRequestException( s"arrayDelete: array index is out of range: $idx" )
+//
+//		val newarray = ListBuffer[Any]( oldarray: _* )
+//		val todelete =
+//			fieldMap get field match {
+//				case None => throw new NotFoundException( s"arrayDelete: '$field' not found" )
+//				case Some( Field(_, ArrayType(MediaType(_)), _, _, _, _, _) ) =>
+//					Some( oldarray(idx).asInstanceOf[Long] )
+//				case _ => None
+//			}
+//
+//		newarray remove idx
+//		update( id, Map(field -> newarray), false )
+//
+//		if (todelete isDefined)
+//			media.delete( todelete get )
+//	}
 
-				newarray += item
-				newarray ++= oldarray.view( idx, oldarray.length )
-				update( id, Map(field -> newarray), false )
-		}
-	}
-
-	def arrayUpdate( id: Long, field: String, idx: Int, json: OBJ ): Unit = {
-		json get "data" match {
-			case None => throw new BadRequestException( "arrayUpdate: 'data' not found in JSON body" )
-			case Some( data ) =>
-				val oldarray = readField( id, field ).asInstanceOf[Array[Any]]
-
-				if (idx < 0 || idx > oldarray.length)
-					throw new BadRequestException( s"arrayUpdate: array index is out of range: $idx" )
-
-				val newarray = ListBuffer[Any]( oldarray: _* )
-				val (item, todelete) =
-					fieldMap get field match {
-						case None => throw new NotFoundException( s"arrayUpdate: '$field' not found" )
-						case Some( Field(_, ArrayType(MediaType(allowed)), _, _, _, _, _) ) =>
-							(CommandFunctionHelpers.mediaInsert( this, allowed, data.toString ), Some( oldarray(idx).asInstanceOf[Long] ))
-						case _ => (data, None)
-					}
-
-				newarray(idx) = item
-				update( id, Map(field -> newarray), false )
-
-				if (todelete isDefined)
-					media.delete( todelete get )
-		}
-	}
-
-	def arrayDelete( id: Long, field: String, idx: Int ): Unit = {
-		val oldarray = readField( id, field ).asInstanceOf[Array[Any]]
-
-		if (idx < 0 || idx > oldarray.length)
-			throw new BadRequestException( s"arrayDelete: array index is out of range: $idx" )
-
-		val newarray = ListBuffer[Any]( oldarray: _* )
-		val todelete =
-			fieldMap get field match {
-				case None => throw new NotFoundException( s"arrayDelete: '$field' not found" )
-				case Some( Field(_, ArrayType(MediaType(_)), _, _, _, _, _) ) =>
-					Some( oldarray(idx).asInstanceOf[Long] )
-				case _ => None
-			}
-
-		newarray remove idx
-		update( id, Map(field -> newarray), false )
-
-		if (todelete isDefined)
-			media.delete( todelete get )
-	}
-
-	def insertLinks( id: Long, field: String, json: OBJ ) =
-		json get field match {
-			case None => throw new BadRequestException( s"insertLinks: field not found: $field" )
-			case Some( vs ) =>
-				fieldMap(field).typ match {
-					case ManyReferenceType( _, _, ref ) =>
-						for (v <- vs.asInstanceOf[List[AnyRef]])
-							associateID( id, ref, CommandFunctionHelpers.uniqueField(ref), v )
-					case _ => throw new BadRequestException( s"insertLinks: field not many-to-many: $field" )
-				}
-		}
+//	def insertLinks( id: Long, field: String, json: OBJ ) =
+//		json get field match {
+//			case None => throw new BadRequestException( s"insertLinks: field not found: $field" )
+//			case Some( vs ) =>
+//				fieldMap(field).typ match {
+//					case ManyReferenceType( _, _, ref ) =>
+//						for (v <- vs.asInstanceOf[List[AnyRef]])
+//							associateID( id, ref, CommandFunctionHelpers.uniqueField(ref), v )
+//					case _ => throw new BadRequestException( s"insertLinks: field not many-to-many: $field" )
+//				}
+//		}
 
 	def append( id: Long, field: String, json: OBJ ) = {
 		fieldMap get field match {
@@ -577,47 +578,47 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 			case None => throw new BadRequestException( s"appendIDs: field not found: $field" )
 		}
 
-	def deleteLinks( id: Long, field: String, json: OBJ ) =
-		json get field match {
-			case None => throw new BadRequestException( s"append: field not found: $field" )
-			case Some( vs ) =>
-				fieldMap(field).typ match {
-					case ManyReferenceType( _, _, ref ) =>
-						for (v <- vs.asInstanceOf[List[AnyRef]])
-							deleteLinkID( id, ref, CommandFunctionHelpers.uniqueField( ref ), v )
-					case _ => throw new BadRequestException( s"append: field not many-to-many: $field" )
-				}
-		}
+//	def deleteLinks( id: Long, field: String, json: OBJ ) =
+//		json get field match {
+//			case None => throw new BadRequestException( s"append: field not found: $field" )
+//			case Some( vs ) =>
+//				fieldMap(field).typ match {
+//					case ManyReferenceType( _, _, ref ) =>
+//						for (v <- vs.asInstanceOf[List[AnyRef]])
+//							deleteLinkID( id, ref, CommandFunctionHelpers.uniqueField( ref ), v )
+//					case _ => throw new BadRequestException( s"append: field not many-to-many: $field" )
+//				}
+//		}
 
-	def deleteLinksID( id: Long, field: String, tid: Long ) =
-		fieldMap(field).typ match {
-			case ManyReferenceType( _, _, ref ) => deleteLinkIDs( id, ref, tid )
-			case _ => throw new BadRequestException( s"append: field not many-to-many: $field" )
-		}
+//	def deleteLinksID( id: Long, field: String, tid: Long ) =
+//		fieldMap(field).typ match {
+//			case ManyReferenceType( _, _, ref ) => deleteLinkIDs( id, ref, tid )
+//			case _ => throw new BadRequestException( s"append: field not many-to-many: $field" )
+//		}
 
-	def deleteLinkID( id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
-		val did = dst.findOne( dfield, dvalue )( "_id" ).asInstanceOf[Long]
+//	def deleteLinkID( id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
+//		val did = dst.findOne( dfield, dvalue )( "_id" ).asInstanceOf[Long]
+//
+//		deleteLinkIDs( id, dst, did )
+//	}
 
-		deleteLinkIDs( id, dst, did )
-	}
+//	def deleteLinkIDs( sid: Long, dst: Resource, did: Long ) =
+//		command( s"DELETE FROM $name$$${dst.name} WHERE $name$$id = $sid AND ${dst.name}$$id = $did" )
 
-	def deleteLinkIDs( sid: Long, dst: Resource, did: Long ) =
-		command( s"DELETE FROM $name$$${dst.name} WHERE $name$$id = $sid AND ${dst.name}$$id = $did" )
-
-	def associateID( id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
-		val did = dst.findOne( dfield, dvalue )( "_id" ).asInstanceOf[Long]
-
-		associateIDs( id, dst, did )
-	}
+//	def associateID( id: Long, dst: Resource, dfield: String, dvalue: AnyRef ) = {
+//		val did = dst.findOne( dfield, dvalue )( "_id" ).asInstanceOf[Long]
+//
+//		associateIDs( id, dst, did )
+//	}
 
 	def associateIDs( sid: Long, dst: Resource, did: Long ) =
 		command( s"INSERT INTO $name$$${dst.name} VALUES ($sid, $did)" )
 
-	def associate( sfield: String, svalue: AnyRef, dst: Resource, dfield: String, dvalue: AnyRef ) = {
-		val sobj = findOne( sfield, svalue )( "_id" ).asInstanceOf[Long]
-
-		associateID( sobj, dst, dfield, dvalue )
-	}
+//	def associate( sfield: String, svalue: AnyRef, dst: Resource, dfield: String, dvalue: AnyRef ) = {
+//		val sobj = findOne( sfield, svalue )( "_id" ).asInstanceOf[Long]
+//
+//		associateID( sobj, dst, dfield, dvalue )
+//	}
 
 }
 

@@ -9,13 +9,13 @@ import xyz.hyperreal.bvm.VM
 
 object UtilityFunctions {
 
-	def rndPrintable( vm: VM, len: Int ) = new String( Array.fill( len )( util.Random.nextPrintableChar) )
+//	def rndPrintable( vm: VM, len: Int ) = new String( Array.fill( len )( util.Random.nextPrintableChar) )
 
-	def rndAlpha( vm: VM, len: Int ) = new String( Array.fill( len )((util.Random.nextInt('z' - 'a') + 'a').toChar) )
+//	def rndAlpha( vm: VM, len: Int ) = new String( Array.fill( len )((util.Random.nextInt('z' - 'a') + 'a').toChar) )
 
-	def rndInt( vm: VM, low: Int, high: Int ) = nextInt( high + 1 - low ) + low
+//	def rndInt( vm: VM, low: Int, high: Int ) = nextInt( high + 1 - low ) + low
 
-	def show( vm: VM, tab: String ) = Console.print( TextTable(vm.statement.executeQuery(s"select * from $tab")) )
+//	def show( vm: VM, tab: String ) = Console.print( TextTable(vm.statement.executeQuery(s"select * from $tab")) )
 
 //	def Some( vm: VM, v: Any ) = scala.Some( v )
 
@@ -57,8 +57,8 @@ object UtilityFunctions {
           case TimeType => ("time", null)
           case TimestampType => ("timestamp", null)
           case BinaryType => ("binary", null)
-          case BLOBType( rep ) => s"blob($rep)"
-          case DecimalType( precision, scale ) => s"decimal($precision,$scale)"
+          case BLOBType( rep ) => ("blob", List(rep.name))
+          case DecimalType( precision, scale ) => ("decimal", List(precision.toString, scale.toString))
           case MediaType( Nil ) => ("media", Nil)
           case MediaType( allowed ) => ("media", allowed map {case MimeType(typ, subtype) => s"$typ/$subtype"})
           case EnumType( name, elems ) => ("enum", name :: elems.toList)

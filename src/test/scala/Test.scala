@@ -8,7 +8,7 @@ object Test {
   def dbconnect = {
 		val res@(c, s, d) = Definition.dbconnect
 
-		dropPostgresTables( c, s, d )
+//		dropPostgresTables( c, s, d )
 		res
 	}
 
