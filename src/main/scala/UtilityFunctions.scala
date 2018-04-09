@@ -66,7 +66,7 @@ object UtilityFunctions {
 
       args match {
 				case None => Map( "type" -> name )
-				case Some( a ) => Map( "type" -> name, "parameters" -> args )
+				case Some( a ) => Map( "type" -> name, "parameters" -> a )
 			}
 
     }
@@ -91,7 +91,6 @@ object UtilityFunctions {
 
 		val Resource( rname, base, columns, _, visible, _, _ ) = resource
 
-		println( columns )
 		Map( "name" -> rname, "resource" -> visible, "fields" -> fields(columns), "base" -> (base map path2string orNull) )
 	}
 
