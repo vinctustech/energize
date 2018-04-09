@@ -25,7 +25,7 @@ object AuthenticationFunctionHelpers {
 	if (EXPIRATION <= 0)
 		sys.error( "authentication expiration value must be positive" )
 
-	def encodeToken( user: Long ) = Jwt.encode( JwtClaim(s"""{"user":$user}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
+	def encodeToken( userid: Long ) = Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
 
 }
 
@@ -37,7 +37,7 @@ object AuthenticationFunctions {
 				case null => throw new UnauthorizedException( "no web token in request" )
 				case h =>
 					if (!h.startsWith("Bearer "))
-						throw new UnauthorizedException( """expected "Beaerer" token in request""" )
+						throw new UnauthorizedException( """expected "Bearer" token in request""" )
 					else
 						h.substring( 7 ).trim
 			}

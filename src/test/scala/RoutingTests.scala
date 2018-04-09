@@ -4,7 +4,7 @@ import org.scalatest._
 import prop.PropertyChecks
 
 
-class EnergizeTests extends FreeSpec with PropertyChecks with Matchers {
+class RoutingTests extends FreeSpec with PropertyChecks with Matchers {
 
 //	"routes" in {
 //		val (c, s, d) = Test.dbconnect

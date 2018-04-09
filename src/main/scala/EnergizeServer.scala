@@ -131,8 +131,8 @@ class EnergizeServer( pro: Processor, port: Int ) {
 				response.setHeader( "Access-Control-Allow-Origin", origin )
 
 				try {
-          val reqheaders = new HttpComponentsMessageHeaders( request )
-          val resheaders = new HttpComponentsMessageHeaders( response )
+          val reqheaders = new HttpComponentsMessageWrapper( request )
+          val resheaders = new HttpComponentsMessageWrapper( response )
 					val (status, ctype, contents) =
 						request match {
 							case withEntity: HttpEntityEnclosingRequest =>

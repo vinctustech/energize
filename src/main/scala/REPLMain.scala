@@ -110,7 +110,7 @@ object REPLMain extends App {
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, uri: String, json: String ) =
-			println( pro.process(method.toUpperCase, uri, new HttpComponentsMessageHeaders(message), json, null) )
+			println( pro.process(method.toUpperCase, uri, new HttpComponentsMessageWrapper(message), json, null) )
 
 		try {
 			com match {
@@ -164,7 +164,7 @@ object REPLMain extends App {
 					}
 				case ("header"|"h") :: h :: v if v != Nil =>
 					headers(h) = rest( 3 )
-					println( MessageHeaders.elements(new BasicHeader( h, rest(3) )) mkString "\n" )
+					println( Message.elements(new BasicHeader( h, rest(3) )) mkString "\n" )
 				case List( "load"|"l" ) =>
 					if (config eq null)
 						println( "no configuration has been loaded" )

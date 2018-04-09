@@ -90,7 +90,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 	def result( name: String, res: Response, error: String ) = call( name, List(res, error) )
 
 	//todo: need a router for each resource and a misc router
-	def process( method: String, uri: String, reqheaders: MessageHeaders, body: AnyRef, resheaders: MessageHeaders ) = mutex.synchronized {
+	def process( method: String, uri: String, reqMessage: Message, body: AnyRef, resMessage: Message ) = mutex.synchronized {
 //					println(method, uri, reqheaders, body, resheaders)//dbg
 		var resStatusCode = 200
 		var resType = "application/octet-stream"
@@ -107,15 +107,15 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				"get" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
-							case h: String => reqheaders( h )
+							case h: String => reqMessage( h )
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
 				"hostname" -> {
-          if (reqheaders eq null)
+          if (reqMessage eq null)
             undefined
           else {
-            val h = reqheaders("Host")
+            val h = reqMessage("Host")
 
 						if (h eq null)
 							undefined
@@ -129,7 +129,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				"parse" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
 						deref( args ) match {
-							case h: String => reqheaders.parse( h )
+							case h: String => reqMessage.parse( h )
 							case _ => problem( apos, "error: expected one string argument" )
 						}
 					},
@@ -142,11 +142,11 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		val res =
 			new Response {
 				def get( header: String ) = {
-					resheaders( header )
+					resMessage( header )
 				}
 
 				def set( header: String, value: String ) = {
-					resheaders( header ) = value
+					resMessage( header ) = value
 					this
 				}
 

@@ -37,37 +37,38 @@ object UtilityFunctions {
 
 	def resourceSchema( vm: VM, resource: Resource ) = {
 		def primitive( typ: FieldType ): Map[String, Any] = {
-      val (name, args: List[String]) =
+      val (name, args: Option[List[String]]) =
         typ match {
-          case CharType( len ) => ("char", List(len.toString))
-          case StringType( len ) => ("string", List(len.toString))
-          case TinytextType => ("tinytext", null)
-          case ShorttextType => ("shorttext", null)
-          case TextType => ("text", null)
-          case LongtextType => ("longtext", null)
-          case BooleanType => ("boolean", null)
-          case TinyintType => ("tinyint", null)
-          case SmallintType => ("smallint", null)
-          case IntegerType => ("integer", null)
-          case BigintType => ("bigint", null)
-          case FloatType => ("float", null)
-          case UUIDType => ("UUID", null)
-          case DateType => ("date", null)
-          case DatetimeType => ("datetime", null)
-          case TimeType => ("time", null)
-          case TimestampType => ("timestamp", null)
-          case BinaryType => ("binary", null)
-          case BLOBType( rep ) => ("blob", List(rep.name))
-          case DecimalType( precision, scale ) => ("decimal", List(precision.toString, scale.toString))
-          case MediaType( Nil ) => ("media", Nil)
-          case MediaType( allowed ) => ("media", allowed map {case MimeType(typ, subtype) => s"$typ/$subtype"})
-          case EnumType( name, elems ) => ("enum", name :: elems.toList)
+          case CharType( len ) => ("char", Some(List(len.toString)))
+          case StringType( len ) => ("string", Some(List(len.toString)))
+          case TinytextType => ("tinytext", None)
+          case ShorttextType => ("shorttext", None)
+          case TextType => ("text", None)
+          case LongtextType => ("longtext", None)
+          case BooleanType => ("boolean", None)
+          case TinyintType => ("tinyint", None)
+          case SmallintType => ("smallint", None)
+          case IntegerType => ("integer", None)
+          case BigintType => ("bigint", None)
+          case FloatType => ("float", None)
+          case UUIDType => ("UUID", None)
+          case DateType => ("date", None)
+          case DatetimeType => ("datetime", None)
+          case TimeType => ("time", None)
+          case TimestampType => ("timestamp", None)
+          case BinaryType => ("binary", None)
+          case BLOBType( rep ) => ("blob", Some(List(rep.name)))
+          case DecimalType( precision, scale ) => ("decimal", Some(List(precision.toString, scale.toString)))
+          case MediaType( Nil ) => ("media", Some(Nil))
+          case MediaType( allowed ) => ("media", Some(allowed map {case MimeType(typ, subtype) => s"$typ/$subtype"}))
+          case EnumType( name, elems ) => ("enum", Some(name :: elems.toList))
         }
 
-      if (args == null)
-        Map( "type" -> name )
-      else
-        Map( "type" -> name, "parameters" -> args )
+      args match {
+				case None => Map( "type" -> name )
+				case Some( a ) => Map( "type" -> name, "parameters" -> args )
+			}
+
     }
 
 		def field( t: FieldType ) =
@@ -88,8 +89,9 @@ object UtilityFunctions {
 			cs map {case Field( fname, typ, secret, required, unique, indexed, _ ) =>	// todo: add validators support to schema
 				Map( "name" -> fname, "type" -> field(typ), "modifiers" -> modifiers(secret, required, unique, indexed))}
 
-		val Resource(rname, base, columns, _, visible, _, _) = resource
+		val Resource( rname, base, columns, _, visible, _, _ ) = resource
 
+		println( columns )
 		Map( "name" -> rname, "resource" -> visible, "fields" -> fields(columns), "base" -> (base map path2string orNull) )
 	}
 
