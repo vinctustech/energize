@@ -24,6 +24,172 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 			""".trim.stripMargin
 		val pro = Definition.define( src, c, s, d, key )
 
+		pro.process( "GET", "/meta/schema?access_token=asdf", null, null, null ) shouldBe
+			(SC_OK, "application/json",
+				"""
+					|{
+					|  "data": {
+					|    "tables": [
+					|      {
+					|        "name": "_media_",
+					|        "resource": false,
+					|        "fields": [
+					|          {
+					|            "name": "type",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "string",
+					|              "parameters": [
+					|                "128"
+					|              ]
+					|            },
+					|            "modifiers": []
+					|          },
+					|          {
+					|            "name": "data",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "blob",
+					|              "parameters": [
+					|                "urlchars"
+					|              ]
+					|            },
+					|            "modifiers": []
+					|          }
+					|        ],
+					|        "base": null
+					|      },
+					|      {
+					|        "name": "test",
+					|        "resource": true,
+					|        "fields": [
+					|          {
+					|            "name": "asdf",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "integer"
+					|            },
+					|            "modifiers": [
+					|              "required"
+					|            ]
+					|          }
+					|        ],
+					|        "base": "/api/v1"
+					|      },
+					|      {
+					|        "name": "todo",
+					|        "resource": true,
+					|        "fields": [
+					|          {
+					|            "name": "name",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "string",
+					|              "parameters": [
+					|                "128"
+					|              ]
+					|            },
+					|            "modifiers": [
+					|              "required"
+					|            ]
+					|          },
+					|          {
+					|            "name": "description",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "string",
+					|              "parameters": [
+					|                "128"
+					|              ]
+					|            },
+					|            "modifiers": []
+					|          },
+					|          {
+					|            "name": "status",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "integer"
+					|            },
+					|            "modifiers": [
+					|              "required"
+					|            ]
+					|          }
+					|        ],
+					|        "base": "/api/v1"
+					|      },
+					|      {
+					|        "name": "users",
+					|        "resource": true,
+					|        "fields": [
+					|          {
+					|            "name": "email",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "string",
+					|              "parameters": [
+					|                "128"
+					|              ]
+					|            },
+					|            "modifiers": [
+					|              "unique"
+					|            ]
+					|          },
+					|          {
+					|            "name": "createdTime",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "timestamp"
+					|            },
+					|            "modifiers": []
+					|          },
+					|          {
+					|            "name": "updatedTime",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "timestamp"
+					|            },
+					|            "modifiers": []
+					|          },
+					|          {
+					|            "name": "state",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "integer"
+					|            },
+					|            "modifiers": []
+					|          },
+					|          {
+					|            "name": "groups",
+					|            "type": {
+					|              "category": "array",
+					|              "type": "string",
+					|              "parameters": [
+					|                "128"
+					|              ]
+					|            },
+					|            "modifiers": []
+					|          },
+					|          {
+					|            "name": "password",
+					|            "type": {
+					|              "category": "primitive",
+					|              "type": "string",
+					|              "parameters": [
+					|                "128"
+					|              ]
+					|            },
+					|            "modifiers": [
+					|              "secret"
+					|            ]
+					|          }
+					|        ],
+					|        "base": null
+					|      }
+					|    ]
+					|  }
+					|}
+				""".trim.stripMargin )
+
 		pro.process( "GET", "/api/v1/todo", null, null, null ) shouldBe
 			(SC_OK, "application/json",
 				"""
@@ -1099,3 +1265,312 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 				""".trim.stripMargin)
 	}
 }
+
+/*
+
+   (200,application/json,{
+     "data": {
+       "tables": [
+         {
+           "name": "users",
+           "resource": true,
+           "fields": [
+             {
+               "name": "email",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": [
+                 "unique"
+               ]
+             },
+             {
+               "name": "createdTime",
+               "type": {
+                 "category": "primitive",
+                 "type": "timestamp"
+               },
+               "modifiers": []
+             },
+             {
+               "name": "updatedTime",
+               "type": {
+                 "category": "primitive",
+                 "type": "timestamp"
+               },
+               "modifiers": []
+             },
+             {
+               "name": "state",
+               "type": {
+                 "category": "primitive",
+                 "type": "integer"
+               },
+               "modifiers": []
+             },
+             {
+               "name": "groups",
+               "type": {
+                 "category": "array",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": []
+             },
+             {
+               "name": "password",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": [
+                 "secret"
+               ]
+             }
+           ],
+           "base": null
+         },
+         {
+           "name": "todo",
+           "resource": true,
+           "fields": [
+             {
+               "name": "name",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": [
+                 "required"
+               ]
+             },
+             {
+               "name": "description",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": []
+             },
+             {
+               "name": "status",
+               "type": {
+                 "category": "primitive",
+                 "type": "integer"
+               },
+               "modifiers": [
+                 "required"
+               ]
+             }
+           ],
+           "base": "/api/v1"
+         },
+         {
+           "name": "_media_",
+           "resource": false,
+           "fields": [
+             {
+               "name": "type",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": []
+             },
+             {
+               "name": "data",
+               "type": {
+                 "category": "primitive",
+                 "type": "blob",
+                 "parameters": [
+                   "urlchars"
+                 ]
+               },
+               "modifiers": []
+             }
+           ],
+           "base": null
+         },
+         {
+           "name": "test",
+           "resource": true,
+           "fields": [
+             {
+               "name": "asdf",
+               "type": {
+                 "category": "primitive",
+                 "type": "integer"
+               },
+               "modifiers": [
+                 "required"
+               ]
+             }
+           ],
+           "base": "/api/v1"
+         }
+       ]
+     }
+   }) was not equal to (200,application/json,{
+     "data": {
+       "tables": [
+         {
+           "name": "users",
+           "resource": true,
+           "fields": [
+             {
+               "name": "email",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": [
+                 "unique"
+               ]
+             },
+             {
+               "name": "createdTime",
+               "type": {
+                 "category": "primitive",
+                 "type": "timestamp"
+               },
+               "modifiers": []
+             },
+             {
+               "name": "updatedTime",
+               "type": {
+                 "category": "primitive",
+                 "type": "timestamp"
+               },
+               "modifiers": []
+             },
+             {
+               "name": "state",
+               "type": {
+                 "category": "primitive",
+                 "type": "integer"
+               },
+               "modifiers": []
+             },
+             {
+               "name": "groups",
+               "type": {
+                 "category": "array",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": []
+             },
+             {
+               "name": "password",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": [
+                 "secret"
+               ]
+             }
+           ],
+           "base": null
+         },
+         {
+           "name": "todo",
+           "resource": true,
+           "fields": [
+             {
+               "name": "name",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": [
+                 "required"
+               ]
+             },
+             {
+               "name": "description",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": []
+             },
+             {
+               "name": "status",
+               "type": {
+                 "category": "primitive",
+                 "type": "integer"
+               },
+               "modifiers": [
+                 "required"
+               ]
+             }
+           ],
+           "base": "/api/v1"
+         },
+         {
+           "name": "_media_",
+           "resource": false,
+           "fields": [
+             {
+               "name": "type",
+               "type": {
+                 "category": "primitive",
+                 "type": "string",
+                 "parameters": [
+                   "128"
+                 ]
+               },
+               "modifiers": []
+             },
+             {
+               "name": "data",
+               "type": {
+                 "category": "primitive",
+                 "type": "blob",
+                 "parameters": [
+                   "urlchars"
+                 ]
+               },
+               "modifiers": []
+             }
+           ],
+           "base": null
+         }
+       ]
+     }
+   }) (ProcessTests.scala:27)
+
+ */

@@ -5,9 +5,7 @@ import java.io.PrintWriter
 
 import collection.mutable.HashMap
 import jline.console.ConsoleReader
-import org.apache.http.{Header, HeaderIterator, HttpMessage, ProtocolVersion}
 import org.apache.http.message.{BasicHeader, BasicHeaderValueParser}
-import org.apache.http.params.HttpParams
 import xyz.hyperreal.table.TextTable
 
 
@@ -42,31 +40,6 @@ object REPLMain extends App {
 	var password = ""
 	var config: String = _
 	var key = AUTHENTICATION.getString( "key" )
-	val message =
-		new HttpMessage {
-			override def setHeaders(headers: Array[Header]): Unit = ???
-			override def headerIterator(): HeaderIterator = ???
-			override def headerIterator(name: String): HeaderIterator = ???
-			override def addHeader(header: Header): Unit = ???
-			override def addHeader(name: String, value: String): Unit = ???
-			override def getHeaders(name: String): Array[Header] = ???
-			override def getFirstHeader(name: String): Header = {
-				headers get name match {
-					case Some( v ) => new BasicHeader( name, v )
-					case None => null
-				}
-			}
-			override def getLastHeader(name: String): Header = ???
-			override def getAllHeaders: Array[Header] = ???
-			override def removeHeaders(name: String): Unit = ???
-			override def setHeader(header: Header): Unit = ???
-			override def setHeader(name: String, value: String): Unit = ???
-			override def removeHeader(header: Header): Unit = ???
-			override def getProtocolVersion: ProtocolVersion = ???
-			override def containsHeader(name: String): Boolean = ???
-			override def getParams: HttpParams = ???
-			override def setParams(params: HttpParams): Unit = ???
-		}
 
 	sys.addShutdownHook {
 		connection.close
@@ -110,7 +83,7 @@ object REPLMain extends App {
 		val com = line1 split "\\s+" toList
 	
 		def result( method: String, uri: String, json: String ) =
-			println( pro.process(method.toUpperCase, uri, new HttpComponentsMessageWrapper(message), json, null) )
+			println( pro.process(method.toUpperCase, uri, null, json, null) )
 
 		try {
 			com match {

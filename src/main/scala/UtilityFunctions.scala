@@ -95,7 +95,7 @@ object UtilityFunctions {
 	}
 
 	def databaseSchema( vm: VM ) = {
-		val tables = vm.resources.values map {r => resourceSchema( vm, r )}
+		val tables = vm.resources.values.toList sortWith (_.name < _.name) map (resourceSchema( vm, _ ))
 
 		Map( "tables" -> tables )
 	}
