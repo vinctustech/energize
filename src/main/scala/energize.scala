@@ -1,7 +1,6 @@
 //@
 package xyz.hyperreal
 
-import java.sql.{Connection, Statement, Types}
 import java.time.{Instant, ZoneOffset}
 import java.util.Base64
 
