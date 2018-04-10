@@ -16,6 +16,7 @@ object AuthenticationFunctionHelpers {
 	lazy val SCHEME = AUTHENTICATION.getString( "scheme" )
 	lazy val KEY = AUTHENTICATION.getString( "key" )
 	lazy val EXPIRATION = if (AUTHENTICATION.getIsNull( "expiration" )) Int.MaxValue else AUTHENTICATION.getInt( "expiration" )
+	lazy val ISSUEDAT = if (AUTHENTICATION.getIsNull( "issuedat" )) None else Some( AUTHENTICATION.getInt("issuedat") )
 
 	SCHEME match {
 		case "JWT" =>
@@ -25,7 +26,11 @@ object AuthenticationFunctionHelpers {
 	if (EXPIRATION <= 0)
 		sys.error( "authentication expiration value must be positive" )
 
-	def encodeToken( userid: Long ) = Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
+	def encodeToken( userid: Long ) =
+		ISSUEDAT match {
+			case None => Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
+			case Some( issuedat ) => Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedAt(issuedat).expiresAt(issuedat + EXPIRATION), KEY, JwtAlgorithm.HS256 )
+		}
 
 }
 

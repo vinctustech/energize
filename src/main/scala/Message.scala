@@ -29,7 +29,7 @@ class SimpleMessage( headers: (String, String)* ) extends Message {
 
 	private val map = mutable.HashMap( headers: _* )
 
-	def apply( header: String ) = map.apply( header )
+	def apply( header: String ) = map get header orNull
 
 	def parse( header: String ): Map[String, (String, Map[String, String])] =
 		Message.elements( BasicHeaderValueParser.parseElements(apply(header), BasicHeaderValueParser.INSTANCE) )

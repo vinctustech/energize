@@ -27,14 +27,14 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-				|resource test
-				|	a binary
+				|resource r protected
+				|  f string
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "POST", "/test", null, """{"a": "123457"}""", null ) )
-  println( pro.process( "PUT", "/test/1", null, """{a: "123458"}""", null ) )
-  println( pro.process( "GET", "/test", null, null, null ) )
+  println( pro.process( "GET", "/r", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
+	println( pro.process( "POST", "/auth/login", new SimpleMessage("Host" -> "example.com:80"), """{"email": "admin@example.com", "password": "password"}""", null ) )
+	println( pro.process( "POST", "/auth/register", new SimpleMessage("Host" -> "example.com:80"), """{"email": "someone@example.com", "password": "someonespassword"}""", null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

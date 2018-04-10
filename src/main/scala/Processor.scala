@@ -102,7 +102,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 		val reqquery = Map( URLEncodedUtils.parse( requri, Processor.charset ).asScala map (p => (p.getName, p.getValue)): _* )	//todo: configuration charset for url decoding?
 		val reqbody = if (body eq null) null else DefaultJSONReader.fromString( body.toString )
 		val req =
-			Map(
+			Map(//todo: very inefficient to be creating this map for every request
         "body" -> reqbody,
 				"get" -> {
 					(_: VM, apos: Position, _: List[Position], args: Any) =>
@@ -145,23 +145,23 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 					resMessage( header )
 				}
 
-				def set( header: String, value: String ) = {
+				def set( header: String, value: String ): Response = {
 					resMessage( header ) = value
 					this
 				}
 
-				def status( code: Int ) = {
+				def status( code: Int ): Response = {
 					resStatusCode = code
 					this
 				}
 
-				def `type`( typ: String ) = {
+				def `type`( typ: String ): Response = {
 					resType = typ
 					resTypeSet = true
 					this
 				}
 
-				def send( body: AnyRef ) = {
+				def send( body: AnyRef ): Response = {
           resBody = body
 
           body match {
