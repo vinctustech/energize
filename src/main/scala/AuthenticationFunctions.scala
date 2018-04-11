@@ -26,11 +26,7 @@ object AuthenticationFunctionHelpers {
 	if (EXPIRATION <= 0)
 		sys.error( "authentication expiration value must be positive" )
 
-	def encodeToken( userid: Long ) =
-		ISSUEDAT match {
-			case None => Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
-			case Some( issuedat ) => Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedAt(issuedat).expiresAt(issuedat + EXPIRATION), KEY, JwtAlgorithm.HS256 )
-		}
+	def encodeToken( userid: Long ) = Jwt.encode( JwtClaim(s"""{"user":$userid}""").issuedNow.expiresIn(EXPIRATION), KEY, JwtAlgorithm.HS256 )
 
 }
 
