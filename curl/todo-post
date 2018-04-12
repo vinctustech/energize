@@ -1,0 +1,1 @@
+curl -v -d "{\"name\": \"asdf\", \"description\": \"asdfasdf\", \"status\": 123}" -X POST http://localhost:8080/todo

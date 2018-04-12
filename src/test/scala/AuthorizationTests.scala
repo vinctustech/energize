@@ -64,7 +64,7 @@ class AuthorizationTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 
-		Thread.sleep( 1000 )
+		Thread.sleep( 2000 )
 
 		pro.process( "GET", "/r", new SimpleMessage("Host" -> "example.com:80", "Authorization" -> s"Bearer $admin"), null, null )._3.toString should include (""""error": "The token is expired since""")
 

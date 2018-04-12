@@ -26,15 +26,16 @@ object Main extends App {
 //      |r.insert( {f: d} )
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
-			"""
-				|resource r protected
-				|  f string
+			"""resource todo
+				|  name        string  required
+				|  description string  optional
+				|  status      integer required
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
+  println( pro.process( "GET", "/todo", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
+	println( pro.process( "POST", "/todo", new SimpleMessage("Host" -> "example.com:80"), """{"email": "admin@example.com", "password": "password"}""", null ) )
   println( pro.process( "GET", "/r", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
-	println( pro.process( "POST", "/auth/login", new SimpleMessage("Host" -> "example.com:80"), """{"email": "admin@example.com", "password": "password"}""", null ) )
-	println( pro.process( "POST", "/auth/register", new SimpleMessage("Host" -> "example.com:80"), """{"email": "someone@example.com", "password": "someonespassword"}""", null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
