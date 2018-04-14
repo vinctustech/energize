@@ -49,7 +49,6 @@ object EnergizeServer {
 
 class EnergizeServer( pro: Processor, port: Int ) {
 	val origin = SERVER.getString( "origin" )
-	val docroot = SERVER.getString( "docroot" )
 	val charset = Charset forName SERVER.getString( "charset" )
 	val `text/html` = mktype( "text/html" )
 	val `application/json` = mktype( "application/json" )
