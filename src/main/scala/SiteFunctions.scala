@@ -1,21 +1,32 @@
 //@
 package xyz.hyperreal.energize
 
-import java.io.File
+import java.io.{File, FileWriter}
+//import java.nio.file.{Files, Paths}
 
 import org.apache.http.HttpStatus._
+import liqp._
 
+import xyz.hyperreal.json.DefaultJSONWriter
 import xyz.hyperreal.bvm.VM
 
 
 object SiteFunctions {
 
-	def serve( vm: VM, res: Response, path: String, root: String ) = {
+	def serve( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
 		val file = {
 			val f = new File( root, path )	//todo: URLDecoder.decode(path, "UTF-8") ???
 
 			if (f isDirectory) {
-				val index = new File(f, "index.html")
+				val liquid = new File( f, "index.liquid" )
+				val index = new File( f, "index.html" )
+
+				if (liquid.exists) {
+					val out = new FileWriter( index )
+
+					out.write( Template.parse(liquid).render(DefaultJSONWriter.toString(query)) )
+					out.close
+				}
 
 				if (index.exists)
 					index

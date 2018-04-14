@@ -48,7 +48,8 @@ libraryDependencies ++= Seq(
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.9",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.5",
 	"org.mindrot" % "jbcrypt" % "0.3m",
-	"com.pauldijou" %% "jwt-core" % "0.16.0"
+	"com.pauldijou" %% "jwt-core" % "0.16.0",
+	"nl.big-o" % "liqp" % "0.7.3"
 )
 
 libraryDependencies ++= Seq(

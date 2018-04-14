@@ -1,2 +1,2 @@
 routes
-  GET /path: ... => serve( res, req.params.path, "/home/ed/dev/energize/website" )
+  GET /path: ... => serve( res, req.params.path, req.query, "/home/ed/dev/energize/website" )

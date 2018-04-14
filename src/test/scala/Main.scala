@@ -27,11 +27,11 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""routes
-				|  GET /path: ... => res.sendFile( req.params.path, {root: "/home/ed"} )
+				|  GET /path: ... => serve( res, req.params.path, "/home/ed/dev/energize/website" )
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "GET", "/asdf/qwer", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
+  println( pro.process( "GET", "/", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
