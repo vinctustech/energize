@@ -23,7 +23,6 @@ object Processor {
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
 								 val resources: Map[String, Resource], val routes: List[Route], val key: String, val users: Resource ) {
 
-	val EXTENSION = ".*\\.(.*)"r
 	val mutex = new Object
 
 	private val router = code.functions( "_router_" )._1
@@ -186,24 +185,12 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 				}
 
 				def sendFile( path: String, options: OBJ ): Response = {
-					val file = new File( path )
-
-					resBody = file
-
-					resType =
-						path.toLowerCase match {
-							case EXTENSION(ext) =>
-								ext match {
-									case "html"|"htm" => "text/html"
-									case "jpeg"|"jpg" => "image/jpeg"
-									case "css" => "text/css"
-									case "js" => "application/javascript"
-									case "json" => "application/json"
-									case "md"|"sbt"|"scala"|"txt"|"yml" => "text/plain"
-									case _ => "application/octet-stream"
-								}
-							case _ => "application/octet-stream"
+					resBody =
+						options get "root" match {
+							case Some( r: String ) => new File( r, path )
+							case None => new File( path )
 						}
+					resType = contentTypeFromExtension( path )
 
 					this
 				}

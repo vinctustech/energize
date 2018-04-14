@@ -25,7 +25,8 @@ object Builtins {
 		Native( ResultFunctions ) ++
 		Native( UtilityFunctions ) ++
 		Native( AuthenticationFunctions ) ++
-		Native( FileFunctions )
+		Native( FileFunctions ) ++
+		Native( SiteFunctions )
 	val map =
 		pairs( natives ) ++ constants toMap
 	//	val jsmap =

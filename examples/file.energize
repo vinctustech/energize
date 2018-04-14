@@ -1,2 +1,0 @@
-routes
-  GET /path: ... => res.sendFile( req.params.path, {:} )

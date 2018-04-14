@@ -20,6 +20,8 @@ package object energize {
 	lazy val ADMIN = CONFIG.getConfig( "admin" )
 	lazy val VERSION = SERVER.getString("version")
 
+	val EXTENSION = ".*\\.(.*)"r
+
 	private val hex = "0123456789ABCDEF"
 
 	implicit def vm2proc( vm: VM ): Processor = vm.args.asInstanceOf[Processor]
@@ -88,6 +90,21 @@ package object energize {
 			case OptionalPathSegment( p ) => path2string( p ) + "?"
 			case OneOrMorePathSegment( p ) => path2string( p ) + "+"
 			case RepeatPathSegment( subpat, lower, _, upper ) => s"${path2string( subpat )}{$lower, $upper}"
+		}
+
+	def contentTypeFromExtension( filename: String ) =
+		filename.toLowerCase match {
+			case EXTENSION(ext) =>
+				ext match {
+					case "html"|"htm" => "text/html"
+					case "jpeg"|"jpg" => "image/jpeg"
+					case "css" => "text/css"
+					case "js" => "application/javascript"
+					case "json" => "application/json"
+					case "md"|"sbt"|"scala"|"txt"|"yml" => "text/plain"
+					case _ => "application/octet-stream"
+				}
+			case _ => "application/octet-stream"
 		}
 
 //	def dropPostgresTables( connection: Connection, statement: Statement, db: Database ): Unit = {
