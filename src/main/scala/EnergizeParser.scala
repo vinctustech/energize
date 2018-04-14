@@ -9,7 +9,7 @@ import xyz.hyperreal.funl2._
 
 class EnergizeParser extends FunLParser {
 	lexical.reserved += ("base", "enum", "table", "resource", "routes", "realm", "protected", "private")
-	lexical.delimiters += ("=>", "?")
+	lexical.delimiters += ("=>", "?", "...")
 
 	import lexical.{Dedent, Indent, Newline}
 
@@ -150,7 +150,7 @@ class EnergizeParser extends FunLParser {
 		seqPathSegment |
 		groupPathSegment
 
-	lazy val seqPathSegment: PackratParser[PathSegment] = "..." ^^^ SeqPathSegment
+	lazy val seqPathSegment: PackratParser[PathSegment] = "..." ^^^ RemainingPathSegment
 
 	lazy val groupPathSegment: PackratParser[PathSegment] =
 		"(" ~> pathPathSegment <~ ")" ^^ {

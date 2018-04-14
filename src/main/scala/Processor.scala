@@ -1,17 +1,15 @@
 //@
 package xyz.hyperreal.energize
 
+import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.net.URI
 import java.nio.charset.Charset
 import java.sql.{Connection, SQLException, Statement}
 
 import collection.JavaConverters._
-
 import scala.util.parsing.input.Position
-
 import org.apache.http.client.utils.URLEncodedUtils
-
 import xyz.hyperreal.json.{DefaultJSONReader, DefaultJSONWriter}
 import xyz.hyperreal.bvm.{Compilation, VM, deref, undefined}
 
@@ -25,6 +23,7 @@ object Processor {
 class Processor( val code: Compilation, val connection: Connection, val statement: Statement, val db: Database,
 								 val resources: Map[String, Resource], val routes: List[Route], val key: String, val users: Resource ) {
 
+	val EXTENSION = ".*\\.(.*)"r
 	val mutex = new Object
 
 	private val router = code.functions( "_router_" )._1
@@ -173,7 +172,7 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
             case _: String =>
               if (!resTypeSet)
                 resType = "text/html"
-            case _: Array[_] | _: Seq[_] =>
+            case _: Array[_] | _: Seq[_] | _: File =>
               if (!resTypeSet)
                 resType = "application/octet-stream"
             case _: Map[_, _] =>
@@ -185,6 +184,30 @@ class Processor( val code: Compilation, val connection: Connection, val statemen
 
 					this
 				}
+
+				def sendFile( path: String, options: OBJ ): Response = {
+					val file = new File( path )
+
+					resBody = file
+
+					resType =
+						path.toLowerCase match {
+							case EXTENSION(ext) =>
+								ext match {
+									case "html"|"htm" => "text/html"
+									case "jpeg"|"jpg" => "image/jpeg"
+									case "css" => "text/css"
+									case "js" => "application/javascript"
+									case "json" => "application/json"
+									case "md"|"sbt"|"scala"|"txt"|"yml" => "text/plain"
+									case _ => "application/octet-stream"
+								}
+							case _ => "application/octet-stream"
+						}
+
+					this
+				}
+
 			}
 
     //todo: handle non-string request body

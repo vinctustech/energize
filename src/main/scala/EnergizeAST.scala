@@ -17,7 +17,7 @@ case class TypePathSegment( typ: String ) extends PathSegment
 case class ParameterPathSegment( pos: Position, param: String, seg: Option[PathSegment] ) extends PathSegment
 case class AlternationPathSegment( segments: List[PathSegment] ) extends PathSegment
 case class ConcatenationPathSegment( segments: List[PathSegment] ) extends PathSegment
-case object SeqPathSegment extends PathSegment
+case object RemainingPathSegment extends PathSegment
 case object SlashPathSegment extends PathSegment
 case object ZeroOrMorePathSegment extends PathSegment
 case object EmptyPathSegment extends PathSegment

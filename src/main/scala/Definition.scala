@@ -215,10 +215,14 @@ object Definition {
 				val fieldstr = cnames1 map nameIn mkString ","
 				val values = Seq.fill( cnames1.length )( "?" ) mkString ","
 
-				r.preparedInsert =
-          connection.prepareStatement(
-            s"INSERT INTO $name ($fieldstr) VALUES ($values)" + (if (db == PostgresDatabase) s" RETURNING $idIn" else "") )
-				r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
+				if (db == PostgresDatabase) {
+					r.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($fieldstr) VALUES ($values) RETURNING $idIn" )
+					r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
+				} else {
+					r.preparedInsert = connection.prepareStatement( s"INSERT INTO $name ($fieldstr) VALUES ($values)", Array(idIn) )
+					r.preparedFullInsert = connection.prepareStatement( s"INSERT INTO $name ($idIn, $fieldstr) VALUES (?, $values)" )
+				}
+
 				r.media = media
 				r.processor = proc
 		}

@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"com.h2database" % "h2" % "1.4.196",
+	"com.h2database" % "h2" % "1.4.197",
 	//	"org.postgresql" % "postgresql" % "9.4.1212.jre7",	//latest release of 2016
 	"org.postgresql" % "postgresql" % "42.2.1"		//latest as of Jan 2018
 	//	"mysql" % "mysql-connector-java" % "6.0.5",

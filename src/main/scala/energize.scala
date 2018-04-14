@@ -77,6 +77,7 @@ package object energize {
 			case ConcatenationPathSegment( segments ) => segments map path2string mkString
 			case LiteralPathSegment( s ) => s
 			case TypePathSegment( t ) => t
+			case RemainingPathSegment => "..."
 			case SlashPathSegment => "/"
 			case AlternationPathSegment( segments ) => s"""(${segments map path2string mkString "|"})"""
 			case GroupedPathSegment( s ) => s"($s)"

@@ -184,6 +184,7 @@ class EnergizeCompiler extends Compiler( Predef.constants ++ Predef.natives ++ B
 			case TypePathSegment( "string" ) => OneOrMorePattern( ClassPattern(_ != '/') )
 			case LiteralPathSegment( s ) => LiteralPattern( s )
 			case GroupedPathSegment( s ) => LiteralPattern( s )
+			case RemainingPathSegment => ZeroOrMorePattern( AnyPattern )
 			case SlashPathSegment => LiteralPattern( "/" )
 			case ParameterPathSegment( _, param, None ) => CapturePattern( param, OneOrMorePattern(ClassPattern(_ != '/')), _.toString )
 			case ParameterPathSegment( _, param, Some(p@TypePathSegment(typ)) ) =>

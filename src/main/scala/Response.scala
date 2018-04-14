@@ -14,6 +14,8 @@ abstract class Response {
 
   def send( body: AnyRef ): Response
 
+  def sendFile( path: String, options: OBJ ): Response
+
   def json( body: OBJ ) = send( body )
 
   def end = send( Nil )

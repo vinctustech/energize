@@ -26,16 +26,12 @@ object Main extends App {
 //      |r.insert( {f: d} )
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
-			"""resource todo
-				|  name        string  required
-				|  description string  optional
-				|  status      integer required
+			"""routes
+				|  GET /path: ... => res.sendFile( req.params.path, {root: "/home/ed"} )
 			""".trim.stripMargin
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "GET", "/todo", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
-	println( pro.process( "POST", "/todo", new SimpleMessage("Host" -> "example.com:80"), """{"email": "admin@example.com", "password": "password"}""", null ) )
-  println( pro.process( "GET", "/r", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
+  println( pro.process( "GET", "/asdf/qwer", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
