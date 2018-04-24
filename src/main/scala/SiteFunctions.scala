@@ -1,11 +1,10 @@
 //@
 package xyz.hyperreal.energize
 
-import java.io.{File, FileWriter}
-//import java.nio.file.{Files, Paths}
+import java.io.{File, PrintStream}
 
 import org.apache.http.HttpStatus._
-import liqp._
+import xyz.hyperreal.liquescent._
 
 import xyz.hyperreal.json.DefaultJSONWriter
 import xyz.hyperreal.bvm.VM
@@ -22,9 +21,9 @@ object SiteFunctions {
 				val index = new File( f, "index.html" )
 
 				if (liquid.exists) {
-					val out = new FileWriter( index )
+					val out = new PrintStream( index )
 
-					out.write( Template.parse(liquid).render(DefaultJSONWriter.toString(query)) )
+					new Interpreter( StandardFilters.map, Map(), query ).perform( LiquescentParser.parse(io.Source.fromFile(liquid)), out )
 					out.close
 				}
 

@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.12.4"
+version := "0.13"
 
 scalaVersion := "2.12.5"
 
@@ -48,19 +48,19 @@ libraryDependencies ++= Seq(
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.9",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.5",
 	"org.mindrot" % "jbcrypt" % "0.3m",
-	"com.pauldijou" %% "jwt-core" % "0.16.0",
-	"nl.big-o" % "liqp" % "0.7.3"
+	"com.pauldijou" %% "jwt-core" % "0.16.0"
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "bvm" % "0.4.1",
-	"xyz.hyperreal" %% "funl2" % "0.4.1",
+	"xyz.hyperreal" %% "bvm" % "0.4.2",
+	"xyz.hyperreal" %% "funl2" % "0.4.2",
 	"xyz.hyperreal" %% "indentation-lexical" % "0.8.1",
-	"xyz.hyperreal" %% "lia" % "0.22",
+	"xyz.hyperreal" %% "lia" % "0.22.2",
 	"xyz.hyperreal" %% "json" % "0.7",
 	"xyz.hyperreal" %% "table" % "0.9",
 	"xyz.hyperreal" %% "options" % "0.2",
-	"xyz.hyperreal" %% "importer" % "0.4"
+	"xyz.hyperreal" %% "importer" % "0.4",
+  "xyz.hyperreal" %% "liquescent" % "0.1.2"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
