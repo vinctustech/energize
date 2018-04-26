@@ -11,9 +11,9 @@ import xyz.hyperreal.bvm.VM
 import scala.collection.mutable
 
 
-object SiteFunctions {
+object SiteFunctionHelpters {
 
-	val apiTag =
+  val apiTag =
     new Tag( "api" ) {
       def apply( vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
         args match {
@@ -21,6 +21,10 @@ object SiteFunctions {
 
         }
     }
+
+}
+
+object SiteFunctions {
 
   def serve( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
 		val file = {
