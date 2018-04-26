@@ -5,7 +5,7 @@ import java.io.{File, PrintStream}
 
 import org.apache.http.HttpStatus._
 import xyz.hyperreal.liquescent._
-import xyz.hyperreal.json.DefaultJSONWriter
+import xyz.hyperreal.json.DefaultJSONReader
 import xyz.hyperreal.bvm.VM
 
 import scala.collection.mutable
@@ -18,7 +18,12 @@ object SiteFunctionHelpters {
       def apply( vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
         args match {
           case List( variable: String, route: String ) =>
+            val (sc, mt, json) = context.asInstanceOf[VM].process( "GET", route, null, null, null )
 
+            if (sc == SC_OK)
+              vars(variable) = DefaultJSONReader.fromString( json.toString )
+            else
+              sys.error( s"error requesting $route: $sc" )
         }
     }
 
@@ -37,7 +42,7 @@ object SiteFunctions {
 				if (liquid.exists) {
 					val out = new PrintStream( index )
 
-					new Interpreter( StandardFilters.map, Map(), query, vm ).perform( LiquescentParser.parse(io.Source.fromFile(liquid)), out )
+					new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), query, vm ).perform( LiquescentParser.parse(io.Source.fromFile(liquid)), out )
 					out.close
 				}
 

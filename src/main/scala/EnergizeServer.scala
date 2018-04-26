@@ -3,8 +3,6 @@ package xyz.hyperreal.energize
 
 import java.util.concurrent.TimeUnit
 import java.io.{ByteArrayOutputStream, File}
-import java.net.URLDecoder
-import java.text.SimpleDateFormat
 import java.nio.charset.Charset
 
 import org.apache.http.{HttpRequest, ExceptionLogger, HttpResponse, HttpEntityEnclosingRequest}
@@ -82,7 +80,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 	}
 
 	def shutdown: Unit = {
-		server.shutdown(1000, TimeUnit.MILLISECONDS)
+		server.shutdown(0, TimeUnit.MILLISECONDS)
 	}
 
 	class RequestHandler extends HttpAsyncRequestHandler[HttpRequest] {
