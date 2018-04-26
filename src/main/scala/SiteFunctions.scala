@@ -5,14 +5,24 @@ import java.io.{File, PrintStream}
 
 import org.apache.http.HttpStatus._
 import xyz.hyperreal.liquescent._
-
 import xyz.hyperreal.json.DefaultJSONWriter
 import xyz.hyperreal.bvm.VM
+
+import scala.collection.mutable
 
 
 object SiteFunctions {
 
-	def serve( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
+	val apiTag =
+    new Tag( "api" ) {
+      def apply( vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
+        args match {
+          case List( variable: String, route: String ) =>
+
+        }
+    }
+
+  def serve( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
 		val file = {
 			val f = new File( root, path )	//todo: URLDecoder.decode(path, "UTF-8") ???
 
@@ -23,7 +33,7 @@ object SiteFunctions {
 				if (liquid.exists) {
 					val out = new PrintStream( index )
 
-					new Interpreter( StandardFilters.map, Map(), query ).perform( LiquescentParser.parse(io.Source.fromFile(liquid)), out )
+					new Interpreter( StandardFilters.map, Map(), query, vm ).perform( LiquescentParser.parse(io.Source.fromFile(liquid)), out )
 					out.close
 				}
 
