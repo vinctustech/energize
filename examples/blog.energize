@@ -1,7 +1,19 @@
 routes
   GET /path: ... => serve( res, req.params.path, req.query, "examples/blog" )
 
+/*
+resource blog
+  domain string indexed
+  title text
+  about text
+*/
+
 resource posts
-  title string
+;;  blog blog
+  poster users
+  category string indexed
+  title text
+  posted date
+  body text
 
 posts.batchInsert( [], false )
