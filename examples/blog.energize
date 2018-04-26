@@ -1,0 +1,7 @@
+routes
+  GET /path: ... => serve( res, req.params.path, req.query, "examples/blog" )
+
+resource matter
+  state string
+
+matter.batchInsert( [['solid'], ['liquid'], ['gas'], ['plasma']], false )

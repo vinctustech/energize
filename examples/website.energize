@@ -1,7 +1,0 @@
-routes
-  GET /path: ... => serve( res, req.params.path, req.query, "/home/ed/dev/energize/website" )
-
-resource r
-  state string
-
-r.batchInsert( [['solid'], ['liquid'], ['gas'], ['plasma']], false )
