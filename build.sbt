@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.12.5"
+version := "0.12.6"
 
 scalaVersion := "2.12.5"
 
@@ -53,7 +53,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "bvm" % "0.4.2",
-	"xyz.hyperreal" %% "funl2" % "0.4.3",
+	"xyz.hyperreal" %% "funl2" % "0.4.4",
 	"xyz.hyperreal" %% "lia" % "0.22.2",
 	"xyz.hyperreal" %% "json" % "0.7",
 	"xyz.hyperreal" %% "table" % "0.9",

@@ -8,7 +8,7 @@ object IntegrationTesting extends App {
 
 	val tests =
 		List( (
-			"java -jar target/scala-2.12/energize-0.12.5.jar examples/todo",
+			"java -jar target/scala-2.12/energize-0.12.6.jar examples/todo",
 			List(
 				"sh todo-post",
 				"sh todo-get"
