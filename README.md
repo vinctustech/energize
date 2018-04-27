@@ -2,8 +2,8 @@
 
 [![Build Status](https://travis-ci.org/vinctustech/energize.svg?branch=master)](https://travis-ci.org/vinctustech/energize)
 [![Coverage Status](https://coveralls.io/repos/github/vinctustech/energize/badge.svg?branch=master)](https://coveralls.io/github/vinctustech/energize?branch=master)
-[![License](https://img.shields.io/badge/license-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-[![Version](https://img.shields.io/badge/latest_release-v0.12.5-orange.svg)](https://www.scala-sbt.org/)
+[![License](https://img.shields.io/badge/license-ISC-blue.svg)](https://github.com/vinctustech/energize/blob/master/LICENSE)
+[![Version](https://img.shields.io/badge/latest_release-v0.12.5-orange.svg)](https://github.com/vinctustech/energize/releases/tag/v0.12.5)
 
 Create a Rest API in Seconds
 
