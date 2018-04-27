@@ -101,7 +101,7 @@
             From the Firehose
           </h3>
 
-          {% api "posts", "/posts" %}
+          {% api "posts", "/posts?limit=3" %}
 
           {% for post in posts.data %}
             <div class="blog-post">
@@ -128,6 +128,7 @@
           <div class="p-3">
             <h4 class="font-italic">Archives</h4>
             <ol class="list-unstyled mb-0">
+
               <li><a href="#">March 2014</a></li>
               <li><a href="#">February 2014</a></li>
               <li><a href="#">January 2014</a></li>

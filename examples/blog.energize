@@ -14,12 +14,20 @@ resource posts
   category string indexed
   title text
   body text
-  posted date
+  posted date indexed
 
 posts.batchInsert( [
-  ['kookoo', 'boring', 'stupid blog post', 'stupid blog text', '2018-04-26'],
+  ['dumber', 'scary', 'stupidest blog post ever', 'stupid blog text', '2018-04-24'],
   ['dumb', 'silly', 'another stupid blog post', 'stupid blog text', '2018-04-25'],
-  ['dumber', 'scary', 'stupidest blog post ever', 'stupid blog text', '2018-04-24']
+  ['kookoo', 'boring', 'stupid blog post', 'stupid blog text', '2018-04-26'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2018-03-24'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2018-03-12'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2018-02-24'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2018-02-14'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2018-01-24'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2017-08-24'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2017-08-14'],
+  ['asdf', 'qewr', 'older blog post ever', 'older blog text', '2017-07-24']
   ], false )
 
 /*
