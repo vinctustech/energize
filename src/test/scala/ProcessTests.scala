@@ -9,6 +9,15 @@ import org.apache.http.HttpStatus._
 
 class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 
+  "crlf" in {
+    val (c, s, d) = Test.dbconnect
+    val key = AUTHENTICATION.getString( "key" )
+    val src = "\r\nroutes\r\n  GET / => res.send( \"asdf\" )"
+    val pro = Definition.define( src, c, s, d, key )
+
+    pro.process( "GET", "/", null, null, null ) shouldBe (SC_OK, "text/html", "asdf")
+  }
+
 	"empty database" in {
 		val (c, s, d) = Test.dbconnect
 		val key = AUTHENTICATION.getString( "key" )

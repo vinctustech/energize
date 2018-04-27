@@ -26,9 +26,8 @@ object Main extends App {
 //      |r.insert( {f: d} )
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
-			"""routes
-				|  GET /path: ... => serve( res, req.params.path, "/home/ed/dev/energize/website" )
-			""".trim.stripMargin
+			"\r\nroutes\r\n  GET / => res.send( \"asdf\" )"
+
   val pro = Definition.define( src, c, s, d, key )
 
   println( pro.process( "GET", "/", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
