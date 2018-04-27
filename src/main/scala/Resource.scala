@@ -269,6 +269,9 @@ case class Resource( name: String, base: Option[PathSegment], fields: List[Field
 					case (TimeType, d: LocalTime) => preparedStatement.setTime( i, Time.valueOf(d) )
 					case (DatetimeType|TimestampType, v: String) => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
 					case (DatetimeType|TimestampType, d: LocalDateTime) => preparedInsert.setTimestamp( i + 1, processor.db.readTimestamp(v.toString) )
+          case (SingleReferenceType( _, _, tref ), v) if !v.isInstanceOf[Number] =>
+            preparedInsert.setLong( i + 1, tref.findOne(CommandFunctionHelpers.uniqueField(tref), v).asInstanceOf[Map[String, Long]]("_id") )
+          case (SingleReferenceType( _, _, _ ), v: Number) => preparedInsert.setLong( i + 1, v.asInstanceOf[Number].longValue )
 					case x => throw new BadRequestException( s"don't know what to do with $x, ${v.getClass}" )
 				}
 			}

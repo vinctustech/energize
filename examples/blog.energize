@@ -10,13 +10,17 @@ resource blog
 
 resource posts
 ;;  blog blog
-;;  poster users
+  poster string
   category string indexed
   title text
   body text
   posted date
 
-posts.batchInsert( [['asdf', 'stupid blog post', 'stupid blog text', '2018-04-26']], false )
+posts.batchInsert( [
+  ['kookoo', 'boring', 'stupid blog post', 'stupid blog text', '2018-04-26'],
+  ['dumb', 'silly', 'another stupid blog post', 'stupid blog text', '2018-04-25'],
+  ['dumber', 'scary', 'stupidest blog post ever', 'stupid blog text', '2018-04-24']
+  ], false )
 
 /*
 sample blog post
