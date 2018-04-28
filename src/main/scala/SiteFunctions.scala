@@ -31,6 +31,14 @@ object SiteFunctionHelpters {
 
 object SiteFunctions {
 
+  def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
+    val out = new PrintStream( output )
+
+    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), assigns, vm ).
+      perform( LiquescentParser.parse(io.Source.fromFile(input)), out )
+    out.close
+  }
+
   def serve( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
 		val file = {
 			val f = new File( root, path )	//todo: URLDecoder.decode(path, "UTF-8") ???
@@ -39,23 +47,39 @@ object SiteFunctions {
 				val liquid = new File( f, "index.liquid" )
 				val index = new File( f, "index.html" )
 
-				if (liquid.exists) {
-					val out = new PrintStream( index )
-
-					new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), query, vm ).perform( LiquescentParser.parse(io.Source.fromFile(liquid)), out )
-					out.close
-				}
+				if (liquid.exists)
+				  render( vm, liquid, index, query )
 
 				if (index.exists)
 					index
 				else
 					f
-			} else
+			} else if (f.getName endsWith ".liquid") {
+        val out = new File( f.getPath.substring(0, f.getPath.length - 7) + ".html" )
+
+        if (f.exists && f.canRead) {
+          render( vm, f, out, query )
+          out
+        } else
+          f
+      } else if (f.getName matches """.*\.[^.]+""")
 				f
+      else {
+        val in = new File( f.getPath + ".liquid" )
+        val out = new File( f.getPath + ".html" )
+
+        if (in.exists && in.canRead) {
+          render( vm, in, out, query )
+          out
+        } else
+          in
+      }
 		}
 
+    // if file is a directory, render directory (add new parameter to serve())
+
 		if (!file.exists || file.isDirectory) {
-			res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$path not found</h1></body></html>" ).`type`( "text/html" )
+			res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$file not found</h1></body></html>" ).`type`( "text/html" )
 		} else if (!file.canRead) {
 			res.status( SC_FORBIDDEN ).send( "<html><body><h1>Access denied</h1></body></html>" ).`type`( "text/html" )
 		} else

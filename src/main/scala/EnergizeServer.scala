@@ -144,7 +144,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 								pro.process( method1, target, req, null, res )
 						}
 
-					if (status == SC_NOT_FOUND) {
+					if (status == SC_NOT_FOUND && contents == null) {
 						response.setStatusCode( SC_NOT_FOUND )
 
 						val entity = new NStringEntity(

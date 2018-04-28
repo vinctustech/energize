@@ -1,9 +1,6 @@
 //@
 package xyz.hyperreal.energize
 
-import org.apache.http._
-import org.apache.http.params.HttpParams
-
 
 object Main extends App {
 
@@ -26,7 +23,10 @@ object Main extends App {
 //      |r.insert( {f: d} )
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
-			"\r\nroutes\r\n  GET / => res.send( \"asdf\" )"
+			"""
+        |routes
+        |  GET /path: ... => serve( res, req.params.path, req.query, "test" )
+      """.stripMargin
 
   val pro = Definition.define( src, c, s, d, key )
 

@@ -1,0 +1,2 @@
+routes
+  GET /path: ... => serve( res, req.params.path, req.query, "examples/test" )

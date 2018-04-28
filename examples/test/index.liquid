@@ -1,0 +1,9 @@
+{% if page %}
+  {% if v %}
+    <a href="page{{ page }}?v={{ v }}">link to 'page{{ page }}'</a>
+  {% else %}
+    page{{ page }} will be expecting 'v' to be defined
+  {% endif %}
+{% else %}
+  expected 'page' to be defined
+{% endif %}
