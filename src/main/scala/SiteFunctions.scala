@@ -33,8 +33,8 @@ object SiteFunctionHelpters {
 object SiteFunctions {
 
   def folderExistsUnderDocroot( vm: VM, path: String ) = {
-    val file = new File( SiteFunctionHelpters.docroot, path )
     val root = new File( SiteFunctionHelpters.docroot )
+    val file = new File( root, path )
 
     if (file.getCanonicalPath == root.getCanonicalPath ||
       file.getParentFile.getCanonicalPath == root.getCanonicalPath ||
