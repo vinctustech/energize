@@ -6,7 +6,7 @@ import java.io.{File, PrintStream}
 import org.apache.http.HttpStatus._
 import xyz.hyperreal.liquescent._
 import xyz.hyperreal.json.DefaultJSONReader
-import xyz.hyperreal.bvm.VM
+import xyz.hyperreal.bvm.{Fail, VM}
 
 import scala.collection.mutable
 
@@ -26,10 +26,23 @@ object SiteFunctionHelpters {
               sys.error( s"error requesting $route: $sc" )
         }
     }
+  val docroot = SERVER.getString( "docroot" )
 
 }
 
 object SiteFunctions {
+
+  def folderExistsUnderDocroot( vm: VM, path: String ) = {
+    val file = new File( SiteFunctionHelpters.docroot, path )
+    val root = new File( SiteFunctionHelpters.docroot )
+
+    if (file.getCanonicalPath == root.getCanonicalPath ||
+      file.getParentFile.getCanonicalPath == root.getCanonicalPath ||
+      root.getCanonicalPath.startsWith( file.getParentFile.getCanonicalPath ))
+      true
+    else
+      Fail
+  }
 
   def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
     val out = new PrintStream( output )
@@ -39,7 +52,21 @@ object SiteFunctions {
     out.close
   }
 
-  def serve( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
+  def serveRaw( vm: VM, res: Response, path: String ) = {
+    val file = new File( SiteFunctionHelpters.docroot, path )
+
+    if (!file.exists || file.isDirectory) {
+      res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$file not found</h1></body></html>" ).`type`( "text/html" )
+    } else if (!file.canRead) {
+      res.status( SC_FORBIDDEN ).send( "<html><body><h1>Access denied</h1></body></html>" ).`type`( "text/html" )
+    } else
+      res.status( SC_OK ).send( file ).`type`( contentTypeFromExtension(file.getName) )
+  }
+
+  def serve( vm: VM, res: Response, path: String, query: Map[String, String] ) =
+    serveWithRoot( vm, res, path, query, SiteFunctionHelpters.docroot )
+
+  def serveWithRoot( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
 		val file = {
 			val f = new File( root, path )	//todo: URLDecoder.decode(path, "UTF-8") ???
 

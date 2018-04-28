@@ -93,6 +93,7 @@ object Builtins {
 			|  password string secret
 			|
 			|routes
+      |  GET     /path: ... if folderExistsUnderDocroot( req.params.path ) => serve( res, req.params.path, req.query )
 			|  GET     /users/me  => Ok( res, authorization(req) )
 			|
 			|routes /meta private
