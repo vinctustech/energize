@@ -56,7 +56,7 @@ object SiteFunctions {
     val file = new File( SiteFunctionHelpters.docroot, path )
 
     if (!file.exists || file.isDirectory) {
-      res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$file not found</h1></body></html>" ).`type`( "text/html" )
+      res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$path not found</h1></body></html>" ).`type`( "text/html" )
     } else if (!file.canRead) {
       res.status( SC_FORBIDDEN ).send( "<html><body><h1>Access denied</h1></body></html>" ).`type`( "text/html" )
     } else
