@@ -28,6 +28,15 @@ object SiteFunctionHelpters {
     }
   val docroot = SERVER.getString( "docroot" )
 
+  def serve( res: Response, path: String, file: File ) =
+    // todo: if file is a directory, render directory (add new parameter to serve())
+    if (!file.exists || file.isDirectory) {
+      res.status( SC_NOT_FOUND ).send( s"<html><body><h1>/$path not found</h1></body></html>" ).`type`( "text/html" )
+    } else if (!file.canRead) {
+      res.status( SC_FORBIDDEN ).send( "<html><body><h1>Access denied</h1></body></html>" ).`type`( "text/html" )
+    } else
+      res.status( SC_OK ).send( file ).`type`( contentTypeFromExtension(file.getName) )
+
 }
 
 object SiteFunctions {
@@ -52,16 +61,7 @@ object SiteFunctions {
     out.close
   }
 
-  def serveRaw( vm: VM, res: Response, path: String ) = {
-    val file = new File( SiteFunctionHelpters.docroot, path )
-
-    if (!file.exists || file.isDirectory) {
-      res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$path not found</h1></body></html>" ).`type`( "text/html" )
-    } else if (!file.canRead) {
-      res.status( SC_FORBIDDEN ).send( "<html><body><h1>Access denied</h1></body></html>" ).`type`( "text/html" )
-    } else
-      res.status( SC_OK ).send( file ).`type`( contentTypeFromExtension(file.getName) )
-  }
+  def serveRaw( vm: VM, res: Response, path: String ) = SiteFunctionHelpters.serve( res, path, new File(SiteFunctionHelpters.docroot, path) )
 
   def serve( vm: VM, res: Response, path: String, query: Map[String, String] ) =
     serveWithRoot( vm, res, path, query, SiteFunctionHelpters.docroot )
@@ -103,14 +103,7 @@ object SiteFunctions {
       }
 		}
 
-    // if file is a directory, render directory (add new parameter to serve())
-
-		if (!file.exists || file.isDirectory) {
-			res.status( SC_NOT_FOUND ).send( s"<html><body><h1>$file not found</h1></body></html>" ).`type`( "text/html" )
-		} else if (!file.canRead) {
-			res.status( SC_FORBIDDEN ).send( "<html><body><h1>Access denied</h1></body></html>" ).`type`( "text/html" )
-		} else
-			res.status( SC_OK ).send( file ).`type`( contentTypeFromExtension(file.getName) )
+    SiteFunctionHelpters.serve( res, path, file )
 	}
 
 }

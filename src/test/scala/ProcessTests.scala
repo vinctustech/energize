@@ -293,10 +293,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
  		pro.process( "GET", "/tod", null, null, null ) shouldBe
-			(SC_NOT_FOUND, "application/json",
-				"""{
-					|  "error": "route not found: GET /tod"
-					|}""".stripMargin)
+			(SC_NOT_FOUND, "text/html", "<html><body><h1>/tod not found</h1></body></html>" )
+//			(SC_NOT_FOUND, "application/json",  // todo: system or global variable 'apiroot' for root of api route paths
+//				"""{                              // todo: system or global variable specifying 404 behaviour for all routes and file server
+//					|  "error": "route not found: GET /tod"
+//					|}""".stripMargin)
 		c.close
 	}
 
@@ -538,12 +539,13 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
  		pro.process( "GET", "/product", null, null, null ) shouldBe
-			(SC_NOT_FOUND, "application/json",
-				"""
-					|{
-					|  "error": "route not found: GET /product"
-					|}
-				""".trim.stripMargin )
+      (SC_NOT_FOUND, "text/html", "<html><body><h1>/product not found</h1></body></html>" )
+//			(SC_NOT_FOUND, "application/json",
+//				"""
+//					|{
+//					|  "error": "route not found: GET /product"
+//					|}
+//				""".trim.stripMargin )
 		c.close
 	}
 
@@ -714,10 +716,11 @@ class ProcessTests extends FreeSpec with PropertyChecks with Matchers {
 					|}
 				""".trim.stripMargin )
 		pro.process( "GET", "/product", null, null, null ) shouldBe
-			(SC_NOT_FOUND, "application/json",
-				"""{
-					|  "error": "route not found: GET /product"
-					|}""".stripMargin )
+      (SC_NOT_FOUND, "text/html", "<html><body><h1>/product not found</h1></body></html>" )
+//			(SC_NOT_FOUND, "application/json",
+//				"""{
+//					|  "error": "route not found: GET /product"
+//					|}""".stripMargin )
 		c.close
 	}
 
