@@ -61,6 +61,12 @@ object SiteFunctions {
     out.close
   }
 
+  def upload( vm: VM, res: Response, path: String, json: OBJ ) = {
+    val file = new File( SiteFunctionHelpters.docroot, path )
+
+
+  }
+
   def serveRaw( vm: VM, res: Response, path: String ) = SiteFunctionHelpters.serve( res, path, new File(SiteFunctionHelpters.docroot, path) )
 
   def serve( vm: VM, res: Response, path: String, query: Map[String, String] ) =

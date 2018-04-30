@@ -94,14 +94,18 @@ object Builtins {
 			|
 			|routes
       |  GET     /path: ... if folderExistsUnderDocroot( req.params.path ) => serve( res, req.params.path, req.query )
-			|  GET     /users/me  => Ok( res, authorization(req) )
+			|  GET     /users/me => Ok( res, authorization(req) )
 			|
 			|routes /meta private
-			|  POST    /resourse:/field:                 => Ok( res, createField(req.params.resourse, req.params.field, req.body) )
-			|  PUT     /resourse:/field:/newname:        => Ok( res, renameField(req.params.resourse, req.params.field, req.params.newname) )
-			|  DELETE  /resourse:/field:                 => Ok( res, deleteField(req.params.resourse, req.params.field) )
-			|  DELETE  /resourse:                        => Ok( res, deleteResource(req.params.resourse) )
-			|  GET     /schema												   => Ok( res, databaseSchema() )
+			|  POST    /resourse/resourse:/field:                 => Ok( res, createField(req.params.resourse, req.params.field, req.body) )
+			|  PUT     /resourse/resourse:/field:/newname:        => Ok( res, renameField(req.params.resourse, req.params.field, req.params.newname) )
+			|  DELETE  /resourse/resourse:/field:                 => Ok( res, deleteField(req.params.resourse, req.params.field) )
+			|  DELETE  /resourse/resourse:                        => Ok( res, deleteResource(req.params.resourse) )
+			|  GET     /schema												            => Ok( res, databaseSchema() )
+      |
+      |  GET     /file/path: ...                            => serveRaw( res, req.params.path )
+      |  POST    /file/path: ...                            => upload( res, req.params.path, req.body )
+      |  GET     /file/metadata/path: ...                   => metadata( res, req.params.path )
 			|
 			|routes $base
 			|  POST    /login        => Ok( res, login(req.body) )
