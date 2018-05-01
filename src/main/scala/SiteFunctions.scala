@@ -44,10 +44,11 @@ object SiteFunctions {
   def folderExistsUnderDocroot( vm: VM, path: String ) = {
     val root = new File( SiteFunctionHelpters.docroot )
     val file = new File( root, path )
+    val dir = file.getParentFile
 
     if (file.getCanonicalPath == root.getCanonicalPath ||
-      file.getParentFile.getCanonicalPath == root.getCanonicalPath ||
-      root.getCanonicalPath.startsWith( file.getParentFile.getCanonicalPath ))
+      dir.getCanonicalPath == root.getCanonicalPath ||
+      dir.getCanonicalPath.startsWith( root.getCanonicalPath ) && dir.exists && dir.isDirectory)
       true
     else
       Fail
@@ -66,6 +67,7 @@ object SiteFunctions {
 
 
   }
+
 
   def serveRaw( vm: VM, res: Response, path: String ) = SiteFunctionHelpters.serve( res, path, new File(SiteFunctionHelpters.docroot, path) )
 

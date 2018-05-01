@@ -24,13 +24,12 @@ object Main extends App {
 //      |write( r.list(None, None, None, None, None, None) )
 //    """.trim.stripMargin
 			"""
-        |routes
-        |  GET /path: ... => serve( res, req.params.path, req.query )
+        |
       """.stripMargin
 
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "GET", "/", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
+  println( pro.process( "GET", "/images/Test.png", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]

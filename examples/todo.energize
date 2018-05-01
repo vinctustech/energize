@@ -1,4 +1,7 @@
-resource todo
+resource todo /api/v1
   name        string  required
   description string  optional
   status      integer required
+
+todo.insert( {name: "first \"thing\"", status: 1} )
+todo.insert( {name: 'second thing', status: 2} )
