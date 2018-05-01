@@ -20,10 +20,7 @@ object SiteFunctionHelpters {
           case List( variable: String, route: String ) =>
             val (sc, mt, json) = context.asInstanceOf[VM].process( "GET", route, null, null, null )
 
-            if (sc == SC_OK)
-              vars(variable) = DefaultJSONReader.fromString( json.toString )
-            else
-              sys.error( s"error requesting $route: $sc" )
+            vars(variable) = if (sc == SC_OK) DefaultJSONReader.fromString( json.toString ) else nil
         }
     }
   val docroot = SERVER.getString( "docroot" )

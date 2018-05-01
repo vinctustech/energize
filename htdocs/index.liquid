@@ -1,3 +1,7 @@
-{% api "todo", "/todo" %}
+{% api "todo", "/api/v1/todo/1" %}
 
-{{ todo.data }}
+{% if todo %}
+  {{ todo.data }}
+{% else %}
+  no results
+{% endif %}
