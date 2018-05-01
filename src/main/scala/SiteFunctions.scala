@@ -56,7 +56,7 @@ object SiteFunctions {
   def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
     val out = new PrintStream( output )
 
-    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), assigns, vm ).
+    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), Map(), assigns, vm ).
       perform( LiquescentParser.parse(io.Source.fromFile(input)), out )
     out.close
   }

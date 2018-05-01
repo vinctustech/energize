@@ -25,7 +25,7 @@ object Main extends App {
 //    """.trim.stripMargin
 			"""
         |routes
-        |  GET /path: ... => serve( res, req.params.path, req.query, "test" )
+        |  GET /path: ... => serve( res, req.params.path, req.query )
       """.stripMargin
 
   val pro = Definition.define( src, c, s, d, key )
