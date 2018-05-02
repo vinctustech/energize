@@ -15,7 +15,7 @@ object SiteFunctionHelpters {
 
   val apiTag =
     new Tag( "api" ) {
-      def apply( vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
+      def apply( settings: Map[Symbol, Any], vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
         args match {
           case List( variable: String, route: String ) =>
             val (sc, mt, json) = context.asInstanceOf[VM].process( "GET", route, null, null, null )
@@ -24,6 +24,10 @@ object SiteFunctionHelpters {
         }
     }
   val docroot = SERVER.getString( "docroot" )
+  val settings =
+    Map(
+      'docroot -> docroot
+    )
 
   def serve( res: Response, path: String, file: File ) =
     // todo: if file is a directory, render directory (add new parameter to serve())
@@ -54,7 +58,7 @@ object SiteFunctions {
   def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
     val out = new PrintStream( output )
 
-    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), Map(), assigns, vm ).
+    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns, vm ).
       perform( LiquescentParser.parse(io.Source.fromFile(input)), out )
     out.close
   }
