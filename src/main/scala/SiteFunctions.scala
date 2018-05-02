@@ -1,4 +1,4 @@
-//@
+//
 package xyz.hyperreal.energize
 
 import java.io.{File, PrintStream}
@@ -42,6 +42,7 @@ object SiteFunctionHelpters {
 
 object SiteFunctions {
 
+  // todo: use Path.startsWith instead
   def folderExistsUnderDocroot( vm: VM, path: String ) = {
     val root = new File( SiteFunctionHelpters.docroot )
     val file = new File( root, path )
@@ -59,7 +60,7 @@ object SiteFunctions {
     val out = new PrintStream( output )
 
     new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns, vm ).
-      perform( LiquescentParser.parse(io.Source.fromFile(input)), out )
+      render( LiquescentParser.parse(io.Source.fromFile(input)), out, input.getCanonicalPath.startsWith("templates/") )
     out.close
   }
 
