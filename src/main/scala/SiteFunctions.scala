@@ -70,50 +70,43 @@ object SiteFunctions {
 
   }
 
+  def serveRendered( vm: VM, res: Response, path: String, input: File, output: File, assigns: Map[String, String] ): Unit = {
+    render( vm, input, output, assigns )
+    SiteFunctionHelpters.serve( res, path, output )
+  }
 
   def serveRaw( vm: VM, res: Response, path: String ) = SiteFunctionHelpters.serve( res, path, new File(SiteFunctionHelpters.docroot, path) )
 
   def serve( vm: VM, res: Response, path: String, query: Map[String, String] ) =
     serveWithRoot( vm, res, path, query, SiteFunctionHelpters.docroot )
 
-  def serveWithRoot( vm: VM, res: Response, path: String, query: Map[String, String], root: String ) = {
-		val file = {
-			val f = new File( root, path )	//todo: URLDecoder.decode(path, "UTF-8") ???
+  def serveWithRoot( vm: VM, res: Response, path: String, query: Map[String, String], root: String ): Unit = {
+    val r = new File( root )
+    val f = new File( r, path )	//todo: URLDecoder.decode(path, "UTF-8") ???
 
-			if (f isDirectory) {
-				val liquid = new File( f, "index.liquid" )
-				val index = new File( f, "index.html" )
+    if (f isDirectory) {
+      val liquid = new File( f, "index.liquid" )
+      val index = new File( f, "index.html" )
 
-				if (liquid.exists)
-				  render( vm, liquid, index, query )
+      if (liquid.exists)
+        serveRendered( vm, res, path, liquid, index, query )
+      else if (index.exists)
+        SiteFunctionHelpters.serve( res, path, index )
+      else if (f.getCanonicalPath == r.getCanonicalPath)
+        serveWithRoot( vm, res, path + "/templates", query, root )
+      else
+        SiteFunctionHelpters.serve( res, path, f )
+    } else if (f.getName matches """.*\.[^.]+""")
+      SiteFunctionHelpters.serve( res, path, f )
+    else {
+      val in = new File( f.getPath + ".liquid" )
+      val out = new File( f.getPath + ".html" )
 
-				if (index.exists)
-					index
-				else
-					f
-			} else if (f.getName endsWith ".liquid") {
-        val out = new File( f.getPath.substring(0, f.getPath.length - 7) + ".html" )
-
-        if (f.exists && f.canRead) {
-          render( vm, f, out, query )
-          out
-        } else
-          f
-      } else if (f.getName matches """.*\.[^.]+""")
-				f
-      else {
-        val in = new File( f.getPath + ".liquid" )
-        val out = new File( f.getPath + ".html" )
-
-        if (in.exists && in.canRead) {
-          render( vm, in, out, query )
-          out
-        } else
-          in
-      }
-		}
-
-    SiteFunctionHelpters.serve( res, path, file )
+      if (in.exists && in.canRead) {
+        serveRendered( vm, res, path, in, out, query )
+      } else
+        SiteFunctionHelpters.serve( res, path, f )
+    }
 	}
 
 }
