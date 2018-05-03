@@ -59,8 +59,9 @@ object SiteFunctions {
   def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
     val out = new PrintStream( output )
 
+    println(input, output)
     new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns, vm ).
-      render( LiquescentParser.parse(io.Source.fromFile(input)), out, input.getCanonicalPath.startsWith("templates/") )
+      render( LiquescentParser.parse(io.Source.fromFile(input)), out, input.getCanonicalPath contains "/templates/" )
     out.close
   }
 
