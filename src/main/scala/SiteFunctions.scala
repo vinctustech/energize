@@ -28,6 +28,8 @@ object SiteFunctionHelpters {
     Map(
       'docroot -> docroot
     )
+  val pages =
+    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/pages.json") )
 
   def serve( res: Response, path: String, file: File ) =
     // todo: if file is a directory, render directory (add new parameter to serve())
@@ -58,9 +60,16 @@ object SiteFunctions {
 
   def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
     val out = new PrintStream( output )
+    var objects = new mutable.HashMap[String, String]
 
-    println(input, output)
-    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns, vm ).
+    SiteFunctionHelpters.pages get input.getName match {
+      case None =>
+      case Some( page: Map[String, String] ) =>
+        objects("page_title") = page("title")
+        objects("page_description") = page("description")
+    }
+
+    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns ++ objects, vm ).
       render( LiquescentParser.parse(io.Source.fromFile(input)), out, input.getCanonicalPath contains "/templates/" )
     out.close
   }

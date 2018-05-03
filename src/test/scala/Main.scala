@@ -35,7 +35,7 @@ object Main extends App {
 
   val pro = Definition.define( src, c, s, d, key )
 
-  println( pro.process( "GET", "/templates/page1", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
+  println( pro.process( "GET", "/", new SimpleMessage("Host" -> "example.com:80"), null, null ) )
 
   //  val parser = new FunLParser
 //  val ast = parser.parseFromString( program, parser.source ).asInstanceOf[AST]
