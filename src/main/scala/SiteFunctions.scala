@@ -64,9 +64,9 @@ object SiteFunctions {
 
     SiteFunctionHelpters.pages get input.getName match {
       case None =>
-      case Some( page: Map[String, String] ) =>
-        objects("page_title") = page("title")
-        objects("page_description") = page("description")
+      case Some( page ) =>
+        objects("page_title") = page.asInstanceOf[Map[String, String]]("title")
+        objects("page_description") = page.asInstanceOf[Map[String, String]]("description")
     }
 
     new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns ++ objects, vm ).

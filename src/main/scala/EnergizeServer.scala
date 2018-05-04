@@ -26,8 +26,8 @@ object EnergizeServer {
 
 		println( connection )
 		println( connection.getMetaData.getDriverName + " " + connection.getMetaData.getDriverVersion )
-
-		println( s"defining server..." )
+    println( s"Energize server v$VERSION" )
+		println( s"loading definition..." )
 
 		val pro =
 			if (json)

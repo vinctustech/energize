@@ -1,8 +1,8 @@
 name := "energize"
 
-version := "0.13_snapshot_1.1"
+version := "0.13_snapshot_2"
 
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.6"
 
 //crossScalaVersions := Seq( "2.11.11" )
 
@@ -59,7 +59,7 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "table" % "0.9",
 	"xyz.hyperreal" %% "options" % "0.2",
 	"xyz.hyperreal" %% "importer" % "0.4",
-  "xyz.hyperreal" %% "liquescent" % "0.2_snapshot_1.1"
+  "xyz.hyperreal" %% "liquescent" % "0.2_snapshot_2"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
