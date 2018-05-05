@@ -26,10 +26,16 @@ object SiteFunctionHelpters {
   val docroot = SERVER.getString( "docroot" )
   val settings =
     Map(
-      'docroot -> docroot
+      'docroot -> docroot,
+      'html_without_currency -> (2, "${{amount}}"),
+      'html_with_currency -> (2, "${{amount}} CAD"),
+      'roundingMode -> BigDecimal.RoundingMode.HALF_EVEN,
+      'locale -> "en"
     )
   val pages =
     DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/pages.json") )
+  val globals =
+    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/globals.json") )
 
   def serve( res: Response, path: String, file: File ) =
     // todo: if file is a directory, render directory (add new parameter to serve())
@@ -70,7 +76,15 @@ object SiteFunctions {
         objects("current_tags") = page("tags")
     }
 
-    new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns ++ objects, vm ).
+    new Interpreter(
+      StandardFilters.map ++
+        ExtraStringFilters.map ++
+        ExtraHTMLFilters.map ++
+        ExtraMoneyFilters.map ++
+        ExtraColorFilters.map ++
+        ExtraFilters.map,
+      Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings,
+      assigns ++ objects ++ SiteFunctionHelpters.globals, vm ).
       render( LiquescentParser.parse(io.Source.fromFile(input)), Map(), out, input.getCanonicalPath contains "/templates/" )
     out.close
   }
