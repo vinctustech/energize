@@ -1,5 +1,6 @@
 {
   "shop": {
-    "name": "An Online Store"
+    "name": "An Online Store",
+    "locale": "en"
   }
 }
