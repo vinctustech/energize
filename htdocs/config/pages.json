@@ -1,6 +1,7 @@
 {
   "index.liquid": {
     "title": "Welcome",
-    "description": "The Home Page"
+    "description": "The Home Page",
+    "tags": ["store", "shopping"]
   }
 }

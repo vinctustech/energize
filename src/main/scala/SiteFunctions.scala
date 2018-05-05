@@ -64,13 +64,14 @@ object SiteFunctions {
 
     SiteFunctionHelpters.pages get input.getName match {
       case None =>
-      case Some( page ) =>
-        objects("page_title") = page.asInstanceOf[Map[String, String]]("title")
-        objects("page_description") = page.asInstanceOf[Map[String, String]]("description")
+      case Some( page: Map[String, String] ) =>
+        objects("page_title") = page("title")
+        objects("page_description") = page("description")
+        objects("current_tags") = page("tags")
     }
 
     new Interpreter( StandardFilters.map, Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings, assigns ++ objects, vm ).
-      render( LiquescentParser.parse(io.Source.fromFile(input)), out, input.getCanonicalPath contains "/templates/" )
+      render( LiquescentParser.parse(io.Source.fromFile(input)), Map(), out, input.getCanonicalPath contains "/templates/" )
     out.close
   }
 
