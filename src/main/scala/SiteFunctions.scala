@@ -82,6 +82,7 @@ object SiteFunctions {
         ExtraHTMLFilters.map ++
         ExtraMoneyFilters.map ++
         ExtraColorFilters.map ++
+        ExtraUrlFilters.map ++
         ExtraFilters.map,
       Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings,
       assigns ++ objects ++ SiteFunctionHelpters.globals, vm ).

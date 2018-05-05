@@ -13,6 +13,12 @@
           {% endunless %}
       {% endcapture %}
       <title>{{ seo_title }}</title>
+
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+
+    {{ 'theme.scss.css' | asset_url | stylesheet_tag }}
   </head>
   <body>
     {{ content_for_layout }}
