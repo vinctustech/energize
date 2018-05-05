@@ -3,5 +3,10 @@
     "title": "Welcome",
     "description": "The Home Page",
     "tags": ["store", "shopping"]
+  },
+  "404.liquid": {
+    "title": "Not Found",
+    "description": "404 - Not Found",
+    "tags": []
   }
 }
