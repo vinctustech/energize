@@ -66,14 +66,18 @@ object SiteFunctions {
 
   def render( vm: VM, input: File, output: File, assigns: Map[String, String] ): Unit = {
     val out = new PrintStream( output )
-    var objects = new mutable.HashMap[String, String]
+    var objects = new mutable.HashMap[String, Any]
 
     SiteFunctionHelpters.pages get input.getName match {
       case None =>
-      case Some( page: Map[String, String] ) =>
+      case Some( page: Map[String, Any] ) =>
         objects("page_title") = page("title")
         objects("page_description") = page("description")
-        objects("current_tags") = page("tags")
+
+        page("tags") match {
+          case null =>
+          case tags => objects("current_tags") = tags
+        }
     }
 
     new Interpreter(

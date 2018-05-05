@@ -7,6 +7,6 @@
   "404.liquid": {
     "title": "Not Found",
     "description": "404 - Not Found",
-    "tags": []
+    "tags": null
   }
 }
