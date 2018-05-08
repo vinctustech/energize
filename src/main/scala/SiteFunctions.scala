@@ -1,4 +1,4 @@
-//
+//@
 package xyz.hyperreal.energize
 
 import java.io.{File, PrintStream}
