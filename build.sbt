@@ -1,6 +1,6 @@
 name := "energize"
 
-version := "0.13_snapshot_6"
+version := "0.13_snapshot_7"
 
 scalaVersion := "2.12.6"
 
@@ -17,19 +17,18 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
 
 libraryDependencies ++= Seq(
-	"org.scalatest" %% "scalatest" % "3.0.4" % "test",
-	"org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
 )
 
 parallelExecution in Test := false
 
 libraryDependencies ++= Seq(
-	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
-	"org.scala-lang.modules" %% "scala-xml" % "1.0.6"
+	"org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0"
 )
 
 libraryDependencies ++= Seq(
-	"com.typesafe" % "config" % "1.3.1"
+	"com.typesafe" % "config" % "1.3.3"
 )
 
 libraryDependencies ++= Seq(
@@ -44,7 +43,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"jline" % "jline" % "2.14.4",
+	"jline" % "jline" % "2.14.6",
 	"org.apache.httpcomponents" % "httpcore-nio" % "4.4.9",
 	"org.apache.httpcomponents" % "httpclient" % "4.5.5",
   "org.apache.httpcomponents" % "fluent-hc" % "4.5.5",
@@ -53,14 +52,14 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-	"xyz.hyperreal" %% "bvm" % "0.4.2",
-	"xyz.hyperreal" %% "funl2" % "0.4.4",
+	"xyz.hyperreal" %% "bvm" % "0.4.3",
+	"xyz.hyperreal" %% "funl2" % "0.4.5",
 	"xyz.hyperreal" %% "lia" % "0.22.2",
-	"xyz.hyperreal" %% "json" % "0.7",
+	"xyz.hyperreal" %% "json" % "0.7.1",
 	"xyz.hyperreal" %% "table" % "0.9",
 	"xyz.hyperreal" %% "options" % "0.2",
-	"xyz.hyperreal" %% "importer" % "0.4",
-  "xyz.hyperreal" %% "liquescent" % "0.2_snapshot_6"
+	"xyz.hyperreal" %% "importer" % "0.4.1",
+  "xyz.hyperreal" %% "liquescent" % "0.2_snapshot_7"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
