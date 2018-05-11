@@ -13,6 +13,7 @@ import scala.collection.mutable
 
 object SiteFunctionHelpters {
 
+  val fs = File.separator
   val apiTag =
     new Tag( "api" ) {
       def apply( settings: Map[Symbol, Any], vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
@@ -90,7 +91,7 @@ object SiteFunctions {
         ExtraFilters.map,
       Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings,
       assigns ++ objects ++ SiteFunctionHelpters.globals, vm ).
-      render( LiquescentParser.parse(io.Source.fromFile(input)), Map(), out, input.getCanonicalPath contains "/templates/" )
+      render( LiquescentParser.parse(io.Source.fromFile(input)), Map(), out, input.getCanonicalPath contains s"${File.separator}templates${File.separator}" )
     out.close
   }
 
@@ -123,7 +124,7 @@ object SiteFunctions {
       else if (index.exists)
         SiteFunctionHelpters.serve( res, path, index )
       else if (f.getCanonicalPath == r.getCanonicalPath)
-        serveWithRoot( vm, res, path + "/templates", query, root )
+        serveWithRoot( vm, res, path + File.separator + "templates", query, root )
       else
         SiteFunctionHelpters.serve( res, path, f )
     } else if (f.getName endsWith ".liquid") {
