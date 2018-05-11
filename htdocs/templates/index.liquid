@@ -1,1 +1,5 @@
-{{ "app" | append: "end" }}
+{% if p %}
+  <a href="templates/page{{ p }}">go to page {{ p }}</a>
+{% else %}
+  no page number
+{% endif %}
