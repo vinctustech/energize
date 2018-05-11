@@ -126,6 +126,8 @@ object SiteFunctions {
         serveWithRoot( vm, res, path + "/templates", query, root )
       else
         SiteFunctionHelpters.serve( res, path, f )
+    } else if (f.getName endsWith ".liquid") {
+
     } else if (f.getName matches """.*\.[^.]+""")
       SiteFunctionHelpters.serve( res, path, f )
     else {
