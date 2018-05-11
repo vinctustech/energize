@@ -97,6 +97,7 @@ package object energize {
 			case EXTENSION(ext) =>
 				ext match {
 					case "html"|"htm" => "text/html"
+          case "xml" => "text/xml"
 					case "jpeg"|"jpg" => "image/jpeg"
 					case "css" => "text/css"
 					case "js" => "application/javascript"
