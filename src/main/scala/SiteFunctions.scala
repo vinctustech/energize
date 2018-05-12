@@ -34,9 +34,9 @@ object SiteFunctionHelpters {
       'locale -> "en"
     )
   val pages =
-    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/pages.json") )
+    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, s"config${File.separator}pages.json") )
   val globals =
-    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/globals.json") )
+    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, s"config${File.separator}globals.json") )
 
   def serve( res: Response, path: String, file: File ) =
     // todo: if file is a directory, render directory (add new parameter to serve())
@@ -128,7 +128,14 @@ object SiteFunctions {
       else
         SiteFunctionHelpters.serve( res, path, f )
     } else if (f.getName endsWith ".liquid") {
+      val in = f.getPath
+      val out =
+        new File( in.substring(0, in.length - 7) + (if (in.indexOf( '.' ) > -1) "" else ".html") )
 
+      if (f.exists && f.canRead) {
+        serveRendered( vm, res, path, f, out, query )
+      } else
+        SiteFunctionHelpters.serve( res, path, f )
     } else if (f.getName matches """.*\.[^.]+""")
       SiteFunctionHelpters.serve( res, path, f )
     else {
