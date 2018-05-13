@@ -34,9 +34,9 @@ object SiteFunctionHelpters {
       'locale -> "en"
     )
   val pages =
-    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/pages.json") )
+    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, s"config${File.separator}pages.json") )
   val globals =
-    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/globals.json") )
+    DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, s"config${File.separator}globals.json") )
 
   def extension( s: String ) =
     s.lastIndexOf( '.' ) match {
@@ -133,17 +133,15 @@ object SiteFunctions {
         serveWithRoot( vm, res, path + File.separator + "templates", query, root )
       else
         SiteFunctionHelpters.serve( res, path, f )
-//    } else if (f.getName endsWith ".liquid") {
-//      val out = {
-//        val l = f.getName
-//        if
-//        new File( f.getPath + ".html" )
-//      }
-//
-//      if (f.exists && f.canRead) {
-//        serveRendered( vm, res, path, f, out, query )
-//      } else
-//        SiteFunctionHelpters.serve( res, path, f )
+    } else if (f.getName endsWith ".liquid") {
+      val in = f.getPath
+      val out =
+        new File( in.substring(0, in.length - 7) + (if (SiteFunctionHelpters.extension( in )) "" else ".html") )
+
+      if (f.exists && f.canRead) {
+        serveRendered( vm, res, path, f, out, query )
+      } else
+        SiteFunctionHelpters.serve( res, path, f )
     } else if (SiteFunctionHelpters.extension( f.getName ))
       SiteFunctionHelpters.serve( res, path, f )
     else {
