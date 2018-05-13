@@ -13,7 +13,7 @@ import scala.collection.mutable
 
 object SiteFunctionHelpters {
 
-  val fs = File.separator
+//  val extensionPattern = """.*\.[^.]+""".r.pattern
   val apiTag =
     new Tag( "api" ) {
       def apply( settings: Map[Symbol, Any], vars: mutable.Map[String, Any], out: PrintStream, args: List[Any], context: AnyRef ) =
@@ -37,6 +37,12 @@ object SiteFunctionHelpters {
     DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/pages.json") )
   val globals =
     DefaultJSONReader.fromFile( new File(SiteFunctionHelpters.docroot, "config/globals.json") )
+
+  def extension( s: String ) =
+    s.lastIndexOf( '.' ) match {
+      case -1 => false
+      case idx => s.length > idx + 1
+    }
 
   def serve( res: Response, path: String, file: File ) =
     // todo: if file is a directory, render directory (add new parameter to serve())
@@ -127,9 +133,18 @@ object SiteFunctions {
         serveWithRoot( vm, res, path + File.separator + "templates", query, root )
       else
         SiteFunctionHelpters.serve( res, path, f )
-    } else if (f.getName endsWith ".liquid") {
-
-    } else if (f.getName matches """.*\.[^.]+""")
+//    } else if (f.getName endsWith ".liquid") {
+//      val out = {
+//        val l = f.getName
+//        if
+//        new File( f.getPath + ".html" )
+//      }
+//
+//      if (f.exists && f.canRead) {
+//        serveRendered( vm, res, path, f, out, query )
+//      } else
+//        SiteFunctionHelpters.serve( res, path, f )
+    } else if (SiteFunctionHelpters.extension( f.getName ))
       SiteFunctionHelpters.serve( res, path, f )
     else {
       val in = new File( f.getPath + ".liquid" )
