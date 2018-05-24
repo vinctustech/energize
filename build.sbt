@@ -59,7 +59,7 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "table" % "0.9",
 	"xyz.hyperreal" %% "options" % "0.2",
 	"xyz.hyperreal" %% "importer" % "0.4.1",
-  "xyz.hyperreal" %% "liquescent" % "0.2_snapshot_9"
+  "xyz.hyperreal" %% "liquescent" % "0.2.1"
 )
 
 mainClass in (Compile, run) := Some( "xyz.hyperreal." + name.value.replace('-', '_') + ".ServerMain" )
