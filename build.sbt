@@ -55,7 +55,7 @@ libraryDependencies ++= Seq(
 	"xyz.hyperreal" %% "bvm" % "0.4.3",
 	"xyz.hyperreal" %% "funl2" % "0.4.5",
 	"xyz.hyperreal" %% "lia" % "0.22.2",
-	"xyz.hyperreal" %% "json" % "0.7.1",
+	"xyz.hyperreal" %% "json" % "0.7.2",
 	"xyz.hyperreal" %% "table" % "0.9",
 	"xyz.hyperreal" %% "options" % "0.2",
 	"xyz.hyperreal" %% "importer" % "0.4.1",
