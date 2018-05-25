@@ -97,7 +97,7 @@ object SiteFunctions {
         ExtraFilters.map,
       Tag(SiteFunctionHelpters.apiTag), SiteFunctionHelpters.settings,
       assigns ++ objects ++ SiteFunctionHelpters.globals, vm ).
-      render( LiquescentParser.parse(io.Source.fromFile(input)), Map(), out, input.getCanonicalPath contains s"${File.separator}templates${File.separator}" )
+      render( LiquescentParser.parse(io.Source.fromFile(input)(io.Codec.ISO8859)), Map(), out, input.getCanonicalPath contains s"${File.separator}templates${File.separator}" )
     out.close
   }
 
