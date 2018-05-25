@@ -3,7 +3,6 @@ package xyz.hyperreal.energize
 
 import java.util.concurrent.TimeUnit
 import java.io.{ByteArrayOutputStream, File}
-import java.nio.charset.Charset
 
 import org.apache.http.{HttpRequest, ExceptionLogger, HttpResponse, HttpEntityEnclosingRequest}
 import org.apache.http.entity.ContentType
@@ -47,7 +46,6 @@ object EnergizeServer {
 
 class EnergizeServer( pro: Processor, port: Int ) {
 	val origin = SERVER.getString( "origin" )
-	val charset = Charset forName SERVER.getString( "charset" )
 	val `text/html` = mktype( "text/html" )
 	val `application/json` = mktype( "application/json" )
 	val config = IOReactorConfig.custom
@@ -65,7 +63,7 @@ class EnergizeServer( pro: Processor, port: Int ) {
 
 	private def mktype( typ: String ) =
 		if (typ.startsWith( "text/" ) || (typ containsSlice "json"))
-			ContentType.create( typ, charset )
+			ContentType.create( typ, CHARSET )
 		else
 			ContentType.create( typ )
 

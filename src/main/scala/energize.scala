@@ -1,6 +1,7 @@
 //@
 package xyz.hyperreal
 
+import java.nio.charset.Charset
 import java.time.{Instant, ZoneOffset}
 import java.util.Base64
 
@@ -16,6 +17,7 @@ package object energize {
 	lazy val CONFIG = ConfigFactory.load
 	lazy val DATABASE = CONFIG.getConfig( "database" )
 	lazy val SERVER = CONFIG.getConfig( "server" )
+  lazy val CHARSET = Charset forName SERVER.getString( "charset" )
 	lazy val AUTHENTICATION = CONFIG.getConfig( "authentication" )
 	lazy val ADMIN = CONFIG.getConfig( "admin" )
 	lazy val VERSION = SERVER.getString("version")
