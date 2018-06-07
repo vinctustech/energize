@@ -8,7 +8,7 @@
 //
 //	val tests =
 //		List( (
-//			"java -jar target/scala-2.12/energize-0.13_snapshot_9.4.jar examples/todo",
+//			"java -jar target/scala-2.12/energize-0.13_snapshot_9.5.jar examples/todo",
 //			List(
 //				"sh todo-post",
 //				"sh todo-get"
