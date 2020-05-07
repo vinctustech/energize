@@ -3,4 +3,4 @@ ruby RUBY_VERSION
 
 gem "github-pages", group: :jekyll_plugins
 gem "jekyll-redirect-from"
-gem 'ffi', '1.9.18'
+gem 'ffi', '1.9.24'
