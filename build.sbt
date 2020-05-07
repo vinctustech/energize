@@ -2,7 +2,7 @@ name := "energize"
 
 version := "0.13_snapshot_9.5"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.11"
 
 //crossScalaVersions := Seq( "2.11.11" )
 
@@ -12,7 +12,7 @@ organization := "xyz.hyperreal"
 
 //resolvers += Resolver.sonatypeRepo( "snapshots" )
 
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+resolvers += "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
 
 resolvers += "Hyperreal Repository" at "https://dl.bintray.com/edadma/maven"
 
